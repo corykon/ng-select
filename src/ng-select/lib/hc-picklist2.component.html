@@ -1,0 +1,86 @@
+<div class="hc-picklists-container">
+
+    <div class="hc-picklist-pane">
+        <h2 class="hc-picklist-pane-header">Available</h2>
+        <ng-select #available
+            [bindLabel]="bindLabel"
+            [bindValue]="bindValue"
+            [markFirst]="markFirst"
+            [placeholder]="placeholder"
+            [notFoundText]="notFoundText"
+            [typeToSearchText]="typeToSearchText"
+            [addTagText]="addTagText"
+            [loadingText]="loadingText"
+            [clearAllText]="clearAllText"
+            [loading]="loading"
+            [maxSelectedItems]="maxSelectedItems"
+            [groupBy]="groupBy"
+            [groupValue]="groupValue"
+            [bufferAmount]="bufferAmount"
+            [virtualScroll]="virtualScroll"
+            [selectableGroup]="selectableGroup"
+            [selectableGroupAsModel]="selectableGroupAsModel"
+            [searchFn]="searchFn"
+            [trackByFn]="trackByFn"
+            [labelForId]="labelForId"
+            [inputAttrs]="inputAttrs"
+            [tabIndex]="tabIndex"
+            [readonly]="readonly"
+            [searchWhileComposing]="searchWhileComposing"
+            [minTermLength]="minTermLength"
+            [keyDownFn]="keyDownFn"
+            [typeahead]="typeahead"
+            [addTag]="addTag"
+            [searchable]="searchable">
+        </ng-select>
+    </div>
+    
+
+    <div class="hc-move-btns">
+        <button hc-button buttonStyle="primary-alt" type="button" name="addBtn"
+                (click)="moveLeftToRight()"
+                [disabled]="disabled">
+            <span class="icon icon-arrow-right"> -> </span>
+        </button>
+        <button hc-button buttonStyle="primary-alt" type="button" name="removeBtn"
+                (click)="moveRightToLeft()"
+                [disabled]="disabled">
+            <span class="icon icon-arrow-left"> <- </span>
+        </button>
+    </div>
+
+    <div class="hc-picklist-pane">
+        <h2 class="hc-picklist-pane-header">Selected</h2>
+        <ng-select #selected
+            [bindLabel]="bindLabel"
+            [bindValue]="bindValue"
+            [markFirst]="markFirst"
+            [placeholder]="placeholder"
+            [notFoundText]="notFoundText"
+            [typeToSearchText]="typeToSearchText"
+            [addTagText]="addTagText"
+            [loadingText]="loadingText"
+            [clearAllText]="clearAllText"
+            [loading]="loading"
+            [maxSelectedItems]="maxSelectedItems"
+            [groupBy]="groupBy"
+            [groupValue]="groupValue"
+            [bufferAmount]="bufferAmount"
+            [virtualScroll]="virtualScroll"
+            [selectableGroup]="selectableGroup"
+            [selectableGroupAsModel]="selectableGroupAsModel"
+            [searchFn]="searchFn"
+            [trackByFn]="trackByFn"
+            [labelForId]="labelForId"
+            [inputAttrs]="inputAttrs"
+            [tabIndex]="tabIndex"
+            [readonly]="readonly"
+            [searchWhileComposing]="searchWhileComposing"
+            [minTermLength]="minTermLength"
+            [keyDownFn]="keyDownFn"
+            [typeahead]="typeahead"
+            [addTag]="addTag"
+            [searchable]="searchable">
+        </ng-select>
+    </div>
+</div>

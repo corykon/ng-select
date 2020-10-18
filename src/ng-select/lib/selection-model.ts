@@ -1,4 +1,4 @@
-import { NgOption } from './ng-select.types';
+import { HcOption } from './ng-select.types';
 
 export type SelectionModelFactory = () => SelectionModel;
 
@@ -7,55 +7,51 @@ export function DefaultSelectionModelFactory() {
 }
 
 export interface SelectionModel {
-    value: NgOption[];
-    select(item: NgOption, multiple: boolean, selectableGroupAsModel: boolean);
-    unselect(item: NgOption, multiple: boolean);
+    value: HcOption[];
+    select(item: HcOption, selectableGroupAsModel: boolean);
+    unselect(item: HcOption);
     clear(keepDisabled: boolean);
 }
 
 export class DefaultSelectionModel implements SelectionModel {
-    private _selected: NgOption[] = [];
+    private _selected: HcOption[] = [];
 
-    get value(): NgOption[] {
+    get value(): HcOption[] {
         return this._selected;
     }
 
-    select(item: NgOption, multiple: boolean, groupAsModel: boolean) {
+    select(item: HcOption, groupAsModel: boolean) {
         item.selected = true;
-        if (!item.children || (!multiple && groupAsModel)) {
+        if (!item.children) {
             this._selected.push(item);
         }
-        if (multiple) {
-            if (item.parent) {
-                const childrenCount = item.parent.children.length;
-                const selectedCount = item.parent.children.filter(x => x.selected).length;
-                item.parent.selected = childrenCount === selectedCount;
-            } else if (item.children) {
-                this._setChildrenSelectedState(item.children, true);
-                this._removeChildren(item);
-                if (groupAsModel && this._activeChildren(item)) {
-                    this._selected = [...this._selected.filter(x => x.parent !== item), item]
-                } else {
-                    this._selected = [...this._selected, ...item.children.filter(x => !x.disabled)];
-                }
+        if (item.parent) {
+            const childrenCount = item.parent.children.length;
+            const selectedCount = item.parent.children.filter(x => x.selected).length;
+            item.parent.selected = childrenCount === selectedCount;
+        } else if (item.children) {
+            this._setChildrenSelectedState(item.children, true);
+            this._removeChildren(item);
+            if (groupAsModel && this._activeChildren(item)) {
+                this._selected = [...this._selected.filter(x => x.parent !== item), item]
+            } else {
+                this._selected = [...this._selected, ...item.children.filter(x => !x.disabled)];
             }
         }
     }
 
-    unselect(item: NgOption, multiple: boolean) {
+    unselect(item: HcOption) {
         this._selected = this._selected.filter(x => x !== item);
         item.selected = false;
-        if (multiple) {
-            if (item.parent && item.parent.selected) {
-                const children = item.parent.children;
-                this._removeParent(item.parent);
-                this._removeChildren(item.parent);
-                this._selected.push(...children.filter(x => x !== item && !x.disabled));
-                item.parent.selected = false;
-            } else if (item.children) {
-                this._setChildrenSelectedState(item.children, false);
-                this._removeChildren(item);
-            }
+        if (item.parent && item.parent.selected) {
+            const children = item.parent.children;
+            this._removeParent(item.parent);
+            this._removeChildren(item.parent);
+            this._selected.push(...children.filter(x => x !== item && !x.disabled));
+            item.parent.selected = false;
+        } else if (item.children) {
+            this._setChildrenSelectedState(item.children, false);
+            this._removeChildren(item);
         }
     }
 
@@ -63,7 +59,7 @@ export class DefaultSelectionModel implements SelectionModel {
         this._selected = keepDisabled ? this._selected.filter(x => x.disabled) : [];
     }
 
-    private _setChildrenSelectedState(children: NgOption[], selected: boolean) {
+    private _setChildrenSelectedState(children: HcOption[], selected: boolean) {
         for (const child of children) {
             if (child.disabled) {
                 continue;
@@ -72,18 +68,18 @@ export class DefaultSelectionModel implements SelectionModel {
         };
     }
 
-    private _removeChildren(parent: NgOption) {
+    private _removeChildren(parent: HcOption) {
         this._selected = [
             ...this._selected.filter(x => x.parent !== parent), 
             ...parent.children.filter(x => x.parent === parent && x.disabled && x.selected)
         ];
     }
 
-    private _removeParent(parent: NgOption) {
+    private _removeParent(parent: HcOption) {
         this._selected = this._selected.filter(x => x !== parent)
     }
 
-    private _activeChildren(item: NgOption): boolean {
+    private _activeChildren(item: HcOption): boolean {
         return item.children.every(x => !x.disabled || x.selected);
     }
 }

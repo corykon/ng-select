@@ -1,0 +1,57 @@
+.hc-picklists-container {
+    height: 100%;
+    display: flex;
+    flex-flow: row;
+    justify-content: space-between;
+    align-items: stretch;
+    overflow: hidden;
+}
+
+.hc-picklist-pane {
+    width: 45%;
+    display: flex;
+    flex-direction: column;
+}
+
+.hc-picklist-pane-header {
+    font-size: 16px;
+    font-weight: bold;
+    flex: 0 0 auto;
+}
+
+.ng-select, .ng-dropdown-panel {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.ng-dropdown-panel-items {
+    flex: 1 1 auto;
+}
+
+.hc-move-btns {
+    padding-top: 100px;
+    display: flex;
+    flex-flow: column;
+    justify-content: center;
+
+    // prevents a slight jiggle when animating carets on the valueset options
+    transform-style: preserve-3d;
+    transform: translate3d(0,0,0);
+
+    button {
+        min-width: 0;
+        width: 35px;
+        padding: 0;
+        height: 60px;
+        margin-top: 12px;
+        color: white;
+        background-color: #6e53a3;
+        border-radius: 4px;
+
+        &[disabled], &[disabled]:hover {
+            background-color: #ccc;
+            border-color: #ccc;
+        }
+    }
+}

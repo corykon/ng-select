@@ -25,16 +25,6 @@ export class NgOptgroupTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }
 
-@Directive({ selector: '[ng-label-tmp]' })
-export class NgLabelTemplateDirective {
-    constructor(public template: TemplateRef<any>) { }
-}
-
-@Directive({ selector: '[ng-multi-label-tmp]' })
-export class NgMultiLabelTemplateDirective {
-    constructor(public template: TemplateRef<any>) { }
-}
-
 @Directive({ selector: '[ng-header-tmp]' })
 export class NgHeaderTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
@@ -62,10 +52,5 @@ export class NgLoadingTextTemplateDirective {
 
 @Directive({ selector: '[ng-tag-tmp]' })
 export class NgTagTemplateDirective {
-    constructor(public template: TemplateRef<any>) { }
-}
-
-@Directive({ selector: '[ng-loadingspinner-tmp]' })
-export class NgLoadingSpinnerTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }

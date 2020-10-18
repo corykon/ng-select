@@ -1,4 +1,4 @@
-export interface NgOption {
+export interface HcOption {
     [name: string]: any;
     index?: number;
     htmlId?: string;
@@ -7,8 +7,8 @@ export interface NgOption {
     marked?: boolean;
     label?: string;
     value?: string | Object;
-    parent?: NgOption;
-    children?: NgOption[];
+    parent?: HcOption;
+    children?: HcOption[];
 }
 
 export enum KeyCode {

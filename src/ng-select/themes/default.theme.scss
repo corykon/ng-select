@@ -214,9 +214,6 @@ $ng-select-value-font-size: 0.9em !default;
 
 .ng-dropdown-panel {
     background-color: $ng-select-bg;
-    border: 1px solid $ng-select-border;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.06);
-    left: 0;
     &.ng-select-bottom {
         top: 100%;
         border-bottom-right-radius: 4px;

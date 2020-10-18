@@ -1,11 +1,11 @@
 import { newId } from './id';
 import { NgSelectComponent } from './ng-select.component';
-import { NgOption } from './ng-select.types';
+import { HcOption } from './ng-select.types';
 import * as searchHelper from './search-helper';
 import { SelectionModel } from './selection-model';
 import { isDefined, isFunction, isObject } from './value-utils';
 
-type OptionGroups = Map<string | NgOption, NgOption[]>;
+type OptionGroups = Map<string | HcOption, HcOption[]>;
 
 export class ItemsList {
     private _groups: OptionGroups;
@@ -15,15 +15,15 @@ export class ItemsList {
         private _selectionModel: SelectionModel) {
     }
 
-    private _items: NgOption[] = [];
+    private _items: HcOption[] = [];
 
-    get items(): NgOption[] {
+    get items(): HcOption[] {
         return this._items;
     }
 
-    private _filteredItems: NgOption[] = [];
+    private _filteredItems: HcOption[] = [];
 
-    get filteredItems(): NgOption[] {
+    get filteredItems(): HcOption[] {
         return this._filteredItems;
     }
 
@@ -37,16 +37,12 @@ export class ItemsList {
         return this._selectionModel.value;
     }
 
-    get markedItem(): NgOption {
+    get markedItem(): HcOption {
         return this._filteredItems[this._markedIndex];
     }
 
-    get noItemsToSelect(): boolean {
-        return this._ngSelect.hideSelected && this._items.length === this.selectedItems.length;
-    }
-
     get maxItemsSelected(): boolean {
-        return this._ngSelect.multiple && this._ngSelect.maxSelectedItems <= this.selectedItems.length;
+        return this._ngSelect.maxSelectedItems <= this.selectedItems.length;
     }
 
     get lastSelectedItem() {
@@ -58,6 +54,11 @@ export class ItemsList {
             }
         }
         return null;
+    }
+
+    clearList() {
+        this._items.length = 0;
+        this._filteredItems.length = 0;
     }
 
     setItems(items: any[]) {
@@ -72,33 +73,24 @@ export class ItemsList {
         this._filteredItems = [...this._items];
     }
 
-    select(item: NgOption) {
-        if (item.selected || this.maxItemsSelected) {
-            return;
-        }
-        const multiple = this._ngSelect.multiple;
-        if (!multiple) {
-            this.clearSelected();
-        }
-
-        this._selectionModel.select(item, multiple, this._ngSelect.selectableGroupAsModel);
-        if (this._ngSelect.hideSelected) {
-            this._hideSelected(item);
-        }
+    reIndex() {
+        this._items.forEach((o, index) => o.index = index);
     }
 
-    unselect(item: NgOption) {
+    select(item: HcOption) {
+        if (item.selected) { return; }
+        this._selectionModel.select(item, this._ngSelect.selectableGroupAsModel);
+    }
+
+    unselect(item: HcOption) {
         if (!item.selected) {
             return;
         }
-        this._selectionModel.unselect(item, this._ngSelect.multiple);
-        if (this._ngSelect.hideSelected && isDefined(item.index) && this._ngSelect.multiple) {
-            this._showSelected(item);
-        }
+        this._selectionModel.unselect(item);
     }
 
-    findItem(value: any): NgOption {
-        let findBy: (item: NgOption) => boolean;
+    findOption(value: any): HcOption {
+        let findBy: (item: HcOption) => boolean;
         if (this._ngSelect.compareWith) {
             findBy = item => this._ngSelect.compareWith(item.value, value)
         } else if (this._ngSelect.bindValue) {
@@ -110,11 +102,28 @@ export class ItemsList {
         return this._items.find(item => findBy(item));
     }
 
-    addItem(item: any) {
+    /**
+     * Adds a new option, transforming the given raw value into an HcOption
+     */
+    addNewOption(item: any): HcOption {
         const option = this.mapItem(item, this._items.length);
         this._items.push(option);
         this._filteredItems.push(option);
         return option;
+    }
+
+    addOption(option: HcOption) {
+        option.index = this._items.length;
+        this._items.push(option);
+    }
+
+    removeOption(item: HcOption) {
+        const indexToRemove = this._items.findIndex(i => i.index === item.index);
+        if (indexToRemove > -1) {
+            this._items.splice(indexToRemove, 1);
+        } else {
+            console.error(`Couldn't find the item to remove: ${item}`);
+        }
     }
 
     clearSelected(keepDisabled = false) {
@@ -123,9 +132,6 @@ export class ItemsList {
             item.selected = keepDisabled && item.selected && item.disabled;
             item.marked = false;
         });
-        if (this._ngSelect.hideSelected) {
-            this.resetFilteredItems();
-        }
     }
 
     findByLabel(term: string) {
@@ -145,14 +151,10 @@ export class ItemsList {
         this._filteredItems = [];
         term = this._ngSelect.searchFn ? term : searchHelper.stripSpecialChars(term).toLocaleLowerCase();
         const match = this._ngSelect.searchFn || this._defaultSearchFn;
-        const hideSelected = this._ngSelect.hideSelected;
 
         for (const key of Array.from(this._groups.keys())) {
             const matchedItems = [];
             for (const item of this._groups.get(key)) {
-                if (hideSelected && (item.parent && item.parent.selected || item.selected)) {
-                    continue;
-                }
                 const searchItem = this._ngSelect.searchFn ? item.value : item;
                 if (match(term, searchItem)) {
                     matchedItems.push(item);
@@ -170,15 +172,8 @@ export class ItemsList {
     }
 
     resetFilteredItems() {
-        if (this._filteredItems.length === this._items.length) {
-            return;
-        }
-
-        if (this._ngSelect.hideSelected && this.selectedItems.length > 0) {
-            this._filteredItems = this._items.filter(x => !x.selected);
-        } else {
-            this._filteredItems = this._items;
-        }
+        if (this._filteredItems.length === this._items.length) { return; }
+        this._filteredItems = this._items;
     }
 
     unmarkItem() {
@@ -193,7 +188,7 @@ export class ItemsList {
         this._stepToItem(-1);
     }
 
-    markItem(item: NgOption) {
+    markItem(item: HcOption) {
         this._markedIndex = this._filteredItems.indexOf(item);
     }
 
@@ -210,6 +205,7 @@ export class ItemsList {
         }
     }
 
+    /** Obtain a nested value from a given object. It could be a direct property, or a nested property */
     resolveNested(option: any, key: string): any {
         if (!isObject(option)) {
             return option;
@@ -229,7 +225,11 @@ export class ItemsList {
         }
     }
 
-    mapItem(item: any, index: number): NgOption {
+    /** Maps the given raw value into an HcOption.
+     * todo: refactor this to be a bit simpler to understand
+     *  - ngOptionLabel stuff for <ng-options>
+    */
+    mapItem(item: any, index: number): HcOption {
         const label = isDefined(item.$ngOptionLabel) ? item.$ngOptionLabel : this.resolveNested(item, this._ngSelect.bindLabel);
         const value = isDefined(item.$ngOptionValue) ? item.$ngOptionValue : item;
         return {
@@ -242,49 +242,15 @@ export class ItemsList {
     }
 
     mapSelectedItems() {
-        const multiple = this._ngSelect.multiple;
         for (const selected of this.selectedItems) {
             const value = this._ngSelect.bindValue ? this.resolveNested(selected.value, this._ngSelect.bindValue) : selected.value;
-            const item = isDefined(value) ? this.findItem(value) : null;
-            this._selectionModel.unselect(selected, multiple);
-            this._selectionModel.select(item || selected, multiple, this._ngSelect.selectableGroupAsModel);
-        }
-
-        if (this._ngSelect.hideSelected) {
-            this._filteredItems = this.filteredItems.filter(x => this.selectedItems.indexOf(x) === -1);
+            const item = isDefined(value) ? this.findOption(value) : null;
+            this._selectionModel.unselect(selected);
+            this._selectionModel.select(item || selected, this._ngSelect.selectableGroupAsModel);
         }
     }
 
-    private _showSelected(item: NgOption) {
-        this._filteredItems.push(item);
-        if (item.parent) {
-            const parent = item.parent;
-            const parentExists = this._filteredItems.find(x => x === parent);
-            if (!parentExists) {
-                this._filteredItems.push(parent);
-            }
-        } else if (item.children) {
-            for (const child of item.children) {
-                child.selected = false;
-                this._filteredItems.push(child);
-            }
-        }
-        this._filteredItems = [...this._filteredItems.sort((a, b) => (a.index - b.index))];
-    }
-
-    private _hideSelected(item: NgOption) {
-        this._filteredItems = this._filteredItems.filter(x => x !== item);
-        if (item.parent) {
-            const children = item.parent.children;
-            if (children.every(x => x.selected)) {
-                this._filteredItems = this._filteredItems.filter(x => x !== item.parent);
-            }
-        } else if (item.children) {
-            this._filteredItems = this.filteredItems.filter(x => x.parent !== item);
-        }
-    }
-
-    private _defaultSearchFn(search: string, opt: NgOption) {
+    private _defaultSearchFn(search: string, opt: HcOption) {
         const label = searchHelper.stripSpecialChars(opt.label).toLocaleLowerCase();
         return label.indexOf(search) > -1
     }
@@ -308,9 +274,6 @@ export class ItemsList {
     }
 
     private _getLastMarkedIndex() {
-        if (this._ngSelect.hideSelected) {
-            return -1;
-        }
 
         if (this._markedIndex > -1 && this.markedItem === undefined) {
             return -1;
@@ -324,8 +287,8 @@ export class ItemsList {
         return Math.max(this.markedIndex, selectedIndex);
     }
 
-    private _groupBy(items: NgOption[], prop: string | Function): OptionGroups {
-        const groups = new Map<string | NgOption, NgOption[]>();
+    private _groupBy(items: HcOption[], prop: string | Function): OptionGroups {
+        const groups = new Map<string | HcOption, HcOption[]>();
         if (items.length === 0) {
             return groups;
         }
@@ -340,7 +303,7 @@ export class ItemsList {
         }
 
         const isFnKey = isFunction(this._ngSelect.groupBy);
-        const keyFn = (item: NgOption) => {
+        const keyFn = (item: HcOption) => {
             let key = isFnKey ? (<Function>prop)(item.value) : item.value[<string>prop];
             return isDefined(key) ? key : undefined;
         };
@@ -370,7 +333,7 @@ export class ItemsList {
             }
 
             const isObjectKey = isObject(key);
-            const parent: NgOption = {
+            const parent: HcOption = {
                 label: isObjectKey ? '' : String(key),
                 children: undefined,
                 parent: null,
@@ -381,7 +344,7 @@ export class ItemsList {
             const groupKey = isGroupByFn ? this._ngSelect.bindLabel : <string>this._ngSelect.groupBy;
             const groupValue = this._ngSelect.groupValue || (() => {
                 if (isObjectKey) {
-                    return (<NgOption>key).value;
+                    return (<HcOption>key).value;
                 }
                 return { [groupKey]: key };
             });

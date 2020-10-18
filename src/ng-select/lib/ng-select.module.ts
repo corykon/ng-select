@@ -1,15 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { HcPicklist2Component } from './hc-picklist2.component';
 import { NgDropdownPanelComponent } from './ng-dropdown-panel.component';
 import { NgOptionComponent } from './ng-option.component';
 import { NgSelectComponent, SELECTION_MODEL_FACTORY } from './ng-select.component';
 import {
     NgFooterTemplateDirective,
     NgHeaderTemplateDirective,
-    NgLabelTemplateDirective,
-    NgLoadingSpinnerTemplateDirective,
     NgLoadingTextTemplateDirective,
-    NgMultiLabelTemplateDirective,
     NgNotFoundTemplateDirective,
     NgOptgroupTemplateDirective,
     NgOptionTemplateDirective,
@@ -24,17 +22,15 @@ import { DefaultSelectionModelFactory } from './selection-model';
         NgDropdownPanelComponent,
         NgOptionComponent,
         NgSelectComponent,
+        HcPicklist2Component,
         NgOptgroupTemplateDirective,
         NgOptionTemplateDirective,
-        NgLabelTemplateDirective,
-        NgMultiLabelTemplateDirective,
         NgHeaderTemplateDirective,
         NgFooterTemplateDirective,
         NgNotFoundTemplateDirective,
         NgTypeToSearchTemplateDirective,
         NgLoadingTextTemplateDirective,
         NgTagTemplateDirective,
-        NgLoadingSpinnerTemplateDirective,
         NgItemLabelDirective
     ],
     imports: [
@@ -42,18 +38,16 @@ import { DefaultSelectionModelFactory } from './selection-model';
     ],
     exports: [
         NgSelectComponent,
+        HcPicklist2Component,
         NgOptionComponent,
         NgOptgroupTemplateDirective,
         NgOptionTemplateDirective,
-        NgLabelTemplateDirective,
-        NgMultiLabelTemplateDirective,
         NgHeaderTemplateDirective,
         NgFooterTemplateDirective,
         NgNotFoundTemplateDirective,
         NgTypeToSearchTemplateDirective,
         NgLoadingTextTemplateDirective,
-        NgTagTemplateDirective,
-        NgLoadingSpinnerTemplateDirective
+        NgTagTemplateDirective
     ],
     providers: [
         { provide: SELECTION_MODEL_FACTORY, useValue: DefaultSelectionModelFactory }
