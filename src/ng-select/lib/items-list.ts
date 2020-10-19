@@ -192,7 +192,7 @@ export class ItemsList {
         this._markedIndex = this._filteredItems.indexOf(item);
     }
 
-    markSelectedOrDefault(markDefault?: boolean) {
+    markSelectedOrDefault() {
         if (this._filteredItems.length === 0) {
             return;
         }
@@ -201,7 +201,7 @@ export class ItemsList {
         if (lastMarkedIndex > -1) {
             this._markedIndex = lastMarkedIndex;
         } else {
-            this._markedIndex = markDefault ? this.filteredItems.findIndex(x => !x.disabled) : -1;
+            this._markedIndex = -1;
         }
     }
 
@@ -239,15 +239,6 @@ export class ItemsList {
             disabled: item.disabled,
             htmlId: `${this._ngSelect.dropdownId}-${index}`,
         };
-    }
-
-    mapSelectedItems() {
-        for (const selected of this.selectedItems) {
-            const value = this._ngSelect.bindValue ? this.resolveNested(selected.value, this._ngSelect.bindValue) : selected.value;
-            const item = isDefined(value) ? this.findOption(value) : null;
-            this._selectionModel.unselect(selected);
-            this._selectionModel.select(item || selected, this._ngSelect.selectableGroupAsModel);
-        }
     }
 
     private _defaultSearchFn(search: string, opt: HcOption) {

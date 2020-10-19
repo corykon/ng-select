@@ -11,9 +11,10 @@ import {
     NgNotFoundTemplateDirective,
     NgOptgroupTemplateDirective,
     NgOptionTemplateDirective,
+    HcPaneHeaderLeftTemplateDirective,
+    HcPaneHeaderRightTemplateDirective,
     NgTagTemplateDirective,
-    NgItemLabelDirective,
-    NgTypeToSearchTemplateDirective
+    NgItemLabelDirective
 } from './ng-templates.directive';
 import { DefaultSelectionModelFactory } from './selection-model';
 
@@ -25,10 +26,11 @@ import { DefaultSelectionModelFactory } from './selection-model';
         HcPicklist2Component,
         NgOptgroupTemplateDirective,
         NgOptionTemplateDirective,
+        HcPaneHeaderLeftTemplateDirective,
+        HcPaneHeaderRightTemplateDirective,
         NgHeaderTemplateDirective,
         NgFooterTemplateDirective,
         NgNotFoundTemplateDirective,
-        NgTypeToSearchTemplateDirective,
         NgLoadingTextTemplateDirective,
         NgTagTemplateDirective,
         NgItemLabelDirective
@@ -42,10 +44,11 @@ import { DefaultSelectionModelFactory } from './selection-model';
         NgOptionComponent,
         NgOptgroupTemplateDirective,
         NgOptionTemplateDirective,
+        HcPaneHeaderLeftTemplateDirective,
+        HcPaneHeaderRightTemplateDirective,
         NgHeaderTemplateDirective,
         NgFooterTemplateDirective,
         NgNotFoundTemplateDirective,
-        NgTypeToSearchTemplateDirective,
         NgLoadingTextTemplateDirective,
         NgTagTemplateDirective
     ],

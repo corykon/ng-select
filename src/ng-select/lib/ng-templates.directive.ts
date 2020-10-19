@@ -15,6 +15,16 @@ export class NgItemLabelDirective implements OnChanges {
     }
 }
 
+@Directive({ selector: '[hc-pane-header-left-tmp]' })
+export class HcPaneHeaderLeftTemplateDirective {
+    constructor(public template: TemplateRef<any>) { }
+}
+
+@Directive({ selector: '[ng-pane-header-right-tmp]' })
+export class HcPaneHeaderRightTemplateDirective {
+    constructor(public template: TemplateRef<any>) { }
+}
+
 @Directive({ selector: '[ng-option-tmp]' })
 export class NgOptionTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
@@ -37,11 +47,6 @@ export class NgFooterTemplateDirective {
 
 @Directive({ selector: '[ng-notfound-tmp]' })
 export class NgNotFoundTemplateDirective {
-    constructor(public template: TemplateRef<any>) { }
-}
-
-@Directive({ selector: '[ng-typetosearch-tmp]' })
-export class NgTypeToSearchTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }
 

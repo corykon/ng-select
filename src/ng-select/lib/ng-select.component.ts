@@ -18,9 +18,10 @@ import {
     Inject,
     ContentChildren,
     QueryList,
-    InjectionToken
+    InjectionToken,
+    OnChanges,
+    SimpleChanges
 } from '@angular/core';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { takeUntil, tap, debounceTime, map, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
@@ -30,7 +31,6 @@ import {
     NgFooterTemplateDirective,
     NgOptgroupTemplateDirective,
     NgNotFoundTemplateDirective,
-    NgTypeToSearchTemplateDirective,
     NgLoadingTextTemplateDirective,
     NgTagTemplateDirective
 } from './ng-templates.directive';
@@ -43,6 +43,7 @@ import { NgDropdownPanelComponent } from './ng-dropdown-panel.component';
 import { NgOptionComponent } from './ng-option.component';
 import { SelectionModelFactory } from './selection-model';
 import { NgDropdownPanelService } from './ng-dropdown-panel.service';
+import { HcPicklist2Service } from './hc-picklist2.service';
 
 export const SELECTION_MODEL_FACTORY = new InjectionToken<SelectionModelFactory>('ng-select-selection-model');
 export type AddTagFn = ((term: string) => any | Promise<any>);
@@ -53,11 +54,7 @@ export type GroupValueFn = (key: string | object, children: any[]) => string | o
     selector: 'ng-select',
     templateUrl: './ng-select.component.html',
     styleUrls: ['./ng-select.component.scss'],
-    providers: [{
-        provide: NG_VALUE_ACCESSOR,
-        useExisting: forwardRef(() => NgSelectComponent),
-        multi: true
-    }, NgDropdownPanelService],
+    providers: [NgDropdownPanelService],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -65,17 +62,14 @@ export type GroupValueFn = (key: string | object, children: any[]) => string | o
         '[class.ng-select]': 'useDefaultClass'
     }
 })
-export class NgSelectComponent implements OnDestroy, AfterViewInit {
-
+export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
     @Input() bindLabel: string;
     @Input() bindValue: string;
-    @Input() markFirst = true;
     @Input() placeholder: string;
     @Input() notFoundText: string;
-    @Input() typeToSearchText: string;
+    @Input() addTag: boolean | AddTagFn = false;
     @Input() addTagText: string;
     @Input() loadingText: string;
-    @Input() clearAllText: string;
     @Input() loading = false;
     @Input() maxSelectedItems: number;
     @Input() groupBy: string | Function;
@@ -86,21 +80,21 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit {
     @Input() selectableGroupAsModel = true;
     @Input() searchFn = null;
     @Input() trackByFn = null;
-    @Input() labelForId = null;
     @Input() inputAttrs: { [key: string]: string } = {};
-    @Input() tabIndex: number;
     @Input() readonly = false;
     @Input() searchWhileComposing = true;
     @Input() minTermLength = 0;
     @Input() keyDownFn = (_: KeyboardEvent) => true;
+    @Input() typeahead: Subject<string>;
+    @Input() searchable = true;
 
-    @Input() @HostBinding('class.ng-select-typeahead') typeahead: Subject<string>; // not sure
-    @Input() @HostBinding('class.ng-select-taggable') addTag: boolean | AddTagFn = false;
-    @Input() @HostBinding('class.ng-select-searchable') searchable = true;
+    @Input() get items() { return this._items };
+    set items(value: any[]) {
+        this._itemsAreUsed = true;
+        this._items = value;
+    };
 
-    @Input()
-    get compareWith() { return this._compareWith; }
-
+    @Input() get compareWith() { return this._compareWith; }
     set compareWith(fn: CompareWithFn) {
         if (!isFunction(fn)) {
             throw Error('`compareWith` must be a function.');
@@ -127,7 +121,6 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit {
     @ContentChild(NgHeaderTemplateDirective, { read: TemplateRef }) headerTemplate: TemplateRef<any>;
     @ContentChild(NgFooterTemplateDirective, { read: TemplateRef }) footerTemplate: TemplateRef<any>;
     @ContentChild(NgNotFoundTemplateDirective, { read: TemplateRef }) notFoundTemplate: TemplateRef<any>;
-    @ContentChild(NgTypeToSearchTemplateDirective, { read: TemplateRef }) typeToSearchTemplate: TemplateRef<any>;
     @ContentChild(NgLoadingTextTemplateDirective, { read: TemplateRef }) loadingTextTemplate: TemplateRef<any>;
     @ContentChild(NgTagTemplateDirective, { read: TemplateRef }) tagTemplate: TemplateRef<any>;
 
@@ -148,6 +141,7 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit {
     useDefaultClass = true;
 
     private _itemsAreUsed: boolean;
+    private _items = [];
     private _defaultLabel = 'label';
     private _primitive;
     private _disabled: boolean;
@@ -157,8 +151,6 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit {
 
     private readonly _destroy$ = new Subject<void>();
     private readonly _keyPress$ = new Subject<string>();
-    private _onChange = (_: any) => { };
-    private _onTouched = () => { };
 
     clearItem = (item: any) => {
         const option = this.selectedItems.find(x => x.value === item);
@@ -168,6 +160,7 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit {
     constructor(
         @Inject(SELECTION_MODEL_FACTORY) newSelectionModel: SelectionModelFactory,
         _elementRef: ElementRef<HTMLElement>,
+        private picklistService: HcPicklist2Service,
         private _cd: ChangeDetectorRef
     ) {
         this.itemsList = new ItemsList(this, newSelectionModel());
@@ -184,6 +177,15 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit {
 
     get hasSelectedItems() {
         return this.selectedItems.length > 0;
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes.items) {
+            this._setItems(changes.items.currentValue || []);
+            this.picklistService.mapIncomingOptionsToSelected(this.bindValue);
+            this.filter();
+            this.detectChanges();
+        }
     }
 
     ngOnInit() {
@@ -350,11 +352,6 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit {
             !this.showAddTag;
     }
 
-    showTypeToSearch() {
-        const empty = this.itemsList.filteredItems.length === 0;
-        return empty && this._isTypeahead && !this._validTerm && !this.loading;
-    }
-
     onCompositionStart() {
         this._isComposing = true;
     }
@@ -380,7 +377,7 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit {
 
         if (!this._isTypeahead) {
             this.itemsList.filter(this.searchTerm);
-            this.itemsList.markSelectedOrDefault(this.markFirst);
+            this.itemsList.markSelectedOrDefault();
         }
 
         this.searchEvent.emit({ term, items: this.itemsList.filteredItems.map(x => x.value) });
@@ -404,14 +401,11 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit {
         this.bindLabel = this.bindLabel || this._defaultLabel;
         this._primitive = isDefined(firstItem) ? !isObject(firstItem) : this._primitive || this.bindLabel === this._defaultLabel;
         this.itemsList.setItems(items);
-        if (items.length > 0 && this.hasSelectedItems) {
-            this.itemsList.mapSelectedItems();
-        }
         if (isDefined(this.searchTerm) && !this._isTypeahead) {
             this.itemsList.filter(this.searchTerm);
         }
         if (this._isTypeahead) {
-            this.itemsList.markSelectedOrDefault(this.markFirst);
+            this.itemsList.markSelectedOrDefault();
         }
     }
 
@@ -442,7 +436,6 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit {
             type: 'text',
             autocorrect: 'off',
             autocapitalize: 'off',
-            autocomplete: this.labelForId ? 'off' : this.dropdownId,
             ...this.inputAttrs
         };
 

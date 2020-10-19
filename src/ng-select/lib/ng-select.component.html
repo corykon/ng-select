@@ -8,8 +8,6 @@
 
         <div class="ng-input">
             <input #searchInput
-                   [attr.id]="labelForId"
-                   [attr.tabindex]="tabIndex"
                    [readOnly]="!searchable || itemsList.maxItemsSelected"
                    [disabled]="disabled"
                    [value]="searchTerm ? searchTerm : ''"
@@ -31,7 +29,7 @@
         </ng-template>
     </ng-container>
 
-    <span *ngIf="showClear()" class="ng-clear-wrapper" title="{{clearAllText}}">
+    <span *ngIf="showClear()" class="ng-clear-wrapper" title="Clear all">
         <span class="ng-clear" aria-hidden="true">×</span>
     </span>
 </div>
@@ -91,16 +89,6 @@
         <ng-template
             [ngTemplateOutlet]="notFoundTemplate || defaultNotFoundTemplate"
             [ngTemplateOutletContext]="{ searchTerm: searchTerm }">
-        </ng-template>
-    </ng-container>
-
-    <ng-container *ngIf="showTypeToSearch()">
-        <ng-template #defaultTypeToSearchTemplate>
-            <div class="ng-option ng-option-disabled">{{typeToSearchText}}</div>
-        </ng-template>
-
-        <ng-template
-            [ngTemplateOutlet]="typeToSearchTemplate || defaultTypeToSearchTemplate">
         </ng-template>
     </ng-container>
 

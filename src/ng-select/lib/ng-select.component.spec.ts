@@ -1454,31 +1454,6 @@ describe('NgSelectComponent', () => {
             });
         }));
 
-        it('should display custom type for search template', fakeAsync(() => {
-            const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<ng-select [items]="cities"
-                            [typeahead]="filter"
-                            [(ngModel)]="selectedCity">
-                    <ng-template ng-typetosearch-tmp>
-                        <div class="custom-typeforsearch">
-                            Start typing...
-                        </div>
-                    </ng-template>
-
-                </ng-select>`);
-
-            fixture.whenStable().then(() => {
-                fixture.componentInstance.cities = [];
-                fixture.componentInstance.filter.subscribe();
-                tickAndDetectChanges(fixture);
-                triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode.Space);
-                tickAndDetectChanges(fixture);
-                const loadingOption = fixture.debugElement.queryAll(By.css('.custom-typeforsearch'));
-                expect(loadingOption.length).toBe(1);
-            });
-        }));
-
         it('should display custom loading spinner template', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
@@ -2027,21 +2002,6 @@ describe('NgSelectComponent', () => {
             expect(fixture.componentInstance.select.selectedItems).toEqual([result]);
         }));
 
-        it('should not mark first item on filter when markFirst disabled', fakeAsync(() => {
-            const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<ng-select [items]="cities"
-                    bindLabel="name"
-                    [markFirst]="false"
-                    [(ngModel)]="selectedCity">
-                </ng-select>`);
-
-            tick(200);
-            fixture.componentInstance.select.filter('pab');
-            tick();
-            expect(fixture.componentInstance.select.itemsList.markedItem).toEqual(undefined)
-        }));
-
         it('should clear filterValue on selected item', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
@@ -2187,47 +2147,6 @@ describe('NgSelectComponent', () => {
                 tickAndDetectChanges(fixture);
                 expect(next).not.toHaveBeenCalledWith('v')
             }));
-
-            it('should mark first item when typeahead results are loaded', fakeAsync(() => {
-                fixture.componentInstance.filter.subscribe();
-                fixture.componentInstance.select.filter('buk');
-                fixture.componentInstance.cities = [{ id: 4, name: 'Bukiskes' }];
-                tickAndDetectChanges(fixture);
-                triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode.Enter);
-                expect(fixture.componentInstance.select.selectedItems).toEqual([jasmine.objectContaining({
-                    value: { id: 4, name: 'Bukiskes' }
-                })])
-            }));
-
-            it('should not mark first item when typeahead results are loaded', fakeAsync(() => {
-                fixture.componentInstance.select.markFirst = false;
-                fixture.componentInstance.filter.subscribe();
-                fixture.componentInstance.select.filter('buk');
-                fixture.componentInstance.cities = [{ id: 4, name: 'Bukiskes' }];
-                tickAndDetectChanges(fixture);
-                triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode.Enter);
-                expect(fixture.componentInstance.select.selectedItems).toEqual([])
-            }));
-
-            describe('search text', () => {
-                it('should be visible until minTermLength reached', fakeAsync(() => {
-                    fixture.componentInstance.cities = [];
-                    fixture.componentInstance.minTermLength = 3;
-                    fixture.componentInstance.filter.subscribe();
-                    fixture.componentInstance.select.filter('vi');
-                    tickAndDetectChanges(fixture);
-                    expect(fixture.componentInstance.select.showTypeToSearch()).toBeTruthy()
-                }));
-
-                it('should not be visible when valid search term is present', fakeAsync(() => {
-                    fixture.componentInstance.cities = [];
-                    fixture.componentInstance.minTermLength = 0;
-                    fixture.componentInstance.filter.subscribe();
-                    fixture.componentInstance.select.filter('v');
-                    tickAndDetectChanges(fixture);
-                    expect(fixture.componentInstance.select.showTypeToSearch()).toBeFalsy()
-                }));
-            });
         });
 
         describe('edit search query', () => {
@@ -2264,7 +2183,6 @@ describe('NgSelectComponent', () => {
             fixture = createTestingModule(
                 NgSelectTestCmp,
                 `<ng-select [items]="cities"
-                        labelForId="lbl"
                         (change)="onChange($event)"
                         bindLabel="name">
                 </ng-select>`);
@@ -2331,11 +2249,6 @@ describe('NgSelectComponent', () => {
             tickAndDetectChanges(fixture);
             expect(input.hasAttribute('aria-owns'))
                 .toBe(false);
-        }));
-
-        it('should add labelForId on filter input id attribute', fakeAsync(() => {
-            tickAndDetectChanges(fixture);
-            expect(input.getAttribute('id')).toEqual('lbl');
         }));
     });
 

@@ -1,17 +1,20 @@
-<div class="hc-picklists-container">
+<div class="hc-picklists-container" [style.height]="height">
 
     <div class="hc-picklist-pane">
-        <h2 class="hc-picklist-pane-header">Available</h2>
+        <div class="hc-picklist-pane-header">
+            <ng-template #defaultLeftHeaderTemplate>
+                <h2 class="hc-picklist-pane-header-default">Available</h2>
+            </ng-template>
+            <ng-template [ngTemplateOutlet]="paneHeaderLeftTemplate || defaultLeftHeaderTemplate"></ng-template>
+        </div>
+
         <ng-select #available
             [bindLabel]="bindLabel"
             [bindValue]="bindValue"
-            [markFirst]="markFirst"
             [placeholder]="placeholder"
             [notFoundText]="notFoundText"
-            [typeToSearchText]="typeToSearchText"
             [addTagText]="addTagText"
             [loadingText]="loadingText"
-            [clearAllText]="clearAllText"
             [loading]="loading"
             [maxSelectedItems]="maxSelectedItems"
             [groupBy]="groupBy"
@@ -22,16 +25,16 @@
             [selectableGroupAsModel]="selectableGroupAsModel"
             [searchFn]="searchFn"
             [trackByFn]="trackByFn"
-            [labelForId]="labelForId"
             [inputAttrs]="inputAttrs"
-            [tabIndex]="tabIndex"
             [readonly]="readonly"
             [searchWhileComposing]="searchWhileComposing"
             [minTermLength]="minTermLength"
             [keyDownFn]="keyDownFn"
             [typeahead]="typeahead"
             [addTag]="addTag"
-            [searchable]="searchable">
+            [searchable]="searchable"
+            [items]="items"
+            [compareWith]="compareWith">
         </ng-select>
     </div>
     
@@ -50,17 +53,19 @@
     </div>
 
     <div class="hc-picklist-pane">
-        <h2 class="hc-picklist-pane-header">Selected</h2>
+        <div class="hc-picklist-pane-header">
+            <ng-template #defaultRightHeaderTemplate>
+                <h2 class="hc-picklist-pane-header-default">Selected</h2>
+            </ng-template>
+            <ng-template [ngTemplateOutlet]="paneHeaderRightTemplate || defaultRightHeaderTemplate"></ng-template>
+        </div>
         <ng-select #selected
             [bindLabel]="bindLabel"
             [bindValue]="bindValue"
-            [markFirst]="markFirst"
             [placeholder]="placeholder"
             [notFoundText]="notFoundText"
-            [typeToSearchText]="typeToSearchText"
             [addTagText]="addTagText"
             [loadingText]="loadingText"
-            [clearAllText]="clearAllText"
             [loading]="loading"
             [maxSelectedItems]="maxSelectedItems"
             [groupBy]="groupBy"
@@ -71,16 +76,15 @@
             [selectableGroupAsModel]="selectableGroupAsModel"
             [searchFn]="searchFn"
             [trackByFn]="trackByFn"
-            [labelForId]="labelForId"
             [inputAttrs]="inputAttrs"
-            [tabIndex]="tabIndex"
             [readonly]="readonly"
             [searchWhileComposing]="searchWhileComposing"
             [minTermLength]="minTermLength"
             [keyDownFn]="keyDownFn"
             [typeahead]="typeahead"
             [addTag]="addTag"
-            [searchable]="searchable">
+            [searchable]="searchable"
+            [compareWith]="compareWith">
         </ng-select>
     </div>
 </div>

@@ -21,11 +21,6 @@
     [hidden] {
         display: none;
     }
-    &.ng-select-searchable {
-        .ng-select-container .ng-value-container .ng-input {
-            opacity: 1;
-        }
-    }
     &.ng-select-opened .ng-select-container {
         z-index: 1001;
     }

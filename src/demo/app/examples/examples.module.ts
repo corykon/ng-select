@@ -4,10 +4,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgOptionHighlightModule } from '@ng-select/ng-option-highlight';
 import { NgSelectModule } from '@ng-select/ng-select';
 import { PicklistExampleComponent } from './picklist-example/picklist-example.component';
+import { PicklistExampleSimpleComponent } from './picklist-example-simple/picklist-example-simple.component';
 
 
 const examples = [
-    PicklistExampleComponent
+    PicklistExampleComponent,
+    PicklistExampleSimpleComponent
 ];
 
 @NgModule({

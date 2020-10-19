@@ -14,15 +14,19 @@
 }
 
 .hc-picklist-pane-header {
-    font-size: 16px;
-    font-weight: bold;
     flex: 0 0 auto;
+
+    .hc-picklist-pane-header-default {
+        font-size: 16px;
+        font-weight: bold;
+    }
 }
 
 .ng-select, .ng-dropdown-panel {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
+    min-height: 0;
 }
 
 .ng-dropdown-panel-items {

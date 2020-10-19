@@ -1,7 +1,6 @@
 import {
     Component,
     OnDestroy,
-    OnChanges,
     AfterViewInit,
     forwardRef,
     ChangeDetectorRef,
@@ -15,10 +14,10 @@ import {
     ViewChild,
     ElementRef,
     ChangeDetectionStrategy,
-    SimpleChanges,
     ContentChildren,
     QueryList,
-    InjectionToken
+    InjectionToken,
+    Attribute
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { takeUntil, startWith } from 'rxjs/operators';
@@ -30,20 +29,18 @@ import {
     NgFooterTemplateDirective,
     NgOptgroupTemplateDirective,
     NgNotFoundTemplateDirective,
-    NgTypeToSearchTemplateDirective,
     NgLoadingTextTemplateDirective,
-    NgTagTemplateDirective
+    NgTagTemplateDirective,
+    HcPaneHeaderRightTemplateDirective,
+    HcPaneHeaderLeftTemplateDirective
 } from './ng-templates.directive';
 
 import { isDefined, isFunction, isObject } from './value-utils';
 import { SelectionModelFactory } from './selection-model';
-import { NgDropdownPanelService } from './ng-dropdown-panel.service';
-import { ItemsList } from './items-list';
-import { HcOption } from './ng-select.types';
-import { newId } from './id';
 import { NgOptionComponent } from './ng-option.component';
 import { ConsoleService } from './console.service';
 import { NgSelectComponent } from './ng-select.component';
+import { HcPicklist2Service } from './hc-picklist2.service';
 
 export const SELECTION_MODEL_FACTORY = new InjectionToken<SelectionModelFactory>('ng-select-selection-model');
 export type AddTagFn = ((term: string) => any | Promise<any>);
@@ -58,21 +55,15 @@ export type GroupValueFn = (key: string | object, children: any[]) => string | o
         provide: NG_VALUE_ACCESSOR,
         useExisting: forwardRef(() => HcPicklist2Component),
         multi: true
-    }, NgDropdownPanelService],
+    }, HcPicklist2Service],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HcPicklist2Component implements OnDestroy, OnChanges, AfterViewInit, ControlValueAccessor {
+export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlValueAccessor {
     @Input() bindLabel: string;
     @Input() bindValue: string;
-    @Input() markFirst = true;
-    @Input() placeholder: string;
-    @Input() notFoundText: string;
-    @Input() typeToSearchText: string;
-    @Input() addTagText: string;
-    @Input() loadingText: string;
-    @Input() clearAllText: string;
-    @Input() loading = false;
+    @Input() addTagText: string; // todo: keep this or no?
+    @Input() addTag: boolean | AddTagFn = false; // todo: keep this or no?
     @Input() maxSelectedItems: number;
     @Input() groupBy: string | Function;
     @Input() groupValue: GroupValueFn;
@@ -82,29 +73,28 @@ export class HcPicklist2Component implements OnDestroy, OnChanges, AfterViewInit
     @Input() selectableGroupAsModel = true;
     @Input() searchFn = null;
     @Input() trackByFn = null;
-    @Input() labelForId = null;
     @Input() inputAttrs: { [key: string]: string } = {};
-    @Input() tabIndex: number;
     @Input() readonly = false;
     @Input() searchWhileComposing = true;
     @Input() minTermLength = 0;
     @Input() keyDownFn = (_: KeyboardEvent) => true;
+    @Input() height = '400px';
 
-    @Input() @HostBinding('class.ng-select-typeahead') typeahead: Subject<string>;
-    @Input() @HostBinding('class.ng-select-taggable') addTag: boolean | AddTagFn = false;
-    @Input() @HostBinding('class.ng-select-searchable') searchable = true;
+    // todo: inputs that should be specific per pane
+    @Input() placeholder: string;
+    @Input() notFoundText: string;
+    @Input() loadingText: string;
+    @Input() loading = false;
+    @Input() typeahead: Subject<string>;
+    @Input() searchable = true;
 
-    @Input()
-    get items() { return this._items };
-
+    @Input() get items() { return this._items };
     set items(value: any[]) {
         this._itemsAreUsed = true;
         this._items = value;
     };
 
-    @Input()
-    get compareWith() { return this._compareWith; }
-
+    @Input() get compareWith() { return this._compareWith; }
     set compareWith(fn: CompareWithFn) {
         if (!isFunction(fn)) {
             throw Error('`compareWith` must be a function.');
@@ -126,10 +116,13 @@ export class HcPicklist2Component implements OnDestroy, OnChanges, AfterViewInit
     @ContentChild(NgOptgroupTemplateDirective, { read: TemplateRef }) optgroupTemplate: TemplateRef<any>;
     @ContentChild(NgHeaderTemplateDirective, { read: TemplateRef }) headerTemplate: TemplateRef<any>;
     @ContentChild(NgFooterTemplateDirective, { read: TemplateRef }) footerTemplate: TemplateRef<any>;
-    @ContentChild(NgNotFoundTemplateDirective, { read: TemplateRef }) notFoundTemplate: TemplateRef<any>;
-    @ContentChild(NgTypeToSearchTemplateDirective, { read: TemplateRef }) typeToSearchTemplate: TemplateRef<any>;
-    @ContentChild(NgLoadingTextTemplateDirective, { read: TemplateRef }) loadingTextTemplate: TemplateRef<any>;
     @ContentChild(NgTagTemplateDirective, { read: TemplateRef }) tagTemplate: TemplateRef<any>;
+    
+    // todo: templates that should be specific per pane
+    @ContentChild(NgNotFoundTemplateDirective, { read: TemplateRef }) notFoundTemplate: TemplateRef<any>;
+    @ContentChild(NgLoadingTextTemplateDirective, { read: TemplateRef }) loadingTextTemplate: TemplateRef<any>;
+    @ContentChild(HcPaneHeaderRightTemplateDirective, { read: TemplateRef }) paneHeaderRightTemplate: TemplateRef<any>;
+    @ContentChild(HcPaneHeaderLeftTemplateDirective, { read: TemplateRef }) paneHeaderLeftTemplate: TemplateRef<any>;
 
     @ContentChildren(NgOptionComponent, { descendants: true }) ngOptions: QueryList<NgOptionComponent>;
 
@@ -138,15 +131,7 @@ export class HcPicklist2Component implements OnDestroy, OnChanges, AfterViewInit
 
     @HostBinding('class.hc-picklist2-disabled') get disabled() { return this.readonly || this._disabled };
 
-    itemsList: ItemsList;
-    viewPortItems: HcOption[] = [];
-    searchTerm: string = null;
-    dropdownId = newId();
     element: HTMLElement;
-    focused: boolean;
-    escapeHTML = true;
-    useDefaultClass = true;
-
     private _items = [];
     private _itemsAreUsed: boolean;
     private _defaultLabel = 'label';
@@ -156,20 +141,23 @@ export class HcPicklist2Component implements OnDestroy, OnChanges, AfterViewInit
     private _onTouched = () => { };
     private readonly _destroy$ = new Subject<void>();
 
-    constructor(_elementRef: ElementRef<HTMLElement>, private _cd: ChangeDetectorRef, private _console: ConsoleService) {
-        this.element = _elementRef.nativeElement;
-    }
-
-    ngOnChanges(changes: SimpleChanges) {
-        if (changes.items) {
-            this.availablePane._setItems(changes.items.currentValue || []);
-        }
+    constructor(
+        _elementRef: ElementRef<HTMLElement>,
+        private picklistService: HcPicklist2Service,
+        private _cd: ChangeDetectorRef,
+        private _console: ConsoleService,
+        @Attribute('autofocus') private autoFocus: any) {
+            this.element = _elementRef.nativeElement;
     }
 
     ngAfterViewInit() {
+        this.picklistService.reset(this.availablePane, this.selectedPane);
         if (!this._itemsAreUsed) {
-            this.escapeHTML = false;
             this._setItemsFromNgOptions();
+        }
+
+        if (isDefined(this.autoFocus)) {
+            this.availablePane.focus();
         }
     }
 
@@ -216,9 +204,9 @@ export class HcPicklist2Component implements OnDestroy, OnChanges, AfterViewInit
             destination.itemsList.addOption(i);
         });
         source.itemsList.reIndex();
-        this.refreshPanes();
         this.availablePane.itemsList.clearSelected();
         this.selectedPane.itemsList.clearSelected();
+        this.refreshPanes();
         this._updateNgModel();
         this._onTouched();
     }
@@ -231,6 +219,8 @@ export class HcPicklist2Component implements OnDestroy, OnChanges, AfterViewInit
         this.selectedPane.detectChanges();
     }
 
+    
+
     /** Convert <ng-option> components into HcOptions */
     private _setItemsFromNgOptions() {
         const mapNgOptions = (options: QueryList<NgOptionComponent>) => {
@@ -241,10 +231,9 @@ export class HcPicklist2Component implements OnDestroy, OnChanges, AfterViewInit
             }));
             this.availablePane.itemsList.setItems(items);
             if (this.hasValue) {
-                // todo: what is the point of this? currently, couldn't be working
-                this.selectedPane.itemsList.mapSelectedItems();
+                // todo: test this code path
+                this.picklistService.mapIncomingOptionsToSelected(this.bindValue);
             }
-            this.detectChanges();
         };
 
         const handleOptionChange = () => {
@@ -265,6 +254,7 @@ export class HcPicklist2Component implements OnDestroy, OnChanges, AfterViewInit
                 this.bindLabel = this._defaultLabel;
                 mapNgOptions(options);
                 handleOptionChange();
+                this.detectChanges();
             });
     }
 
@@ -282,6 +272,7 @@ export class HcPicklist2Component implements OnDestroy, OnChanges, AfterViewInit
             if (item) {
                 this.availablePane.itemsList.removeOption(item);
                 this.selectedPane.itemsList.addOption(item);
+                this.availablePane.itemsList.reIndex();
             } else {
                 const isValObject = isObject(val);
                 const isPrimitive = !isValObject && !this.bindValue;

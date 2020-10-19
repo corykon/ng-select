@@ -1,0 +1,13 @@
+
+
+<h3>Array of objects</h3>
+<br>
+
+<hc-picklist2 [items]="cars" bindLabel="name" [(ngModel)]="selectedCars" [compareWith]="compareWith" autofocus>
+</hc-picklist2>
+
+<br>
+
+<br/>Selected car IDs: {{selectedCars | json}}
+
+<button type="button" class="btn btn-secondary btn-sm" (click)="updateOpts()">update opts</button>
