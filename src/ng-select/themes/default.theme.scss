@@ -6,7 +6,7 @@ $ng-select-disabled-text: #f9f9f9 !default;
 $ng-select-border: #ccc !default;
 $ng-select-border-radius: 4px !default;
 $ng-select-bg: #ffffff !default;
-$ng-select-selected: lighten($ng-select-highlight, 46) !default;
+$ng-select-selected: lighten($ng-select-highlight, 30) !default;
 $ng-select-marked: lighten($ng-select-highlight, 48) !default;
 $ng-select-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 0 3px rgba(0, 126, 255, 0.1) !default;
 $ng-select-placeholder: lighten($ng-select-primary-text, 40) !default;
