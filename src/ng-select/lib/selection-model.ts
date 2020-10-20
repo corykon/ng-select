@@ -11,6 +11,7 @@ export interface SelectionModel {
     select(item: HcOption, selectableGroupAsModel: boolean);
     unselect(item: HcOption);
     clear(keepDisabled: boolean);
+    selectAll(items: Array<HcOption>, selectableGroup: boolean);
 }
 
 export class DefaultSelectionModel implements SelectionModel {
@@ -57,6 +58,11 @@ export class DefaultSelectionModel implements SelectionModel {
 
     clear(keepDisabled: boolean) {
         this._selected = keepDisabled ? this._selected.filter(x => x.disabled) : [];
+    }
+
+    selectAll(items: Array<HcOption>, selectableGroup: boolean) {
+        this._selected = items.filter(i => !i.disabled && (selectableGroup || !i.children));
+        this._selected.forEach(i => i.selected = true);
     }
 
     private _setChildrenSelectedState(children: HcOption[], selected: boolean) {

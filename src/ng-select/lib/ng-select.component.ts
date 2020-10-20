@@ -106,7 +106,6 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
     @Output('change') changeEvent = new EventEmitter();
     @Output('open') openEvent = new EventEmitter();
     @Output('close') closeEvent = new EventEmitter();
-    @Output('clear') clearEvent = new EventEmitter();
     @Output('add') addEvent = new EventEmitter();
     @Output('remove') removeEvent = new EventEmitter();
     
@@ -238,27 +237,23 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
         }
     }
 
+    // todo: remove this?
     handleMousedown($event: MouseEvent) {
         const target = $event.target as HTMLElement;
         if (target.tagName !== 'INPUT') {
             $event.preventDefault();
         }
-
-        // this'll be handled by a seperate link
-        if (target.classList.contains('ng-clear-wrapper')) {
-            this.handleClearClick();
-            return;
-        }
     }
 
-    handleClearClick() {
+    deselectAll() {
         if (this.hasSelectedItems) {
             this.itemsList.clearSelected(true);
         }
-        this._clearSearch();
-        this.focus();
-        this.clearEvent.emit();
+        this._onSelectionChanged();
+    }
 
+    selectAll() {
+        this.itemsList.selectAll();
         this._onSelectionChanged();
     }
 
@@ -281,11 +276,13 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
     }
 
     select(item: HcOption) {
-        if (!item.selected) {
-            this.itemsList.select(item);
+        if (item.selected) { return; }
+        this.itemsList.select(item);
+    }
 
-            this.addEvent.emit(item.value);
-        }
+    unselect(item: HcOption) {
+        if (!item) { return; }
+        this.itemsList.unselect(item);
     }
 
     focus() {
@@ -294,15 +291,6 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
 
     blur() {
         this.searchInput.nativeElement.blur();
-    }
-
-    unselect(item: HcOption) {
-        if (!item) {
-            return;
-        }
-
-        this.itemsList.unselect(item);
-        this.removeEvent.emit(item);
     }
 
     selectTag() {
@@ -319,10 +307,6 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
         } else if (tag) {
             this.select(handleTag(tag));
         }
-    }
-
-    showClear() {
-        return (this.hasSelectedItems || this.searchTerm) && !this.disabled;
     }
 
     trackByOption = (_: number, item: HcOption) => {

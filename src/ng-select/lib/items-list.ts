@@ -134,6 +134,10 @@ export class ItemsList {
         });
     }
 
+    selectAll() {
+        this._selectionModel.selectAll(this._items, this._ngSelect.selectableGroup);
+    }
+
     findByLabel(term: string) {
         term = searchHelper.stripSpecialChars(term).toLocaleLowerCase();
         return this.filteredItems.find(item => {

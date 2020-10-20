@@ -29,6 +29,29 @@
     min-height: 0;
 }
 
+.hc-picklist-pane-tools {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    flex: 0 0 auto;
+    font-size: 12px;
+
+    // todo remove these button styles later as needed
+    .button-link-inline {
+        outline: none;
+        border: none;
+        font-size: 12px;
+        color: #00aeff;
+        padding: 0;
+        margin: 0 0 0 10px;
+        background-color: transparent;
+
+        &[disabled] {
+            color: #ccc;
+        }
+    }
+}
+
 .ng-dropdown-panel-items {
     flex: 1 1 auto;
 }

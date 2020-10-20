@@ -179,12 +179,6 @@ $ng-select-value-font-size: 0.9em !default;
             }
         }
     }
-    .ng-clear-wrapper {
-        color: darken($ng-select-border, 20);
-        &:hover .ng-clear {
-            color: #D0021B;
-        }
-    }
     .ng-spinner-zone {
         padding: 5px 5px 0 0;
 

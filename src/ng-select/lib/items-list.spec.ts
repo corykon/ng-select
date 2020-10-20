@@ -29,7 +29,6 @@ describe('ItemsList', () => {
             let cmp: NgSelectComponent;
             beforeEach(() => {
                 cmp = ngSelectFactory();
-                cmp.multiple = true;
                 cmp.bindLabel = 'label';
                 list = itemsListFactory(cmp);
             });
@@ -49,7 +48,6 @@ describe('ItemsList', () => {
             });
 
             it('should select only group item when at least one child was selected and then group item was selected', () => {
-                cmp.hideSelected = true;
                 cmp.groupBy = 'groupKey';
                 list.setItems([
                     { label: 'K1', val: 'V1', groupKey: 'G1' },
@@ -555,6 +553,10 @@ describe('ItemsList', () => {
             expect(list.markedIndex).toBe(0);
         });
     });
+
+    // todo: write tests
+    describe('clearSelected', () => { });
+    describe('selectAll', () => { });
 
     function itemsListFactory(cmp: NgSelectComponent): ItemsList {
         return new ItemsList(cmp, new DefaultSelectionModel());
