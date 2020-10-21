@@ -193,7 +193,6 @@
     width: 100%;
     -webkit-overflow-scrolling: touch;
     .ng-dropdown-panel-items {
-        border: 1px solid #c0c5cc;
         display: block;
         height: auto;
         -webkit-box-sizing: border-box;
@@ -207,16 +206,11 @@
 
         .ng-option {
             box-sizing: border-box;
-            cursor: pointer;
             display: block;
             @include wrapt-text();
-
             .highlighted {
                 font-weight: bold;
                 text-decoration: underline;
-            }
-            &.disabled {
-                cursor: default;
             }
         }
     }
@@ -241,124 +235,12 @@
     }
 }
 
-$pane-header-height: 30px;
-
-.dual-pane-select {
-    height: 100%;
+.hc-default-empty-msg {
     display: flex;
-    flex-flow: row;
-    justify-content: space-between;
-    align-items: stretch;
-    overflow: hidden;
-    background-color: white;
-
-    .pane {
-        width: 45%;
-        display: flex;
-        flex-direction: column;
-
-        .pane-header {
-            flex: 0 0 $pane-header-height;
-            h2 {
-                font-size: 16px;
-                font-weight: bold;
-            }
-
-            ul {
-                width: 240px;
-                font-size: 13px;
-                display: flex;
-                justify-content: flex-end;
-
-                li a {
-                    height: 100%;
-                    padding: 7px 0 0;
-                    flex: 0 0 auto;
-                    min-width: 80px;
-                }
-            }
-        }
-
-        ppr-selectbox {
-            display: block;
-            flex: 1 1 auto;
-            height: calc(100% - #{$pane-header-height});
-        }
-
-        ppr-selectbox.hide {
-            display: none;
-        }
-
-        ppr-csv-component {
-            display: flex;
-            height: calc(100% - 30px);
-            flex-direction: column;
-
-            .csv-container {
-                flex: 1 0 auto;
-                position: relative;
-                display: flex;
-                flex-direction: row;
-                justify-content: flex-start;
-                align-items: stretch;
-                align-content: stretch;
-                padding: 0 0 2px 2px;
-                
-                textarea {
-                    flex: 1 1 auto;
-                    overflow: auto;
-                    margin: 0;
-                }
-
-                .csv-working-mask {
-                    position: absolute;
-                    width: calc(100% - 4px);
-                    height: calc(100% - 4px);
-                    top: 0;
-                    left: 0;
-                    background-color: #ccc;
-                    position: absolute;
-                    margin: 2px;
-                }
-            }
-
-            .alert {
-                display: flex;
-                align-items: center;
-                height: 60px;
-                margin: 10px 0 0 0;
-                font-size: 12px;
-                line-height: 1.2;
-            }
-
-            &.hide {
-                display: none;
-            }
-        }
-    }
-
-    .move-btns {
-        padding-top: 100px;
-        display: flex;
-        flex-flow: column;
-        justify-content: center;
-
-        // prevents a slight jiggle when animating carets on the valueset options
-        transform-style: preserve-3d;
-        transform: translate3d(0,0,0);
-
-        .hc-button {
-            min-width: 0;
-            width: 35px;
-            padding: 0;
-            height: 60px;
-            margin-top: 12px;
-            color: white;
-
-            &[disabled], &[disabled]:hover {
-                background-color: #ccc;
-                border-color: #ccc;
-            }
-        }
-    }
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    color: #c0c5c0;
 }

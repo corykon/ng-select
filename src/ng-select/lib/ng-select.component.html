@@ -1,5 +1,4 @@
 <div
-    (mousedown)="handleMousedown($event)"
     [class.ng-has-value]="hasSelectedItems"
     class="ng-select-container">
 
@@ -15,6 +14,7 @@
                    (compositionstart)="onCompositionStart()"
                    (compositionend)="onCompositionEnd(searchInput.value)"
                    (change)="$event.stopPropagation()"
+                   (keydown)="onInputKeydown($event)"
                    role="combobox">
         </div>
     </div>
@@ -50,29 +50,37 @@
 </div>
 
 <ng-dropdown-panel class="ng-dropdown-panel ng-select-multiple"
-                   [virtualScroll]="virtualScroll"
-                   [bufferAmount]="bufferAmount"
-                   [headerTemplate]="headerTemplate"
-                   [footerTemplate]="footerTemplate"
-                   [filterValue]="searchTerm"
-                   [items]="itemsList.filteredItems"
-                   [markedItem]="itemsList.markedItem"
-                   (update)="viewPortItems = $event"
-                   (scroll)="scroll.emit($event)"
-                   (scrollToEnd)="scrollToEnd.emit($event)"
-                   [id]="dropdownId">
+    [ngClass]="{'hc-pane-will-accept-drop': _willAcceptDrop}"
+    [virtualScroll]="virtualScroll"
+    [bufferAmount]="bufferAmount"
+    [headerTemplate]="headerTemplate"
+    [footerTemplate]="footerTemplate"
+    [filterValue]="searchTerm"
+    [items]="itemsList.filteredItems"
+    [markedItem]="itemsList.markedItem"
+    (update)="viewPortItems = $event"
+    (scroll)="scroll.emit($event)"
+    (scrollToEnd)="scrollToEnd.emit($event)"
+    (keydown)="onPanelKeydown($event)"
+    (focus)="onPanelFocus()"
+    (drop)="dragService.drop($event)" (dragover)="dragService.allowDrop($event)" (dragleave)="dragService.dragLeave()"
+    tabIndex="0"
+    [id]="dropdownId">
 
     <ng-container>
-        <div class="ng-option" [attr.role]="item.children ? 'group' : 'option'" (click)="toggleItem(item)" (mouseover)="onItemHover(item)"
-                *ngFor="let item of viewPortItems; trackBy: trackByOption"
-                [class.ng-option-disabled]="item.disabled"
-                [class.ng-option-selected]="item.selected"
-                [class.ng-optgroup]="item.children"
-                [class.ng-option]="!item.children"
-                [class.ng-option-child]="!!item.parent"
-                [class.ng-option-marked]="item === itemsList.markedItem"
-                [attr.aria-selected]="item.selected"
-                [attr.id]="item?.htmlId">
+        <div class="ng-option" [attr.role]="item.children ? 'group' : 'option'"
+            *ngFor="let item of viewPortItems; trackBy: trackByOption; let first = first;"
+            (click)="onItemClick($event, item)"
+            (dblclick)="onItemDoubledClicked($event, item)"
+            draggable="true" (dragstart)="dragService.drag($event, itemsList, item)" (dragend)="dragService.dragEnd()"
+            [class.ng-option-disabled]="item.disabled"
+            [class.ng-option-selected]="item.selected"
+            [class.ng-optgroup]="item.children"
+            [class.ng-option]="!item.children"
+            [class.ng-option-child]="!!item.parent"
+            [class.ng-option-marked]="item === itemsList.markedItem"
+            [attr.aria-selected]="item.selected"
+            [attr.id]="item?.htmlId">
 
             <ng-template #defaultOptionTemplate>
                 <span class="ng-option-label" [ngItemLabel]="item.label" [escape]="escapeHTML"></span>
@@ -98,7 +106,7 @@
 
     <ng-container *ngIf="showNoItemsFound()">
         <ng-template #defaultNotFoundTemplate>
-            <div class="ng-option ng-option-disabled">{{notFoundText}}</div>
+            <div class="hc-default-empty-msg"><span>{{notFoundText}}</span></div>
         </ng-template>
 
         <ng-template

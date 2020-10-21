@@ -9,6 +9,7 @@
         </div>
 
         <ng-select #available
+            [_isLeftPane]="true"
             [bindLabel]="bindLabel"
             [bindValue]="bindValue"
             [placeholder]="placeholder"
@@ -29,12 +30,12 @@
             [readonly]="readonly"
             [searchWhileComposing]="searchWhileComposing"
             [minTermLength]="minTermLength"
-            [keyDownFn]="keyDownFn"
             [typeahead]="typeahead"
             [addTag]="addTag"
             [searchable]="searchable"
             [items]="items"
-            [compareWith]="compareWith">
+            [compareWith]="compareWith"
+            (triggerMove)="moveLeftToRight()">
         </ng-select>
     </div>
     
@@ -80,11 +81,11 @@
             [readonly]="readonly"
             [searchWhileComposing]="searchWhileComposing"
             [minTermLength]="minTermLength"
-            [keyDownFn]="keyDownFn"
             [typeahead]="typeahead"
             [addTag]="addTag"
             [searchable]="searchable"
-            [compareWith]="compareWith">
+            [compareWith]="compareWith"
+            (triggerMove)="moveRightToLeft()">
         </ng-select>
     </div>
 </div>

@@ -4,7 +4,6 @@
     flex-flow: row;
     justify-content: space-between;
     align-items: stretch;
-    overflow: hidden;
 }
 
 .hc-picklist-pane {
@@ -29,6 +28,20 @@
     min-height: 0;
 }
 
+.ng-dropdown-panel {
+    border: 1px solid #c0c5cc;
+
+    &.hc-pane-will-accept-drop {
+        border-color: #00aeff;
+        box-shadow: 0 0 3px #00aeff;
+    }
+
+    &:focus {
+        outline: none;
+        .ng-option-marked { outline: darken(#00aeff, 0.2) 2px solid; outline-offset: -2px; }
+    }
+}
+
 .hc-picklist-pane-tools {
     display: flex;
     justify-content: space-between;
@@ -48,6 +61,10 @@
 
         &[disabled] {
             color: #ccc;
+        }
+
+        &:focus {
+            outline: auto;
         }
     }
 }

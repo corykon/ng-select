@@ -62,7 +62,7 @@ export type GroupValueFn = (key: string | object, children: any[]) => string | o
 export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlValueAccessor {
     @Input() bindLabel: string;
     @Input() bindValue: string;
-    @Input() addTagText: string; // todo: keep this or no?
+    @Input() addTagText = 'Add custom option.'; // todo: keep this or no?
     @Input() addTag: boolean | AddTagFn = false; // todo: keep this or no?
     @Input() maxSelectedItems: number;
     @Input() groupBy: string | Function;
@@ -77,13 +77,12 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     @Input() readonly = false;
     @Input() searchWhileComposing = true;
     @Input() minTermLength = 0;
-    @Input() keyDownFn = (_: KeyboardEvent) => true;
     @Input() height = '400px';
 
-    // todo: inputs that should be specific per pane
-    @Input() placeholder: string;
-    @Input() notFoundText: string;
-    @Input() loadingText: string;
+    // todo: inputs that should be specific per pane (maybe)
+    @Input() placeholder = 'Search';
+    @Input() notFoundText = 'No options to show.';
+    @Input() loadingText = 'Loading'
     @Input() loading = false;
     @Input() typeahead: Subject<string>;
     @Input() searchable = true;

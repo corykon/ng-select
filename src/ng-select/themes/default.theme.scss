@@ -275,9 +275,12 @@ $ng-select-value-font-size: 0.9em !default;
                     font-weight: 600;
                 }
             }
-            &.ng-option-marked {
+            &:hover {
                 background-color: $ng-select-marked;
                 color: $ng-select-primary-text;
+            }
+            &.ng-option-selected:hover {
+                background-color: lighten($ng-select-selected, 5);
             }
             &.ng-option-disabled {
                 color: lighten($ng-select-primary-text, 60);

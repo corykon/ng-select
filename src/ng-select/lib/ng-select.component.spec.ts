@@ -1230,13 +1230,6 @@ describe('NgSelectComponent', () => {
             }));
         });
 
-        describe('esc', () => {
-            it('should blur the search input', () => {
-                triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode.Esc);
-                expect(select.focused).toBe(false);
-            });
-        });
-
         describe('tab', () => {
             it('should mark first item on filter when tab', fakeAsync(() => {
                 tick(200);
@@ -2160,7 +2153,6 @@ describe('NgSelectComponent', () => {
                         bindLabel="name"
                         [(ngModel)]="selectedCity">
                     </ng-select>`);
-                expect(fixture.componentInstance.select.editableSearchTerm).toBeTruthy();
                 const select = fixture.componentInstance.select;
                 const input = select.searchInput.nativeElement;
                 const selectedCity = fixture.componentInstance.cities[0];
@@ -2702,9 +2694,6 @@ describe('NgSelectComponent', () => {
 
             const select = fixture.componentInstance.select;
             expect(select.itemsList.markedItem).toBeUndefined();
-
-            select.onItemHover(select.itemsList.items[0]);
-            expect(select.itemsList.markedItem).toBeUndefined();
         }));
 
         it('should filter grouped items', fakeAsync(() => {
@@ -2868,56 +2857,6 @@ describe('NgSelectComponent', () => {
             }));
         });
     });
-
-    describe('User defined keyDown handler', () => {
-        let fixture: ComponentFixture<NgSelectTestCmp>;
-        let select: NgSelectComponent;
-
-        beforeEach(() => {
-            fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<ng-select [keyDownFn]="keyDownFn"></ng-select>`);
-            select = fixture.componentInstance.select;
-        });
-
-        const expectSpyToBeCalledAfterKeyDown = (spy, expectedNumber) => {
-            const possibleKeyCodes = Object.keys(KeyCode);
-            possibleKeyCodes
-                .forEach(keyCode => {
-                    triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode[keyCode])
-                });
-            expect(spy).toHaveBeenCalledTimes(expectedNumber)
-        };
-
-        it('should execute user function if any of defined keys was pressed', () => {
-            const spy = spyOn(fixture.componentInstance.select, 'keyDownFn');
-            expectSpyToBeCalledAfterKeyDown(spy, Object.keys(KeyCode).length)
-        });
-
-        it('should not call any of default keyDown handlers if user handler returns false', fakeAsync(() => {
-            fixture.componentInstance.keyDownFn = () => false;
-            tickAndDetectChanges(fixture);
-            const spy = spyOn(fixture.componentInstance.select, 'handleKeyCode');
-
-            expectSpyToBeCalledAfterKeyDown(spy, 0)
-        }));
-
-        it('should call default keyHandler if user handler returns truthy', fakeAsync(() => {
-            fixture.componentInstance.keyDownFn = () => true;
-            tickAndDetectChanges(fixture);
-
-            const spy = spyOn(fixture.componentInstance.select, 'handleKeyCode');
-            expectSpyToBeCalledAfterKeyDown(spy, Object.keys(KeyCode).length)
-        }));
-
-        it('should call default keyHandler if user handler returns falsy but not `false`', fakeAsync(() => {
-            fixture.componentInstance.keyDownFn = () => null;
-            tickAndDetectChanges(fixture);
-
-            const spy = spyOn(fixture.componentInstance.select, 'handleKeyCode');
-            expectSpyToBeCalledAfterKeyDown(spy, Object.keys(KeyCode).length)
-        }))
-    })
 });
 
 
@@ -3001,7 +2940,6 @@ class NgSelectTestCmp {
         { id: 2, description: { name: 'USA', id: 'b' } },
         { id: 3, description: { name: 'Australia', id: 'c' } }
     ];
-    keyDownFn = () => {};
 
     tagFunc(term: string) {
         return { id: term, name: term, custom: true }

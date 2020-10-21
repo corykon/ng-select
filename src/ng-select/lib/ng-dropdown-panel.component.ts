@@ -61,8 +61,8 @@ export class NgDropdownPanelComponent implements OnInit, OnChanges, OnDestroy {
     @ViewChild('scroll', { read: ElementRef, static: true }) scrollElementRef: ElementRef;
     @ViewChild('padding', { read: ElementRef, static: true }) paddingElementRef: ElementRef;
 
+    public readonly _panel: HTMLElement;
     private readonly _destroy$ = new Subject<void>();
-    private readonly _dropdown: HTMLElement;
     private _virtualPadding: HTMLElement;
     private _scrollablePanel: HTMLElement;
     private _contentPanel: HTMLElement;
@@ -71,7 +71,7 @@ export class NgDropdownPanelComponent implements OnInit, OnChanges, OnDestroy {
     private _lastScrollPosition = 0;
 
     constructor(private _zone: NgZone, private _panelService: NgDropdownPanelService, _elementRef: ElementRef) {
-        this._dropdown = _elementRef.nativeElement;
+        this._panel = _elementRef.nativeElement;
     }
 
     private _itemsLength: number;
@@ -94,16 +94,6 @@ export class NgDropdownPanelComponent implements OnInit, OnChanges, OnDestroy {
             return panelHeight > offset ? 0 : offset;
         }
         return 0;
-    }
-
-    // todo: what dis?
-    @HostListener('mousedown', ['$event'])
-    handleMousedown($event: MouseEvent) {
-        const target = $event.target as HTMLElement;
-        if (target.tagName === 'INPUT') {
-            return;
-        }
-        $event.preventDefault();
     }
 
     ngOnInit() {
@@ -141,7 +131,7 @@ export class NgDropdownPanelComponent implements OnInit, OnChanges, OnDestroy {
             const itemHeight = this._panelService.dimensions.itemHeight;
             scrollTo = this._panelService.getScrollTo(index * itemHeight, itemHeight, this._lastScrollPosition);
         } else {
-            const item: HTMLElement = this._dropdown.querySelector(`#${option.htmlId}`);
+            const item: HTMLElement = this._panel.querySelector(`#${option.htmlId}`);
             const lastScroll = startFromOption ? item.offsetTop : this._lastScrollPosition;
             scrollTo = this._panelService.getScrollTo(item.offsetTop, item.clientHeight, lastScroll);
         }
@@ -266,7 +256,7 @@ export class NgDropdownPanelComponent implements OnInit, OnChanges, OnDestroy {
         this.update.emit([first]);
 
         return Promise.resolve().then(() => {
-            const option = this._dropdown.querySelector(`#${first.htmlId}`);
+            const option = this._panel.querySelector(`#${first.htmlId}`);
             const optionHeight = option.clientHeight;
             this._virtualPadding.style.height = `${optionHeight * this.itemsLength}px`;
             const panelHeight = this._scrollablePanel.clientHeight;
@@ -285,7 +275,7 @@ export class NgDropdownPanelComponent implements OnInit, OnChanges, OnDestroy {
             this._virtualPadding :
             this._contentPanel;
 
-        if (scrollTop + this._dropdown.clientHeight >= padding.clientHeight) {
+        if (scrollTop + this._panel.clientHeight >= padding.clientHeight) {
             this._zone.run(() => this.scrollToEnd.emit());
             this._scrollToEndFired = true;
         }

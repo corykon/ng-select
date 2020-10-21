@@ -33,6 +33,10 @@ export class ItemsList {
         return this._markedIndex;
     }
 
+    get hasMarkedItem(): boolean {
+        return this._markedIndex !== -1;
+    }
+
     get selectedItems() {
         return this._selectionModel.value;
     }
@@ -180,16 +184,12 @@ export class ItemsList {
         this._filteredItems = this._items;
     }
 
-    unmarkItem() {
+    unmark() {
         this._markedIndex = -1;
     }
 
-    markNextItem() {
-        this._stepToItem(+1);
-    }
-
-    markPreviousItem() {
-        this._stepToItem(-1);
+    markNextItem(stepIsDown: boolean) {
+        this._stepToItem(stepIsDown ? 1 : -1);
     }
 
     markItem(item: HcOption) {

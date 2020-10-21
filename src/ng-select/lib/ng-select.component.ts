@@ -44,6 +44,7 @@ import { NgOptionComponent } from './ng-option.component';
 import { SelectionModelFactory } from './selection-model';
 import { NgDropdownPanelService } from './ng-dropdown-panel.service';
 import { HcPicklist2Service } from './hc-picklist2.service';
+import { HcPicklistPaneDragService } from './hc-picklist-pane-drag.service';
 
 export const SELECTION_MODEL_FACTORY = new InjectionToken<SelectionModelFactory>('ng-select-selection-model');
 export type AddTagFn = ((term: string) => any | Promise<any>);
@@ -54,7 +55,7 @@ export type GroupValueFn = (key: string | object, children: any[]) => string | o
     selector: 'ng-select',
     templateUrl: './ng-select.component.html',
     styleUrls: ['./ng-select.component.scss'],
-    providers: [NgDropdownPanelService],
+    providers: [NgDropdownPanelService, HcPicklistPaneDragService],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
@@ -84,9 +85,9 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
     @Input() readonly = false;
     @Input() searchWhileComposing = true;
     @Input() minTermLength = 0;
-    @Input() keyDownFn = (_: KeyboardEvent) => true;
     @Input() typeahead: Subject<string>;
     @Input() searchable = true;
+    @Input() _isLeftPane = false;
 
     @Input() get items() { return this._items };
     set items(value: any[]) {
@@ -110,6 +111,7 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
     @Output('remove') removeEvent = new EventEmitter();
     
     // todo: probably need
+    @Output('triggerMove') triggerMoveEvent = new EventEmitter();
     @Output('search') searchEvent = new EventEmitter<{ term: string, items: any[] }>();
     @Output('scroll') scroll = new EventEmitter<{ start: number; end: number }>();
     @Output('scrollToEnd') scrollToEnd = new EventEmitter();
@@ -138,6 +140,10 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
     element: HTMLElement;
     escapeHTML = true;
     useDefaultClass = true;
+    _isDragging = false;
+    _willAcceptDrop = false;
+    public get _companionPane(): NgSelectComponent {
+        return this._isLeftPane ? this.picklistService.selectedPane : this.picklistService.availablePane; }
 
     private _itemsAreUsed: boolean;
     private _items = [];
@@ -160,10 +166,12 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
         @Inject(SELECTION_MODEL_FACTORY) newSelectionModel: SelectionModelFactory,
         _elementRef: ElementRef<HTMLElement>,
         private picklistService: HcPicklist2Service,
-        private _cd: ChangeDetectorRef
+        private _cd: ChangeDetectorRef,
+        public dragService: HcPicklistPaneDragService
     ) {
         this.itemsList = new ItemsList(this, newSelectionModel());
         this.element = _elementRef.nativeElement;
+        this.dragService.reset(this);
     }
 
     get selectedItems(): HcOption[] {
@@ -203,46 +211,65 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
         this._destroy$.complete();
     }
 
-    @HostListener('keydown', ['$event'])
-    handleKeyDown($event: KeyboardEvent) {
-        const keyCode = KeyCode[$event.which];
-        if (keyCode) {
-            if (this.keyDownFn($event) === false) {
-                return;
-            }
-            this.handleKeyCode($event)
-        } else if ($event.key && $event.key.length === 1) {
+    onInputKeydown($event: KeyboardEvent) {
+        if ($event.which === KeyCode.ArrowDown || $event.which === KeyCode.Enter) {
+            $event.preventDefault();
+            this.dropdownPanel._panel.focus();
+        } else if ($event.key && $event.key.length === 1 && $event.target === this.searchInput.nativeElement) {
             this._keyPress$.next($event.key.toLocaleLowerCase());
         }
     }
 
-    handleKeyCode($event: KeyboardEvent) {
+    onPanelKeydown($event: KeyboardEvent) {
         switch ($event.which) {
             case KeyCode.ArrowDown:
-                this._handleArrowDown($event);
+                this._handlePanelArrow($event, true);
                 break;
             case KeyCode.ArrowUp:
-                this._handleArrowUp($event);
+                this._handlePanelArrow($event, false);
                 break;
             case KeyCode.Enter:
-                this._handleArrowDown($event);
-                break;
-            case KeyCode.Tab:
-                this._handleArrowDown($event);
+                this.triggerMoveEvent.emit();
                 break;
             case KeyCode.Esc:
-                this.blur();
-                $event.preventDefault();
+                this.itemsList.clearSelected();
+                this.itemsList.unmark();
+                this.dropdownPanel._panel.blur();
                 break;
         }
     }
 
-    // todo: remove this?
-    handleMousedown($event: MouseEvent) {
-        const target = $event.target as HTMLElement;
-        if (target.tagName !== 'INPUT') {
-            $event.preventDefault();
+    onPanelFocus() {
+        if (!this.itemsList.hasMarkedItem) {
+            this._jumpFocusToFirstItem();
         }
+    }
+
+    private _jumpFocusToFirstItem() {
+        if (this.itemsList.filteredItems.length === 0) { return; }
+        const item = this.itemsList.filteredItems[0];
+        this.itemsList.clearSelected();
+        this.itemsList.markItem(item);
+        this._selectAndScrollToItem(item);
+    }
+
+    private _handlePanelArrow($event: KeyboardEvent, isDown: boolean) {
+        if (this._nextItemIsTag(isDown)) {
+            this.itemsList.unmark();
+            this._scrollToTag();
+        } else {
+            this.itemsList.markNextItem(isDown);
+            if (!$event.shiftKey && !$event.ctrlKey) { this.itemsList.clearSelected(); }
+            const nextItem = this.itemsList.markedItem;
+            this._selectAndScrollToItem(nextItem);
+        }
+        $event.preventDefault();
+    }
+
+    private _selectAndScrollToItem(item: HcOption) {
+        if (!item) { return; }
+        this.itemsList.select(item);
+        this._scrollToMarked();
     }
 
     deselectAll() {
@@ -261,18 +288,41 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
         this.itemsList.clearSelected();
     }
 
-    toggleItem(item: HcOption) {
-        if (!item || item.disabled || this.disabled) {
-            return;
-        }
-
-        if (item.selected) {
-            this.unselect(item);
-        } else {
-            this.select(item);
+    /**
+     * Shift + click selects a range
+     * Ctrl + click adds to current selection
+     * Regular click clears current selection and selects anew
+     */
+    onItemClick($event: MouseEvent, item: HcOption) {
+        if (!item) { return; }
+        const lastMarkedIndex = this.itemsList.markedIndex;
+        if (!$event.ctrlKey) { this.itemsList.clearSelected(true); }
+        if (!$event.shiftKey) { this.itemsList.markItem(item); }
+        
+        
+        if ($event.shiftKey) {
+            const indexOfItemClicked = this.itemsList.filteredItems.findIndex(i => i === item);
+            const start = Math.min(lastMarkedIndex, indexOfItemClicked);
+            const end = Math.max(lastMarkedIndex, indexOfItemClicked);
+            for (let i = start; i <= end; i++) {
+                this.select(this.itemsList.filteredItems[i]);
+            }
+        } else if (!item.disabled && !this.disabled) {
+            if ($event.ctrlKey && item.selected) {
+                this.unselect(item);
+            } else {
+                this.select(item);
+            }
         }
 
         this._onSelectionChanged();
+        this.dropdownPanel._panel.focus();
+    }
+
+    onItemDoubledClicked($event: MouseEvent, item: HcOption) {
+        if (!$event.shiftKey) { this.itemsList.clearSelected(true); }
+        this.select(item);
+        this.triggerMoveEvent.emit();
     }
 
     select(item: HcOption) {
@@ -367,13 +417,6 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
         this.searchEvent.emit({ term, items: this.itemsList.filteredItems.map(x => x.value) });
     }
 
-    onItemHover(item: HcOption) {
-        if (item.disabled) {
-            return;
-        }
-        this.itemsList.markItem(item);
-    }
-
     detectChanges() {
         if (!(<any>this._cd).destroyed) {
             this._cd.detectChanges();
@@ -453,29 +496,8 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
         this._cd.detectChanges();
     }
 
-    private _handleArrowDown($event: KeyboardEvent) {
-        if (this._nextItemIsTag(+1)) {
-            this.itemsList.unmarkItem();
-            this._scrollToTag();
-        } else {
-            this.itemsList.markNextItem();
-            this._scrollToMarked();
-        }
-        $event.preventDefault();
-    }
-
-    private _handleArrowUp($event: KeyboardEvent) {
-        if (this._nextItemIsTag(-1)) {
-            this.itemsList.unmarkItem();
-            this._scrollToTag();
-        } else {
-            this.itemsList.markPreviousItem();
-            this._scrollToMarked();
-        }
-        $event.preventDefault();
-    }
-
-    private _nextItemIsTag(nextStep: number): boolean {
+    private _nextItemIsTag(nextStepIsDown: boolean): boolean {
+        const nextStep = nextStepIsDown ? 1 : -1;
         const nextIndex = this.itemsList.markedIndex + nextStep;
         return this.addTag && this.searchTerm
             && this.itemsList.markedItem
