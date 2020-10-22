@@ -293,7 +293,6 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
         }
 
         this._onSelectionChanged();
-        this.panelFocus();
     }
 
     onItemDoubledClicked($event: MouseEvent, item: HcOption) {
