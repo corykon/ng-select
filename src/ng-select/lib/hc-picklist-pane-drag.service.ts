@@ -13,27 +13,11 @@ export class HcPicklistPaneDragService {
 
     public drag(event: DragEvent, list: ItemsList, item: HcOption) {
         event.stopPropagation();
-        console.log('hey'); 
         if (!item.selected) {
             list.clearSelected(true);
         }
         list.select(item);
         this.pane._isDragging = true;
-        
-        // const canvas = document.createElement("canvas");
-        // canvas.width = canvas.height = 50;
-
-        // const ctx = canvas.getContext("2d");
-        // ctx.lineWidth = 4;
-        // ctx.moveTo(0, 0);
-        // ctx.lineTo(500, 500);
-        // ctx.moveTo(0, 500);
-        // ctx.lineTo(500, 0);
-        // ctx.stroke();
-
-        // const dt = event.dataTransfer;
-        // dt.setData('text/plain', 'Data to Drag');
-        // dt.setDragImage(canvas, 25, 25);
     }
 
     public allowDrop(event: DragEvent) {

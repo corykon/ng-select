@@ -28,8 +28,6 @@ import {
     NgHeaderTemplateDirective,
     NgFooterTemplateDirective,
     NgOptgroupTemplateDirective,
-    NgNotFoundTemplateDirective,
-    NgLoadingTextTemplateDirective,
     NgTagTemplateDirective,
     HcPaneHeaderRightTemplateDirective,
     HcPaneHeaderLeftTemplateDirective
@@ -116,10 +114,6 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     @ContentChild(NgHeaderTemplateDirective, { read: TemplateRef }) headerTemplate: TemplateRef<any>;
     @ContentChild(NgFooterTemplateDirective, { read: TemplateRef }) footerTemplate: TemplateRef<any>;
     @ContentChild(NgTagTemplateDirective, { read: TemplateRef }) tagTemplate: TemplateRef<any>;
-    
-    // todo: templates that should be specific per pane
-    @ContentChild(NgNotFoundTemplateDirective, { read: TemplateRef }) notFoundTemplate: TemplateRef<any>;
-    @ContentChild(NgLoadingTextTemplateDirective, { read: TemplateRef }) loadingTextTemplate: TemplateRef<any>;
     @ContentChild(HcPaneHeaderRightTemplateDirective, { read: TemplateRef }) paneHeaderRightTemplate: TemplateRef<any>;
     @ContentChild(HcPaneHeaderLeftTemplateDirective, { read: TemplateRef }) paneHeaderLeftTemplate: TemplateRef<any>;
 
@@ -158,6 +152,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         if (isDefined(this.autoFocus)) {
             this.availablePane.focus();
         }
+        this.detectChanges();
     }
 
     ngOnDestroy() {

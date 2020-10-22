@@ -1,0 +1,25 @@
+
+
+<h3>Array of objects</h3>
+<br>
+
+<hc-picklist2 [items]="transportOptions" bindLabel="name" [formControl]="selected" [searchFn]="customSearchFn" groupBy="type">
+     <!-- Group header template -->
+     <ng-template ng-optgroup-tmp let-item="item">
+        <div class="group-row">{{ item.type }}</div>
+    </ng-template>
+
+    <!-- Dropdown option template -->
+    <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+        <div class="opt-row" title="Travel by {{ item.type }}: {{ item.name }}">
+            <span class="icon-wrapper {{ item.color }}"><hc-icon fontSet="fa" fontIcon="fa-{{ item.icon }}" hcIconSm></hc-icon></span>
+            {{ item.name }}
+        </div>
+    </ng-template>
+</hc-picklist2>
+
+<br>
+
+<br/>Selected car IDs: {{ selected.value | json }}
+
+<!-- <button type="button" class="btn btn-secondary btn-sm" (click)="updateOpts()">update opts</button> -->

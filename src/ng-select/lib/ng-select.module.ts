@@ -7,8 +7,6 @@ import { NgSelectComponent, SELECTION_MODEL_FACTORY } from './ng-select.componen
 import {
     NgFooterTemplateDirective,
     NgHeaderTemplateDirective,
-    NgLoadingTextTemplateDirective,
-    NgNotFoundTemplateDirective,
     NgOptgroupTemplateDirective,
     NgOptionTemplateDirective,
     HcPaneHeaderLeftTemplateDirective,
@@ -30,8 +28,6 @@ import { DefaultSelectionModelFactory } from './selection-model';
         HcPaneHeaderRightTemplateDirective,
         NgHeaderTemplateDirective,
         NgFooterTemplateDirective,
-        NgNotFoundTemplateDirective,
-        NgLoadingTextTemplateDirective,
         NgTagTemplateDirective,
         NgItemLabelDirective
     ],
@@ -48,8 +44,6 @@ import { DefaultSelectionModelFactory } from './selection-model';
         HcPaneHeaderRightTemplateDirective,
         NgHeaderTemplateDirective,
         NgFooterTemplateDirective,
-        NgNotFoundTemplateDirective,
-        NgLoadingTextTemplateDirective,
         NgTagTemplateDirective
     ],
     providers: [

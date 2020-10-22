@@ -3,8 +3,6 @@
     class="ng-select-container">
 
     <div class="ng-value-container">
-        <div class="ng-placeholder">{{placeholder}}</div>
-
         <div class="ng-input">
             <input #searchInput
                    [readOnly]="!searchable || itemsList.maxItemsSelected"
@@ -15,6 +13,7 @@
                    (compositionend)="onCompositionEnd(searchInput.value)"
                    (change)="$event.stopPropagation()"
                    (keydown)="onInputKeydown($event)"
+                   [placeholder]="placeholder"
                    role="combobox">
         </div>
     </div>
@@ -50,7 +49,7 @@
 </div>
 
 <ng-dropdown-panel class="ng-dropdown-panel ng-select-multiple"
-    [ngClass]="{'hc-pane-will-accept-drop': _willAcceptDrop}"
+    [ngClass]="{'hc-pane-will-accept-drop': _willAcceptDrop, 'pane-is-active': _paneIsActive}"
     [virtualScroll]="virtualScroll"
     [bufferAmount]="bufferAmount"
     [headerTemplate]="headerTemplate"
@@ -62,7 +61,8 @@
     (scroll)="scroll.emit($event)"
     (scrollToEnd)="scrollToEnd.emit($event)"
     (keydown)="onPanelKeydown($event)"
-    (focus)="onPanelFocus()"
+    (focus)="_paneIsActive = true"
+    (blur)="_paneIsActive = false"
     (drop)="dragService.drop($event)" (dragover)="dragService.allowDrop($event)" (dragleave)="dragService.dragLeave()"
     tabIndex="0"
     [id]="dropdownId">
@@ -105,25 +105,11 @@
     </ng-container>
 
     <ng-container *ngIf="showNoItemsFound()">
-        <ng-template #defaultNotFoundTemplate>
-            <div class="hc-default-empty-msg"><span>{{notFoundText}}</span></div>
-        </ng-template>
-
-        <ng-template
-            [ngTemplateOutlet]="notFoundTemplate || defaultNotFoundTemplate"
-            [ngTemplateOutletContext]="{ searchTerm: searchTerm }">
-        </ng-template>
+        <div class="hc-default-empty-msg"><span>{{notFoundText}}</span></div>
     </ng-container>
 
     <ng-container *ngIf="loading && itemsList.filteredItems.length === 0">
-        <ng-template #defaultLoadingTextTemplate>
-            <div class="ng-option ng-option-disabled">{{loadingText}}</div>
-        </ng-template>
-
-        <ng-template
-            [ngTemplateOutlet]="loadingTextTemplate || defaultLoadingTextTemplate"
-            [ngTemplateOutletContext]="{ searchTerm: searchTerm }">
-        </ng-template>
+        <div class="ng-option ng-option-disabled">{{loadingText}}</div>
     </ng-container>
 
 </ng-dropdown-panel>

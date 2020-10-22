@@ -205,7 +205,7 @@ export class ItemsList {
         if (lastMarkedIndex > -1) {
             this._markedIndex = lastMarkedIndex;
         } else {
-            this._markedIndex = -1;
+            this.markNextItem(true);
         }
     }
 

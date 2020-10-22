@@ -35,6 +35,11 @@
             [searchable]="searchable"
             [items]="items"
             [compareWith]="compareWith"
+            [optionTemplate]="optionTemplate"
+            [optgroupTemplate]="optgroupTemplate"
+            [headerTemplate]="headerTemplate"
+            [footerTemplate]="footerTemplate"
+            [tagTemplate]="tagTemplate"
             (triggerMove)="moveLeftToRight()">
         </ng-select>
     </div>
@@ -43,12 +48,12 @@
     <div class="hc-move-btns">
         <button hc-button buttonStyle="primary-alt" type="button" name="addBtn"
                 (click)="moveLeftToRight()"
-                [disabled]="disabled">
+                [disabled]="disabled || availablePane.selectedItems.length === 0">
             <span class="icon icon-arrow-right"> -> </span>
         </button>
         <button hc-button buttonStyle="primary-alt" type="button" name="removeBtn"
                 (click)="moveRightToLeft()"
-                [disabled]="disabled">
+                [disabled]="disabled || selectedPane.selectedItems.length === 0">
             <span class="icon icon-arrow-left"> <- </span>
         </button>
     </div>
@@ -85,6 +90,11 @@
             [addTag]="addTag"
             [searchable]="searchable"
             [compareWith]="compareWith"
+            [optionTemplate]="optionTemplate"
+            [optgroupTemplate]="optgroupTemplate"
+            [headerTemplate]="headerTemplate"
+            [footerTemplate]="footerTemplate"
+            [tagTemplate]="tagTemplate"
             (triggerMove)="moveRightToLeft()">
         </ng-select>
     </div>
