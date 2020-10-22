@@ -187,8 +187,7 @@ export class ItemsList {
     /** Wipe out selection state and marked state, then mark the first selectable option */
     resetListSelectionState() {
         this.clearSelected();
-        this.unmark();
-        this.markNextItem(true);
+        this.markFirst();
     }
 
     unmark() {
@@ -212,8 +211,14 @@ export class ItemsList {
         if (lastMarkedIndex > -1) {
             this._markedIndex = lastMarkedIndex;
         } else {
-            this.markNextItem(true);
+            this.markFirst();
         }
+    }
+
+    /** Unmarks what ever is currently marked and then marks the first selectable item */
+    markFirst() {
+        this.unmark();
+        this.markNextItem(true);
     }
 
     /** Obtain a nested value from a given object. It could be a direct property, or a nested property */
