@@ -213,9 +213,7 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
                 this.triggerMoveEvent.emit();
                 break;
             case KeyCode.Esc:
-                this.itemsList.clearSelected();
-                this.itemsList.unmark();
-                this.itemsList.markSelectedOrDefault();
+                this.itemsList.resetListSelectionState();
                 this.dropdownPanel._panel.blur();
                 break;
         }
@@ -223,16 +221,14 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
 
     panelFocus() {
         this.dropdownPanel._panel.focus();
-        if (!this.itemsList.hasMarkedItem) {
+        if (!this.hasSelectedItems) {
             this._jumpFocusToFirstItem();
         }
     }
 
     private _jumpFocusToFirstItem() {
         if (this.itemsList.filteredItems.length === 0) { return; }
-        this.itemsList.clearSelected();
-        this.itemsList.unmark();
-        this.itemsList.markNextItem(true);
+        this.itemsList.resetListSelectionState();
         this._selectAndScrollToItem(this.itemsList.markedItem);
     }
 
@@ -256,8 +252,7 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
     }
 
     deselectAll() {
-        this.itemsList.clearSelected();
-        this.itemsList.unmark();
+        this.itemsList.resetListSelectionState();
         this._onSelectionChanged();
     }
 

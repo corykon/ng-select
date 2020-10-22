@@ -184,6 +184,13 @@ export class ItemsList {
         this._filteredItems = this._items;
     }
 
+    /** Wipe out selection state and marked state, then mark the first selectable option */
+    resetListSelectionState() {
+        this.clearSelected();
+        this.unmark();
+        this.markNextItem(true);
+    }
+
     unmark() {
         this._markedIndex = -1;
     }
