@@ -3,7 +3,7 @@
 <h3>Array of objects</h3>
 <br>
 
-<hc-picklist2 [items]="transportOptions" bindLabel="name" [formControl]="selected" [searchFn]="customSearchFn" groupBy="type">
+<hc-picklist2 [items]="transportOptions" [formControl]="selected" [searchFn]="customSearchFn" groupBy="type" [selectableGroup]="true" [selectableGroupAsModel]="false">
      <!-- Group header template -->
      <ng-template ng-optgroup-tmp let-item="item">
         <div class="group-row">{{ item.type }}</div>
@@ -20,6 +20,4 @@
 
 <br>
 
-<br/>Selected car IDs: {{ selected.value | json }}
-
-<!-- <button type="button" class="btn btn-secondary btn-sm" (click)="updateOpts()">update opts</button> -->
+<br/>Selected: {{ selected.value | json }}

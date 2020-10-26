@@ -67,14 +67,7 @@ export class ItemsList {
 
     setItems(items: any[]) {
         this._items = items.map((item, index) => this.mapItem(item, index));
-        if (this._ngSelect.groupBy) {
-            this._groups = this._groupBy(this._items, this._ngSelect.groupBy);
-            this._items = this._flatten(this._groups);
-        } else {
-            this._groups = new Map();
-            this._groups.set(undefined, this._items)
-        }
-        this._filteredItems = [...this._items];
+        this._groupItems();
     }
 
     reIndex() {
@@ -112,22 +105,40 @@ export class ItemsList {
     addNewOption(item: any): HcOption {
         const option = this.mapItem(item, this._items.length);
         this._items.push(option);
-        this._filteredItems.push(option);
+        this._reGroup();
         return option;
     }
 
     addOption(option: HcOption) {
         option.index = this._items.length;
         this._items.push(option);
+        this._reGroup();
     }
 
     removeOption(item: HcOption) {
         const indexToRemove = this._items.findIndex(i => i.index === item.index);
         if (indexToRemove > -1) {
             this._items.splice(indexToRemove, 1);
+            this._reGroup();
         } else {
             console.error(`Couldn't find the item to remove: ${item}`);
         }
+    }
+
+    private _reGroup() {
+        this._items = this._items.filter(i => !i.children);
+        this._groupItems();
+    }
+
+    private _groupItems() {
+        if (this._ngSelect.groupBy) {
+            this._groups = this._groupBy(this._items, this._ngSelect.groupBy);
+            this._items = this._flatten(this._groups);
+        } else {
+            this._groups = new Map();
+            this._groups.set(undefined, this._items)
+        }
+        this._filteredItems = [...this._items];
     }
 
     clearSelected(keepDisabled = false) {

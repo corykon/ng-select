@@ -315,9 +315,15 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         return value.every(item => validateBinding(item));
     }
 
+    // todo: more testing around this
     private _updateNgModel() {
         const model = [];
-        const selectedItems = this.selectedPane.itemsList.items;
+        let selectedItems = this.selectedPane.itemsList.items;
+
+        if (!this.selectableGroup || !this.selectableGroupAsModel) {
+            selectedItems = selectedItems.filter(item => !item.children);
+        }
+
         for (const item of selectedItems) {
             if (this.bindValue) {
                 let value = null;
