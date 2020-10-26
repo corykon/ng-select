@@ -137,8 +137,16 @@ export class ItemsList {
         } else {
             this._groups = new Map();
             this._groups.set(undefined, this._items)
+            this._sortChildrenWithinGroups();
         }
         this._filteredItems = [...this._items];
+    }
+
+    private _sortChildrenWithinGroups() {
+        if (!this._ngSelect.sortFn) { return; }
+        for (let values of this._groups.values()) {
+            values.sort(this._ngSelect.sortFn)
+        }
     }
 
     clearSelected(keepDisabled = false) {
@@ -341,12 +349,13 @@ export class ItemsList {
 
     private _flatten(groups: OptionGroups) {
         const isGroupByFn = isFunction(this._ngSelect.groupBy);
-        const items = [];
+        this._sortChildrenWithinGroups();
+        const flattenedSortedItems = new Array<HcOption>()
+        const groupItems = new Array<HcOption>();
         for (const key of Array.from(groups.keys())) {
-            let i = items.length;
             if (key === undefined) {
                 const withoutGroup = groups.get(undefined) || [];
-                items.push(...withoutGroup.map(x => ({ ...x, index: i++ })));
+                flattenedSortedItems.push(...withoutGroup.map((item, index) => ({ ...item, index: index })));
                 continue;
             }
 
@@ -355,7 +364,6 @@ export class ItemsList {
                 label: isObjectKey ? '' : String(key),
                 children: undefined,
                 parent: null,
-                index: i++,
                 disabled: !this._ngSelect.selectableGroup,
                 htmlId: newId(),
             };
@@ -369,14 +377,23 @@ export class ItemsList {
             const children = groups.get(key).map(x => {
                 x.parent = parent;
                 x.children = undefined;
-                x.index = i++;
                 return x;
             });
             parent.children = children;
             parent.value = groupValue(key, children.map(x => x.value));
-            items.push(parent);
-            items.push(...children);
+            groupItems.push(parent)
         }
-        return items;
+        if (this._ngSelect.sortFn) { groupItems.sort(this._ngSelect.sortFn); }
+
+        groupItems.forEach(groupItem => {
+            let i = flattenedSortedItems.length;
+            groupItem.index = i++;
+            flattenedSortedItems.push(groupItem)
+            groupItem.children.forEach(childItem => {
+                childItem.index = i++;
+                flattenedSortedItems.push(childItem);
+            });
+        });
+        return flattenedSortedItems;
     }
 }

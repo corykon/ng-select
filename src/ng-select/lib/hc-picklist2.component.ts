@@ -39,11 +39,13 @@ import { NgOptionComponent } from './ng-option.component';
 import { ConsoleService } from './console.service';
 import { NgSelectComponent } from './ng-select.component';
 import { HcPicklist2Service } from './hc-picklist2.service';
+import { HcOption } from './ng-select.types';
 
 export const SELECTION_MODEL_FACTORY = new InjectionToken<SelectionModelFactory>('ng-select-selection-model');
 export type AddTagFn = ((term: string) => any | Promise<any>);
 export type CompareWithFn = (a: any, b: any) => boolean;
 export type GroupValueFn = (key: string | object, children: any[]) => string | object;
+export type SortFn = (a: HcOption, b: HcOption) => number;
 
 @Component({
     selector: 'hc-picklist2',
@@ -71,6 +73,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     @Input() selectableGroupAsModel = true;
     @Input() searchFn = null;
     @Input() trackByFn = null;
+    @Input() sortFn: SortFn = null;
     @Input() inputAttrs: { [key: string]: string } = {};
     @Input() readonly = false;
     @Input() searchWhileComposing = true;

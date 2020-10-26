@@ -30,11 +30,7 @@ import { SelectionModelFactory } from './selection-model';
 import { NgDropdownPanelService } from './ng-dropdown-panel.service';
 import { HcPicklist2Service } from './hc-picklist2.service';
 import { HcPicklistPaneDragService } from './hc-picklist-pane-drag.service';
-
-export const SELECTION_MODEL_FACTORY = new InjectionToken<SelectionModelFactory>('ng-select-selection-model');
-export type AddTagFn = ((term: string) => any | Promise<any>);
-export type CompareWithFn = (a: any, b: any) => boolean;
-export type GroupValueFn = (key: string | object, children: any[]) => string | object;
+import { AddTagFn, CompareWithFn, GroupValueFn, SortFn, SELECTION_MODEL_FACTORY } from './hc-picklist2.component';
 
 @Component({
     selector: 'ng-select',
@@ -66,6 +62,7 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
     @Input() selectableGroupAsModel = true;
     @Input() searchFn = null;
     @Input() trackByFn = null;
+    @Input() sortFn: SortFn = null;
     @Input() inputAttrs: { [key: string]: string } = {};
     @Input() readonly = false;
     @Input() searchWhileComposing = true;
