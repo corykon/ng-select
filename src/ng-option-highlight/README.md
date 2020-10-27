@@ -30,7 +30,7 @@ export class AppModule {}
 ```html
 <ng-select>
     ...
-    <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+    <ng-template hc-pick-option-tmp let-item="item" let-search="searchTerm">
         <span [ngOptionHighlight]="search">{{item.title}}</span>
     </ng-template>
 </ng-select>

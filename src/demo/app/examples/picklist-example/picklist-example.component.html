@@ -1,11 +1,11 @@
 
 
-<h3>Using ng-options</h3>
+<h3>Using hc-pick-options</h3>
 <br>
 
 <hc-picklist2 [(ngModel)]="selectedCars" autofocus>
-    <ng-option *ngFor="let car of cars" [value]="car.id" [disabled]="car.disabled">{{car.name}}</ng-option>
-    <ng-option [value]="'custom'">Custom</ng-option>
+    <hc-pick-option *ngFor="let car of cars" [value]="car.id" [disabled]="car.disabled">{{car.name}}</hc-pick-option>
+    <hc-pick-option [value]="'custom'">Custom</hc-pick-option>
 </hc-picklist2>
 
 <br>

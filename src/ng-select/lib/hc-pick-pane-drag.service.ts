@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { ItemsList } from './items-list';
-import { NgSelectComponent } from './ng-select.component';
-import { HcOption } from './ng-select.types';
+import { HcPickPaneComponent } from './hc-pick-pane.component';
+import { HcOption } from './hc-pick.types';
 
 @Injectable()
-export class HcPicklistPaneDragService {
-    private pane: NgSelectComponent;
+export class HcPickPaneDragService {
+    private pane: HcPickPaneComponent;
 
-    public reset(pane: NgSelectComponent) {
+    public reset(pane: HcPickPaneComponent) {
         this.pane = pane;
     }
 

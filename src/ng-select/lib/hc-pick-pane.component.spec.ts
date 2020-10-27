@@ -4,21 +4,21 @@ import { Component, DebugElement, ErrorHandler, NgZone, Type, ViewChild, ViewEnc
 import { ConsoleService } from './console.service';
 import { FormsModule } from '@angular/forms';
 import { getNgSelectElement, selectOption, TestsErrorHandler, tickAndDetectChanges, triggerKeyDownEvent } from '../testing/helpers';
-import { KeyCode, HcOption } from './ng-select.types';
+import { KeyCode, HcOption } from './hc-pick.types';
 import { MockConsole, MockNgZone } from '../testing/mocks';
-import { NgSelectComponent } from '@ng-select/ng-select';
-import { NgSelectModule } from './ng-select.module';
+import { HcPickPaneComponent } from '@ng-select/ng-select';
+import { HcPicklist2Module } from './hc-picklist2.module';
 import { Subject } from 'rxjs';
 import { NgSelectConfig } from './config.service';
 
-describe('NgSelectComponent', () => {
+describe('HcPickPaneComponent', () => {
 
     describe('Data source', () => {
         it('should set items from primitive numbers array', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="[0, 30, 60, 90, 120, 180, 240]">
-                </ng-select>`);
+                `<hc-pick-pane [items]="[0, 30, 60, 90, 120, 180, 240]">
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
             const itemsList = fixture.componentInstance.select.itemsList;
@@ -29,13 +29,13 @@ describe('NgSelectComponent', () => {
             }));
         }));
 
-        it('should create items from ng-option', fakeAsync(() => {
+        it('should create items from hc-pick-option', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [(ngModel)]="selectedCity">
-                <ng-option [value]="true">Yes</ng-option>
-                <ng-option [value]="false">No</ng-option>
-            </ng-select>`);
+                `<hc-pick-pane [(ngModel)]="selectedCity">
+                <hc-pick-option [value]="true">Yes</hc-pick-option>
+                <hc-pick-option [value]="false">No</hc-pick-option>
+            </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
 
@@ -51,16 +51,16 @@ describe('NgSelectComponent', () => {
     });
 
     describe('Model bindings and data changes', () => {
-        let select: NgSelectComponent;
+        let select: HcPickPaneComponent;
 
         it('should update ngModel on value change', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [clearable]="true"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             selectOption(fixture, KeyCode.ArrowDown, 1);
             tickAndDetectChanges(fixture);
@@ -76,11 +76,11 @@ describe('NgSelectComponent', () => {
         it('should update internal model on ngModel change', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [clearable]="true"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.selectedCity = fixture.componentInstance.cities[0];
             tickAndDetectChanges(fixture);
@@ -100,12 +100,12 @@ describe('NgSelectComponent', () => {
         it('should update internal model after it was toggled with *ngIf', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select *ngIf="visible"
+                `<hc-pick-pane *ngIf="visible"
                         [items]="cities"
                         bindLabel="name"
                         [clearable]="true"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             // select first city
             fixture.componentInstance.selectedCity = fixture.componentInstance.cities[0];
@@ -126,12 +126,12 @@ describe('NgSelectComponent', () => {
         it('should set items correctly after ngModel set first when bindValue is used', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         bindValue="id"
                         [clearable]="true"
                         [(ngModel)]="selectedCityId">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.cities = [];
             fixture.componentInstance.selectedCityId = 7;
@@ -150,11 +150,11 @@ describe('NgSelectComponent', () => {
         it('should set items correctly after ngModel set first when bindValue is not used', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [clearable]="true"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.cities = [];
             fixture.componentInstance.selectedCity = { id: 7, name: 'Pailgis' };
@@ -175,11 +175,11 @@ describe('NgSelectComponent', () => {
             config.bindValue = 'id';
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [clearable]="true"
                         [(ngModel)]="selectedCityId">
-                </ng-select>`,
+                </hc-pick-pane>`,
                 config
             );
 
@@ -202,12 +202,12 @@ describe('NgSelectComponent', () => {
             config.bindValue = 'globalbindvalue';
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         bindValue="id"
                         [clearable]="true"
                         [(ngModel)]="selectedCityId">
-                </ng-select>`,
+                </hc-pick-pane>`,
                 config
             );
 
@@ -228,12 +228,12 @@ describe('NgSelectComponent', () => {
         it('should bind whole object as value when bindValue prop is specified with empty string in template', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         bindValue=""
                         [clearable]="true"
                         [(ngModel)]="selectedCity">
-                </ng-select>`
+                </hc-pick-pane>`
             );
 
             fixture.componentInstance.cities = [];
@@ -253,11 +253,11 @@ describe('NgSelectComponent', () => {
         it('should map label correctly', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [clearable]="true"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.cities = [{ label: 'Vilnius city', name: 'Vilnius' }];
             tickAndDetectChanges(fixture);
@@ -269,12 +269,12 @@ describe('NgSelectComponent', () => {
         it('should set items correctly after ngModel set first when typeahead and single select is used', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [typeahead]="filter"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             select = fixture.componentInstance.select;
             fixture.componentInstance.selectedCity = { id: 1, name: 'Vilnius' };
@@ -297,13 +297,13 @@ describe('NgSelectComponent', () => {
         it('should set items correctly after ngModel set first when typeahead and multi-select is used', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [multiple]="true"
                     [typeahead]="filter"
                     placeholder="select value"
                     [(ngModel)]="selectedCities">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             select = fixture.componentInstance.select;
             fixture.componentInstance.selectedCities = [{ id: 1, name: 'Vilnius' }, { id: 2, name: 'Kaunas' }];
@@ -330,11 +330,11 @@ describe('NgSelectComponent', () => {
         it('should set items correctly if there is no bindLabel', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select
+                `<hc-pick-option
                     [items]="cities"
                     [clearable]="true"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             const cities = [{ id: 7, name: 'Pailgis' }];
             fixture.componentInstance.selectedCity = { id: 7, name: 'Pailgis' };
@@ -349,11 +349,11 @@ describe('NgSelectComponent', () => {
         it('should bind ngModel object even if items are empty', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [clearable]="true"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.cities = [];
             tickAndDetectChanges(fixture);
@@ -370,10 +370,10 @@ describe('NgSelectComponent', () => {
         it('should bind ngModel simple value even if items are empty', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="citiesNames"
+                `<hc-pick-pane [items]="citiesNames"
                         [clearable]="true"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.cities = [];
             tickAndDetectChanges(fixture);
@@ -390,11 +390,11 @@ describe('NgSelectComponent', () => {
         it('should preserve latest selected value when items are changing', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [clearable]="true"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.selectedCity = fixture.componentInstance.cities[0];
             tickAndDetectChanges(fixture);
@@ -418,11 +418,11 @@ describe('NgSelectComponent', () => {
         it('should map selected items with items in dropdown', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [clearable]="true"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             select = fixture.componentInstance.select;
 
@@ -442,12 +442,12 @@ describe('NgSelectComponent', () => {
         it('should keep selected item while setting new items and bindValue is incorrect', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         bindValue="value"
                         [clearable]="true"
                         [(ngModel)]="selectedCityId">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture); // triggers write value
 
@@ -466,11 +466,11 @@ describe('NgSelectComponent', () => {
         it('should clear previous single select value when setting new model', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [clearable]="true"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.selectedCity = fixture.componentInstance.cities[0];
             tickAndDetectChanges(fixture);
@@ -486,12 +486,12 @@ describe('NgSelectComponent', () => {
         it('should clear disabled selected values when setting new model', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [multiple]="true"
                         [clearable]="true"
                         [(ngModel)]="selectedCities">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
 
             const disabled = { ...fixture.componentInstance.cities[1], disabled: true };
@@ -510,11 +510,11 @@ describe('NgSelectComponent', () => {
         it('should clear previous selected value even if it is disabled', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [clearable]="true"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.cities[0].disabled = true;
             fixture.componentInstance.cities = [...fixture.componentInstance.cities];
@@ -529,12 +529,12 @@ describe('NgSelectComponent', () => {
         it('should clear previous multiple select value when setting new model', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [multiple]="true"
                         [clearable]="true"
                         [(ngModel)]="selectedCities">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.selectedCities = [fixture.componentInstance.cities[0]];
             tickAndDetectChanges(fixture);
@@ -553,12 +553,12 @@ describe('NgSelectComponent', () => {
         it('should not add selected items to new items list when [items] are changed', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [multiple]="true"
                         [clearable]="true"
                         [(ngModel)]="selectedCities">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.selectedCities = [...fixture.componentInstance.cities.slice(0, 2)];
             tickAndDetectChanges(fixture);
@@ -574,11 +574,11 @@ describe('NgSelectComponent', () => {
         it('should reset marked item when [items] are changed and dropdown is opened', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [clearable]="true"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
             select = fixture.componentInstance.select;
 
             fixture.componentInstance.selectedCity = fixture.componentInstance.cities[2];
@@ -596,11 +596,11 @@ describe('NgSelectComponent', () => {
         it('should bind to custom object properties', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             bindValue="id"
                             [(ngModel)]="selectedCityId">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             selectOption(fixture, KeyCode.ArrowDown, 0);
             tickAndDetectChanges(fixture);
@@ -616,10 +616,10 @@ describe('NgSelectComponent', () => {
         it('should bind to nested label property', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="countries"
+                `<hc-pick-pane [items]="countries"
                             bindLabel="description.name"
                             [(ngModel)]="selectedCountry">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             selectOption(fixture, KeyCode.ArrowDown, 1);
             fixture.detectChanges();
@@ -639,11 +639,11 @@ describe('NgSelectComponent', () => {
         it('should bind to nested value property', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="countries"
+                `<hc-pick-pane [items]="countries"
                             bindLabel="description.name"
                             bindValue="description.id"
                             [(ngModel)]="selectedCountry">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             selectOption(fixture, KeyCode.ArrowDown, 1);
             tickAndDetectChanges(fixture);
@@ -664,9 +664,9 @@ describe('NgSelectComponent', () => {
         it('should bind to simple array', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="citiesNames"
+                `<hc-pick-pane [items]="citiesNames"
                             [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             selectOption(fixture, KeyCode.ArrowDown, 0);
             tickAndDetectChanges(fixture);
@@ -680,10 +680,10 @@ describe('NgSelectComponent', () => {
         it('should bind to object', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             // from component to model
             selectOption(fixture, KeyCode.ArrowDown, 0);
@@ -700,13 +700,13 @@ describe('NgSelectComponent', () => {
             discardPeriodicTasks();
         }));
 
-        describe('ng-option', () => {
+        describe('hc-pick-option', () => {
             it('should reset to empty array', fakeAsync(() => {
                 const fixture = createTestingModule(
                     NgSelectTestCmp,
-                    `<ng-select [(ngModel)]="selectedCityId">
-                        <ng-option *ngFor="let city of cities" [value]="city.id">{{city.name}}</ng-option>
-                    </ng-select>`);
+                    `<hc-pick-pane [(ngModel)]="selectedCityId">
+                        <hc-pick-pane *ngFor="let city of cities" [value]="city.id">{{city.name}}</hc-pick-pane>
+                    </hc-pick-pane>`);
 
                 select = fixture.componentInstance.select;
                 tickAndDetectChanges(fixture);
@@ -720,10 +720,10 @@ describe('NgSelectComponent', () => {
             it('should bind value', fakeAsync(() => {
                 const fixture = createTestingModule(
                     NgSelectTestCmp,
-                    `<ng-select [(ngModel)]="selectedCityId">
-                    <ng-option [value]="1">A</ng-option>
-                    <ng-option [value]="2">B</ng-option>
-                </ng-select>`);
+                    `<hc-pick-pane [(ngModel)]="selectedCityId">
+                    <hc-pick-option [value]="1">A</hc-pick-option>
+                    <hc-pick-option [value]="2">B</hc-pick-option>
+                </hc-pick-pane>`);
 
                 // from component to model
                 selectOption(fixture, KeyCode.ArrowDown, 0);
@@ -744,10 +744,10 @@ describe('NgSelectComponent', () => {
             it('should not fail while resolving selected item from object', fakeAsync(() => {
                 const fixture = createTestingModule(
                     NgSelectTestCmp,
-                    `<ng-select [(ngModel)]="selectedCity">
-                        <ng-option [value]="cities[0]">Vilnius</ng-option>
-                        <ng-option [value]="cities[1]">Kaunas</ng-option>
-                </ng-select>`);
+                    `<hc-pick-pane [(ngModel)]="selectedCity">
+                        <hc-pick-option [value]="cities[0]">Vilnius</hc-pick-option>
+                        <hc-pick-option [value]="cities[1]">Kaunas</hc-pick-option>
+                </hc-pick-pane>`);
 
                 const selected = { name: 'Vilnius', id: 1 };
                 fixture.componentInstance.selectedCity = selected;
@@ -764,12 +764,12 @@ describe('NgSelectComponent', () => {
         it('should not set internal model when single select ngModel is not valid', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [clearable]="true"
                         [multiple]="false"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             const invalidValues = [undefined, null];
 
@@ -783,12 +783,12 @@ describe('NgSelectComponent', () => {
         it('should not set internal model when multiselect ngModel is not valid', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [clearable]="true"
                         [multiple]="true"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             const invalidValues = [{}, '', undefined, 0, 1, 'false', 'true', false];
 
@@ -804,12 +804,12 @@ describe('NgSelectComponent', () => {
                 it('should select by bindValue when primitive type', fakeAsync(() => {
                     const fixture = createTestingModule(
                         NgSelectTestCmp,
-                        `<ng-select [items]="cities"
+                        `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             bindValue="id"
                             placeholder="select value"
                             [(ngModel)]="selectedCityId">
-                        </ng-select>`);
+                        </hc-pick-pane>`);
 
                     fixture.componentInstance.selectedCityId = 2;
                     tickAndDetectChanges(fixture);
@@ -821,44 +821,15 @@ describe('NgSelectComponent', () => {
                     expect(select.selectedItems).toEqual(result);
                 }));
 
-                it('should apply host css classes', fakeAsync(() => {
-                    const fixture = createTestingModule(
-                        NgSelectTestCmp,
-                        `<ng-select [items]="cities"
-                            bindLabel="name"
-                            bindValue="id"
-                            placeholder="select value"
-                            [(ngModel)]="selectedCityId">
-                        </ng-select>`);
-
-                    fixture.componentInstance.selectedCityId = 2;
-                    tickAndDetectChanges(fixture);
-                    tickAndDetectChanges(fixture);
-
-                    const classes = ['ng-select', 'ng-select-single', 'ng-select-searchable'];
-                    const selectEl = fixture.nativeElement.querySelector('ng-select');
-                    for (const c of classes) {
-                        expect(selectEl.classList.contains(c)).toBeTruthy(`expected to contain "${c}" class`);
-                    }
-                    let hasValueEl = fixture.nativeElement.querySelector('.ng-has-value');
-                    expect(hasValueEl).not.toBeNull();
-
-                    fixture.componentInstance.selectedCityId = null;
-                    tickAndDetectChanges(fixture);
-                    tickAndDetectChanges(fixture);
-                    hasValueEl = fixture.nativeElement.querySelector('.ng-has-value');
-                    expect(hasValueEl).toBeNull();
-                }));
-
                 it('should select by bindValue ', fakeAsync(() => {
                     const fixture = createTestingModule(
                         NgSelectTestCmp,
-                        `<ng-select [items]="cities"
+                        `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             bindValue="id"
                             placeholder="select value"
                             [(ngModel)]="selectedCityId">
-                        </ng-select>`);
+                        </hc-pick-pane>`);
 
                     fixture.componentInstance.cities = [{ id: 0, name: 'Vilnius' }];
                     fixture.componentInstance.selectedCityId = 0;
@@ -875,11 +846,11 @@ describe('NgSelectComponent', () => {
                 it('should select by bindLabel when binding to object', fakeAsync(() => {
                     const fixture = createTestingModule(
                         NgSelectTestCmp,
-                        `<ng-select [items]="cities"
+                        `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             placeholder="select value"
                             [(ngModel)]="selectedCity">
-                        </ng-select>`);
+                        </hc-pick-pane>`);
 
                     fixture.componentInstance.selectedCity = { id: 2, name: 'Kaunas' };
                     tickAndDetectChanges(fixture);
@@ -893,11 +864,11 @@ describe('NgSelectComponent', () => {
                 it('should select by object reference', fakeAsync(() => {
                     const fixture = createTestingModule(
                         NgSelectTestCmp,
-                        `<ng-select [items]="cities"
+                        `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             placeholder="select value"
                             [(ngModel)]="selectedCity">
-                        </ng-select>`);
+                        </hc-pick-pane>`);
 
                     fixture.componentInstance.selectedCity = fixture.componentInstance.cities[1];
                     tickAndDetectChanges(fixture);
@@ -911,12 +882,12 @@ describe('NgSelectComponent', () => {
                 it('should select by compareWith function when bindValue is not used', fakeAsync(() => {
                     const fixture = createTestingModule(
                         NgSelectTestCmp,
-                        `<ng-select [items]="cities"
+                        `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             placeholder="select value"
                             [compareWith]="compareWith"
                             [(ngModel)]="selectedCity">
-                        </ng-select>`);
+                        </hc-pick-pane>`);
 
 
                     const city = { name: 'Vilnius', id: 7, district: 'Ozo parkas' };
@@ -931,13 +902,13 @@ describe('NgSelectComponent', () => {
                 it('should select by compareWith function when bindValue is used', fakeAsync(() => {
                     const fixture = createTestingModule(
                         NgSelectTestCmp,
-                        `<ng-select [items]="cities"
+                        `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             bindValue="id"
                             placeholder="select value"
                             [compareWith]="compareWith"
                             [(ngModel)]="selectedCityId">
-                        </ng-select>`);
+                        </hc-pick-pane>`);
 
                     const cmp = fixture.componentInstance;
                     cmp.selectedCityId = cmp.cities[1].id.toString();
@@ -951,12 +922,12 @@ describe('NgSelectComponent', () => {
                 it('should select selected when there is no items', fakeAsync(() => {
                     const fixture = createTestingModule(
                         NgSelectTestCmp,
-                        `<ng-select [items]="cities"
+                        `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             bindValue="id"
                             placeholder="select value"
                             [(ngModel)]="selectedCityId">
-                        </ng-select>`);
+                        </hc-pick-pane>`);
 
                     fixture.componentInstance.cities = [];
                     fixture.componentInstance.selectedCityId = 2;
@@ -981,13 +952,13 @@ describe('NgSelectComponent', () => {
                 it('should select by bindValue when primitive type', fakeAsync(() => {
                     const fixture = createTestingModule(
                         NgSelectTestCmp,
-                        `<ng-select [items]="cities"
+                        `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             bindValue="id"
                             multiple="true"
                             placeholder="select value"
                             [(ngModel)]="selectedCityIds">
-                        </ng-select>`);
+                        </hc-pick-pane>`);
 
                     fixture.componentInstance.selectedCityIds = [2, 3];
                     tickAndDetectChanges(fixture);
@@ -998,12 +969,12 @@ describe('NgSelectComponent', () => {
                 it('should select by bindLabel when binding to object', fakeAsync(() => {
                     const fixture = createTestingModule(
                         NgSelectTestCmp,
-                        `<ng-select [items]="cities"
+                        `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             multiple="true"
                             placeholder="select value"
                             [(ngModel)]="selectedCities">
-                        </ng-select>`);
+                        </hc-pick-pane>`);
 
                     fixture.componentInstance.selectedCities = [{ id: 2, name: 'Kaunas' }, { id: 3, name: 'Pabrade' }];
                     tickAndDetectChanges(fixture);
@@ -1017,15 +988,15 @@ describe('NgSelectComponent', () => {
         it('should set and render items in dropdown panel', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             [(ngModel)]="city">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             const select = fixture.componentInstance.select;
 
             expect(select.dropdownPanel.items.length).toBe(3);
-            let options = fixture.debugElement.nativeElement.querySelectorAll('.ng-option');
+            let options = fixture.debugElement.nativeElement.querySelectorAll('.hc-pick-option');
             expect(options.length).toBe(3);
             expect(options[0].innerText).toBe('Vilnius');
             expect(options[1].innerText).toBe('Kaunas');
@@ -1033,7 +1004,7 @@ describe('NgSelectComponent', () => {
 
             fixture.componentInstance.cities = Array.from(Array(30).keys()).map((_, i) => ({ id: i, name: String.fromCharCode(97 + i) }));
             tickAndDetectChanges(fixture);
-            options = fixture.debugElement.nativeElement.querySelectorAll('.ng-option');
+            options = fixture.debugElement.nativeElement.querySelectorAll('.hc-pick-option');
             expect(options.length).toBe(30);
             expect(options[0].innerText).toBe('a');
         }));
@@ -1041,12 +1012,12 @@ describe('NgSelectComponent', () => {
         it('should always have div #padding with height 0 in dropdown panel when virtual scroll is disabled', fakeAsync(() => {
             createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             [virtualScroll]="false">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
-            const panelItems = document.querySelector('.ng-dropdown-panel-items');
+            const panelItems = document.querySelector('.hc-pick-pane-list-items');
             const firstChild = <HTMLScriptElement>panelItems.firstChild;
 
             expect(firstChild.offsetHeight).toBe(0);
@@ -1056,16 +1027,16 @@ describe('NgSelectComponent', () => {
 
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             [virtualScroll]="true">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
             fixture.detectChanges();
 
             expect(fixture.componentInstance.select.dropdownPanel.items.length).toBe(3);
-            let options = fixture.debugElement.nativeElement.querySelectorAll('.ng-option');
+            let options = fixture.debugElement.nativeElement.querySelectorAll('.hc-pick-option');
             expect(options.length).toBe(3);
             expect(options[0].innerText).toBe('Vilnius');
             expect(options[1].innerText).toBe('Kaunas');
@@ -1075,7 +1046,7 @@ describe('NgSelectComponent', () => {
             tickAndDetectChanges(fixture);
             fixture.detectChanges();
 
-            const panelItems = document.querySelector('.ng-dropdown-panel-items');
+            const panelItems = document.querySelector('.hc-pick-pane-list-items');
             const firstChild = <HTMLScriptElement>panelItems.firstChild;
 
             expect(firstChild.offsetHeight).not.toBe(0);
@@ -1084,18 +1055,18 @@ describe('NgSelectComponent', () => {
         it('should set and render items in dropdown panel with virtual scroll', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             [virtualScroll]="true"
                             [(ngModel)]="city">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             const select = fixture.componentInstance.select;
             tickAndDetectChanges(fixture);
             fixture.detectChanges();
 
             expect(fixture.componentInstance.select.dropdownPanel.items.length).toBe(3);
-            let options = fixture.debugElement.nativeElement.querySelectorAll('.ng-option');
+            let options = fixture.debugElement.nativeElement.querySelectorAll('.hc-pick-option');
             expect(options.length).toBe(3);
             expect(options[0].innerText).toBe('Vilnius');
             expect(options[1].innerText).toBe('Kaunas');
@@ -1104,7 +1075,7 @@ describe('NgSelectComponent', () => {
             fixture.componentInstance.cities = Array.from(Array(30).keys()).map((_, i) => ({ id: i, name: String.fromCharCode(97 + i) }));
             tickAndDetectChanges(fixture);
             fixture.detectChanges();
-            options = fixture.debugElement.nativeElement.querySelectorAll('.ng-option');
+            options = fixture.debugElement.nativeElement.querySelectorAll('.hc-pick-option');
             expect(options.length).toBe(8);
             expect(options[0].innerText).toBe('a');
         }));
@@ -1113,10 +1084,10 @@ describe('NgSelectComponent', () => {
         it('should scroll to item and do not change scroll position when scrolled to visible item', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             [(ngModel)]="city">
-                </ng-select>`);
+                </hc-pick-pane>`);
             const cmp = fixture.componentInstance;
             const el: HTMLElement = fixture.debugElement.nativeElement;
             tickAndDetectChanges(fixture);
@@ -1127,17 +1098,17 @@ describe('NgSelectComponent', () => {
             cmp.select.dropdownPanel.scrollTo(cmp.select.itemsList.items[1]);
             tickAndDetectChanges(fixture);
 
-            const panelItems = el.querySelector('.ng-dropdown-panel-items');
+            const panelItems = el.querySelector('.hc-pick-pane-list-items');
             expect(panelItems.scrollTop).toBe(0);
         }));
 
         it('should scroll to item and change scroll position when scrolled to not visible item', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             [(ngModel)]="city">
-                </ng-select>`);
+                </hc-pick-pane>`);
             const cmp = fixture.componentInstance;
             const el: HTMLElement = fixture.debugElement.nativeElement;
 
@@ -1147,25 +1118,25 @@ describe('NgSelectComponent', () => {
             cmp.select.dropdownPanel.scrollTo(cmp.select.itemsList.items[15]);
             tickAndDetectChanges(fixture);
 
-            const panelItems = el.querySelector('.ng-dropdown-panel-items');
+            const panelItems = el.querySelector('.hc-pick-pane-list-items');
             expect(panelItems.scrollTop).toBe(48);
         }));
     });
 
     describe('Keyboard events', () => {
         let fixture: ComponentFixture<NgSelectTestCmp>;
-        let select: NgSelectComponent;
+        let select: HcPickPaneComponent;
 
         beforeEach(() => {
             fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [loading]="citiesLoading"
                         [selectOnTab]="selectOnTab"
                         [multiple]="multiple"
                         [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
             select = fixture.componentInstance.select;
         });
 
@@ -1283,11 +1254,11 @@ describe('NgSelectComponent', () => {
         it('should display custom header template', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities" [(ngModel)]="selectedCity">
+                `<hc-pick-pane [items]="cities" [(ngModel)]="selectedCity">
                     <ng-template ng-label-tmp let-item="item">
                         <div class="custom-header">{{item.name}}</div>
                     </ng-template>
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.selectedCity = fixture.componentInstance.cities[0];
             tickAndDetectChanges(fixture);
@@ -1301,10 +1272,10 @@ describe('NgSelectComponent', () => {
         it('should clear item using value', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             [(ngModel)]="city">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             selectOption(fixture, KeyCode.ArrowDown, 0);
             fixture.detectChanges();
@@ -1318,10 +1289,10 @@ describe('NgSelectComponent', () => {
         it('should clear item even if there are no items loaded', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             selectOption(fixture, KeyCode.ArrowDown, 0);
             fixture.detectChanges();
@@ -1338,11 +1309,11 @@ describe('NgSelectComponent', () => {
         it('should display custom dropdown option template', async(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities" [(ngModel)]="selectedCity">
-                    <ng-template ng-option-tmp let-item="item">
+                `<hc-pick-pane [items]="cities" [(ngModel)]="selectedCity">
+                    <ng-template hc-pick-option-tmp let-item="item">
                         <div class="custom-option">{{item.name}}</div>
                     </ng-template>
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.detectChanges();
 
@@ -1355,11 +1326,11 @@ describe('NgSelectComponent', () => {
         it('should display custom multiple label template', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities" [multiple]="true" [(ngModel)]="selectedCities">
+                `<hc-pick-pane [items]="cities" [multiple]="true" [(ngModel)]="selectedCities">
                     <ng-template ng-multi-label-tmp let-items="items">
                         <div class="custom-multi-label">selected {{items.length}}</div>
                     </ng-template>
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.selectedCities = [fixture.componentInstance.cities[0]];
             tickAndDetectChanges(fixture);
@@ -1372,14 +1343,14 @@ describe('NgSelectComponent', () => {
         it('should display custom footer and header template', async(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities" [(ngModel)]="selectedCity">
-                    <ng-template ng-header-tmp>
+                `<hc-pick-pane [items]="cities" [(ngModel)]="selectedCity">
+                    <ng-template hc-pane-list-header-tmp>
                         <span class="header-label">header</span>
                     </ng-template>
-                    <ng-template ng-footer-tmp>
+                    <ng-template hc-pane-list-footer-tmp>
                         <span class="footer-label">footer</span>
                     </ng-template>
-                </ng-select>`);
+                </hc-pick-pane>`);
             fixture.detectChanges();
 
             fixture.whenStable().then(() => {
@@ -1394,11 +1365,11 @@ describe('NgSelectComponent', () => {
         it('should display custom tag template', async(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities" [(ngModel)]="selectedCity" [addTag]="true">
-                    <ng-template ng-tag-tmp let-search="searchTerm">
+                `<hc-pick-pane [items]="cities" [(ngModel)]="selectedCity" [addTag]="true">
+                    <ng-template hc-pick-tag-tmp let-search="searchTerm">
                         <span class="tag-template">{{searchTerm}}</span>
                     </ng-template>
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.select.searchTerm = 'tag';
             fixture.detectChanges();
@@ -1412,7 +1383,7 @@ describe('NgSelectComponent', () => {
         it('should display custom loading and no data found template', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             [loading]="citiesLoading"
                             [(ngModel)]="selectedCity">
 
@@ -1426,7 +1397,7 @@ describe('NgSelectComponent', () => {
                             Fetching Data for "{{searchTerm}}"
                         </div>
                     </ng-template>
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.whenStable().then(() => {
                 fixture.componentInstance.cities = [];
@@ -1450,7 +1421,7 @@ describe('NgSelectComponent', () => {
         it('should display custom loading spinner template', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             [loading]="true"
                             [(ngModel)]="selectedCity">
 
@@ -1459,7 +1430,7 @@ describe('NgSelectComponent', () => {
                             Custom loading spinner
                         </div>
                     </ng-template>
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.whenStable().then(() => {
                 tickAndDetectChanges(fixture);
@@ -1468,13 +1439,13 @@ describe('NgSelectComponent', () => {
             });
         }));
 
-        it('should update ng-option state', fakeAsync(() => {
+        it('should update hc-pick-option state', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [(ngModel)]="selectedCity">
-                    <ng-option [disabled]="disabled" [value]="true">Yes</ng-option>
-                    <ng-option [value]="false">No</ng-option>
-                </ng-select>`);
+                `<hc-pick-pane [(ngModel)]="selectedCity">
+                    <hc-pick-pane [disabled]="disabled" [value]="true">Yes</hc-pick-pane>
+                    <hc-pick-option [value]="false">No</hc-pick-option>
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
             const items = fixture.componentInstance.select.itemsList.items;
@@ -1484,13 +1455,13 @@ describe('NgSelectComponent', () => {
             expect(items[0].disabled).toBeTruthy();
         }));
 
-        it('should update ng-option label', fakeAsync(() => {
+        it('should update hc-pick-option label', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [(ngModel)]="selectedCity">
-                    <ng-option [disabled]="disabled" [value]="true">{{label}}</ng-option>
-                    <ng-option [value]="false">No</ng-option>
-                </ng-select>`);
+                `<hc-pick-pane [(ngModel)]="selectedCity">
+                    <hc-pick-pane [disabled]="disabled" [value]="true">{{label}}</hc-pick-pane>
+                    <hc-pick-option [value]="false">No</hc-pick-option>
+                </hc-pick-pane>`);
 
             fixture.componentInstance.label = 'Indeed';
             tickAndDetectChanges(fixture);
@@ -1501,16 +1472,16 @@ describe('NgSelectComponent', () => {
 
     describe('Multiple', () => {
         let fixture: ComponentFixture<NgSelectTestCmp>;
-        let select: NgSelectComponent;
+        let select: HcPickPaneComponent;
         beforeEach(() => {
             fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     placeholder="select value"
                     [(ngModel)]="selectedCities"
                     [multiple]="true">
-                </ng-select>`);
+                </hc-pick-pane>`);
         });
 
         it('should select several items', fakeAsync(() => {
@@ -1636,12 +1607,12 @@ describe('NgSelectComponent', () => {
         it('should select default tag', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [addTag]="true"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
             fixture.componentInstance.select.filter('new tag');
@@ -1653,11 +1624,11 @@ describe('NgSelectComponent', () => {
         it('should add tag as string', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="citiesNames"
+                `<hc-pick-pane [items]="citiesNames"
                     [addTag]="true"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
             fixture.componentInstance.select.filter('Copenhagen');
@@ -1669,10 +1640,10 @@ describe('NgSelectComponent', () => {
         it('should add tag as string when there are no items', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="[]"
+                `<hc-pick-pane [items]="[]"
                     [addTag]="true"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
             fixture.componentInstance.select.filter('Copenhagen');
@@ -1685,11 +1656,11 @@ describe('NgSelectComponent', () => {
         it('should not add item to list when select is closed', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="[]"
+                `<hc-pick-pane [items]="[]"
                     [isOpen]="false"
                     [addTag]="true"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
             fixture.componentInstance.select.filter('Copenhagen');
@@ -1701,12 +1672,12 @@ describe('NgSelectComponent', () => {
         it('should add tag as string when tab pressed', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="citiesNames"
+                `<hc-pick-pane [items]="citiesNames"
                     [addTag]="true"
                     [selectOnTab]="true"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
             fixture.componentInstance.select.filter('Copenhagen');
@@ -1718,12 +1689,12 @@ describe('NgSelectComponent', () => {
         it('should select tag even if there are filtered items that matches search term', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [addTag]="true"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
             fixture.componentInstance.select.filter('Vil');
@@ -1736,12 +1707,12 @@ describe('NgSelectComponent', () => {
         it('should select custom tag', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [addTag]="tagFunc"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
             fixture.componentInstance.select.filter('custom tag');
@@ -1755,12 +1726,12 @@ describe('NgSelectComponent', () => {
         it('should select custom tag with promise', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [addTag]="tagFuncPromise"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
             fixture.componentInstance.select.filter('server side tag');
@@ -1773,18 +1744,18 @@ describe('NgSelectComponent', () => {
         }));
 
         describe('show add tag', () => {
-            let select: NgSelectComponent;
+            let select: HcPickPaneComponent;
             let fixture: ComponentFixture<NgSelectTestCmp>;
             beforeEach(() => {
                 fixture = createTestingModule(
                     NgSelectTestCmp,
-                    `<ng-select [items]="cities"
+                    `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [multiple]="true"
                     [addTag]="true"
                     placeholder="select value"
                     [(ngModel)]="selectedCities">
-                </ng-select>`);
+                </hc-pick-pane>`);
                 select = fixture.componentInstance.select;
             });
 
@@ -1828,11 +1799,11 @@ describe('NgSelectComponent', () => {
         beforeEach(() => {
             fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
         });
 
         it('should be visible when no value selected', async(() => {
@@ -1844,43 +1815,16 @@ describe('NgSelectComponent', () => {
                 expect(getComputedStyle(placeholder).display).toBe('block');
             });
         }));
-
-        it('should be visible when value was cleared', fakeAsync(() => {
-            const select = fixture.componentInstance.select;
-            fixture.componentInstance.selectedCity = fixture.componentInstance.cities[0];
-            tickAndDetectChanges(fixture);
-            tickAndDetectChanges(fixture);
-            const element = fixture.componentInstance.select.element;
-            const ngControl = element.querySelector('.ng-select-container');
-            const placeholder = element.querySelector('.ng-placeholder');
-            expect(ngControl.classList.contains('ng-has-value')).toBeTruthy();
-
-            select.deselectAll();
-            tickAndDetectChanges(fixture);
-            tickAndDetectChanges(fixture);
-
-            expect(ngControl.classList.contains('ng-has-value')).toBeFalsy();
-            expect(getComputedStyle(placeholder).display).toBe('block');
-        }));
-
-        it('should contain .ng-has-value when value was selected', fakeAsync(() => {
-            tickAndDetectChanges(fixture);
-            const element = fixture.componentInstance.select.element;
-            const ngControl = element.querySelector('.ng-select-container');
-            selectOption(fixture, KeyCode.ArrowDown, 2);
-            tickAndDetectChanges(fixture);
-            expect(ngControl.classList.contains('ng-has-value')).toBeTruthy();
-        }));
     });
 
     describe('Filter', () => {
         it('should filter using default implementation', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tick(200);
             fixture.componentInstance.select.filter('vilnius');
@@ -1895,11 +1839,11 @@ describe('NgSelectComponent', () => {
         it('should filter using custom searchFn', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [searchFn]="searchFn"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.searchFn = (term: string, item: any) => {
                 return item.name.indexOf(term) > -1 || item.id === 2;
@@ -1921,11 +1865,11 @@ describe('NgSelectComponent', () => {
         it('should not filter when searchable false', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [searchable]="false"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             const select = fixture.componentInstance.select;
             triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode.Space);
@@ -1941,10 +1885,10 @@ describe('NgSelectComponent', () => {
         it('should mark first item on filter', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tick(200);
             fixture.componentInstance.select.filter('pab');
@@ -1961,11 +1905,11 @@ describe('NgSelectComponent', () => {
         it('should not mark first item when isOpen is false', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [isOpen]="false"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tick(200);
             fixture.componentInstance.select.filter('pab');
@@ -1977,10 +1921,10 @@ describe('NgSelectComponent', () => {
         it('should mark first item on filter when selected is not among filtered items', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             fixture.componentInstance.selectedCity = fixture.componentInstance.cities[0];
             fixture.detectChanges();
@@ -1998,11 +1942,11 @@ describe('NgSelectComponent', () => {
         it('should clear filterValue on selected item', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [(ngModel)]="selectedCity"
                     [multiple]="true">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
 
@@ -2015,11 +1959,11 @@ describe('NgSelectComponent', () => {
         it('should not reset items when selecting option', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [(ngModel)]="selectedCity"
                     [multiple]="true">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             const resetFilteredItemsSpy = spyOn(fixture.componentInstance.select.itemsList, 'resetFilteredItems');
             tickAndDetectChanges(fixture);
@@ -2033,11 +1977,11 @@ describe('NgSelectComponent', () => {
         it('should filter grouped items', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectGroupingTestCmp,
-                `<ng-select [items]="accounts"
+                `<hc-pick-pane [items]="accounts"
                         groupBy="country"
                         bindLabel="name"
                         [(ngModel)]="selectedAccount">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
             fixture.componentInstance.select.filter('adam');
@@ -2054,10 +1998,10 @@ describe('NgSelectComponent', () => {
         it('should continue filtering items on update of items', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
             tickAndDetectChanges(fixture);
 
             fixture.componentInstance.select.filter('vil');
@@ -2092,13 +2036,13 @@ describe('NgSelectComponent', () => {
             beforeEach(() => {
                 fixture = createTestingModule(
                     NgSelectTestCmp,
-                    `<ng-select [items]="cities"
+                    `<hc-pick-pane [items]="cities"
                         [typeahead]="filter"
                         [minTermLength]="minTermLength"
                         bindLabel="name"
                         [hideSelected]="hideSelected"
                         [(ngModel)]="selectedCity">
-                    </ng-select>`);
+                    </hc-pick-pane>`);
             });
 
             it('should not show selected city among options if it does not match search term', fakeAsync(() => {
@@ -2146,13 +2090,13 @@ describe('NgSelectComponent', () => {
             it('should allow edit search if option selected & input focused', fakeAsync(() => {
                 const fixture = createTestingModule(
                     NgSelectTestCmp,
-                    `<ng-select [items]="cities"
+                    `<hc-pick-pane [items]="cities"
                         [typeahead]="filter"
                         [editableSearchTerm]="true"
                         bindValue="id"
                         bindLabel="name"
                         [(ngModel)]="selectedCity">
-                    </ng-select>`);
+                    </hc-pick-pane>`);
                 const select = fixture.componentInstance.select;
                 const input = select.searchInput.nativeElement;
                 const selectedCity = fixture.componentInstance.cities[0];
@@ -2168,16 +2112,16 @@ describe('NgSelectComponent', () => {
 
     describe('Accessibility', () => {
         let fixture: ComponentFixture<NgSelectTestCmp>;
-        let select: NgSelectComponent;
+        let select: HcPickPaneComponent;
         let input: HTMLInputElement;
 
         beforeEach(fakeAsync(() => {
             fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                         (change)="onChange($event)"
                         bindLabel="name">
-                </ng-select>`);
+                </hc-pick-pane>`);
             select = fixture.componentInstance.select;
             input = fixture.debugElement.query(By.css('input')).nativeElement;
         }));
@@ -2248,10 +2192,10 @@ describe('NgSelectComponent', () => {
         it('should fire search event', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             (search)="onSearch($event)"
                             [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             spyOn(fixture.componentInstance, 'onSearch');
 
@@ -2265,12 +2209,12 @@ describe('NgSelectComponent', () => {
         it('should fire change when changed', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             bindValue="id"
                             bindLabel="name"
                             (change)="onChange($event)"
                             [(ngModel)]="selectedCityId">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             spyOn(fixture.componentInstance, 'onChange');
 
@@ -2288,10 +2232,10 @@ describe('NgSelectComponent', () => {
         it('should not fire change when item not changed', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             (change)="onChange()"
                             [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             spyOn(fixture.componentInstance, 'onChange');
 
@@ -2307,11 +2251,11 @@ describe('NgSelectComponent', () => {
         it('should fire addEvent when item is added', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             (add)="onAdd($event)"
                             [multiple]="true"
                             [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             spyOn(fixture.componentInstance, 'onAdd');
 
@@ -2324,11 +2268,11 @@ describe('NgSelectComponent', () => {
         it('should not fire addEvent for single select', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             (add)="onAdd($event)"
                             [multiple]="false"
                             [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             spyOn(fixture.componentInstance, 'onAdd');
 
@@ -2340,11 +2284,11 @@ describe('NgSelectComponent', () => {
         it('should fire remove when item is removed', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             (remove)="onRemove($event)"
                             [multiple]="true"
                             [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             spyOn(fixture.componentInstance, 'onRemove');
 
@@ -2359,11 +2303,11 @@ describe('NgSelectComponent', () => {
         it('should fire clear when model is cleared using clear icon', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             (clear)="onClear($event)"
                             [multiple]="true"
                             [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             spyOn(fixture.componentInstance, 'onClear');
 
@@ -2380,12 +2324,12 @@ describe('NgSelectComponent', () => {
         it('should focus dropdown', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="cities"
+                `<hc-pick-pane [items]="cities"
                             autofocus
                             bindLabel="name"
                             [multiple]="true"
                             [(ngModel)]="selectedCities">
-                </ng-select>`);
+                </hc-pick-pane>`);
             const select = fixture.componentInstance.select;
             const focus = spyOn(select, 'focus');
             select.ngAfterViewInit();
@@ -2395,51 +2339,24 @@ describe('NgSelectComponent', () => {
 
     describe('Mousedown', () => {
         let fixture: ComponentFixture<NgSelectTestCmp>;
-        let select: NgSelectComponent;
+        let select: HcPickPaneComponent;
         let triggerMousedown = null;
-
-        describe('dropdown click', () => {
-            beforeEach(fakeAsync(() => {
-                fixture = createTestingModule(
-                    NgSelectTestCmp,
-                    `<ng-select [items]="cities"
-                            bindLabel="name"
-                            [multiple]="true"
-                            [(ngModel)]="selectedCities">
-                    </ng-select>`);
-                select = fixture.componentInstance.select;
-
-                tickAndDetectChanges(fixture);
-                tickAndDetectChanges(fixture);
-                triggerMousedown = () => {
-                    const control = fixture.debugElement.query(By.css('.ng-select-container'));
-                    control.triggerEventHandler('mousedown', createEvent({ className: 'ng-control' }));
-                };
-            }));
-
-            it('should focus dropdown', fakeAsync(() => {
-                const focus = spyOn(select, 'focus');
-                triggerMousedown();
-                tickAndDetectChanges(fixture);
-                expect(focus).toHaveBeenCalled();
-            }));
-        });
 
         describe('input click', () => {
             let event: Event;
             beforeEach(fakeAsync(() => {
                 fixture = createTestingModule(
                     NgSelectTestCmp,
-                    `<ng-select [items]="cities"
+                    `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             [multiple]="true"
                             [(ngModel)]="selectedCities">
-                    </ng-select>`);
+                    </hc-pick-pane>`);
                 select = fixture.componentInstance.select;
 
                 event = createEvent({ tagName: 'INPUT' }) as any;
                 triggerMousedown = () => {
-                    const control = fixture.debugElement.query(By.css('.ng-select-container'));
+                    const control = fixture.debugElement.query(By.css('.hc-pick-search-outer'));
                     control.triggerEventHandler('mousedown', event);
                 };
             }));
@@ -2456,14 +2373,14 @@ describe('NgSelectComponent', () => {
             beforeEach(fakeAsync(() => {
                 fixture = createTestingModule(
                     NgSelectTestCmp,
-                    `<ng-select [items]="cities"
+                    `<hc-pick-pane [items]="cities"
                             (change)="onChange($event)"
                             bindLabel="name"
                             [multiple]="true"
                             [disabled]="disabled"
                             [readonly]="readonly"
                             [(ngModel)]="selectedCities">
-                    </ng-select>`);
+                    </hc-pick-pane>`);
 
                 spyOn(fixture.componentInstance, 'onChange');
                 const disabled = { ...fixture.componentInstance.cities[1], disabled: true };
@@ -2473,7 +2390,7 @@ describe('NgSelectComponent', () => {
                 fixture.componentInstance.cities = [...fixture.componentInstance.cities];
                 tickAndDetectChanges(fixture);
                 triggerMousedown = () => {
-                    const control = fixture.debugElement.query(By.css('.ng-select-container'));
+                    const control = fixture.debugElement.query(By.css('.hc-pick-search-outer'));
                     control.triggerEventHandler('mousedown', createEvent({
                         classList: { contains: (term) => term === 'ng-clear-wrapper' }
                     }));
@@ -2519,18 +2436,18 @@ describe('NgSelectComponent', () => {
             beforeEach(fakeAsync(() => {
                 fixture = createTestingModule(
                     NgSelectTestCmp,
-                    `<ng-select [items]="cities"
+                    `<hc-pick-pane [items]="cities"
                             bindLabel="name"
                             [multiple]="true"
                             [(ngModel)]="selectedCities">
-                    </ng-select>`);
+                    </hc-pick-pane>`);
                 select = fixture.componentInstance.select;
 
                 fixture.componentInstance.selectedCities = fixture.componentInstance.cities[0];
                 tickAndDetectChanges(fixture);
                 tickAndDetectChanges(fixture);
                 triggerMousedown = () => {
-                    const control = fixture.debugElement.query(By.css('.ng-select-container'));
+                    const control = fixture.debugElement.query(By.css('.hc-pick-search-outer'));
                     control.triggerEventHandler('mousedown', createEvent({
                         classList: { contains: (term) => term === 'ng-value-icon' }
                     }));
@@ -2550,10 +2467,10 @@ describe('NgSelectComponent', () => {
         it('should group flat items list by group key', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectGroupingTestCmp,
-                `<ng-select [items]="accounts"
+                `<hc-pick-pane [items]="accounts"
                         groupBy="country"
                         [(ngModel)]="selectedAccount">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
 
@@ -2582,10 +2499,10 @@ describe('NgSelectComponent', () => {
         it('should group items with children array by group key', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectGroupingTestCmp,
-                `<ng-select [items]="groupedAccounts"
+                `<hc-pick-pane [items]="groupedAccounts"
                         groupBy="accounts"
                         [(ngModel)]="selectedAccount">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
 
@@ -2612,10 +2529,10 @@ describe('NgSelectComponent', () => {
         it('should not group items without key', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectGroupingTestCmp,
-                `<ng-select [items]="accounts"
+                `<hc-pick-pane [items]="accounts"
                         groupBy="country"
                         [(ngModel)]="selectedAccount">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
 
@@ -2643,11 +2560,11 @@ describe('NgSelectComponent', () => {
         it('should group by group fn', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectGroupingTestCmp,
-                `<ng-select [items]="accounts"
+                `<hc-pick-pane [items]="accounts"
                         bindLabel="name"
                         [groupBy]="groupByFn"
                         [(ngModel)]="selectedAccount">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
 
@@ -2663,12 +2580,12 @@ describe('NgSelectComponent', () => {
         it('should set group value using custom fn', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectGroupingTestCmp,
-                `<ng-select [items]="accounts"
+                `<hc-pick-pane [items]="accounts"
                         bindLabel="name"
                         [groupBy]="groupByFn"
                         [groupValue]="groupValueFn"
                         [(ngModel)]="selectedAccount">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
 
@@ -2684,11 +2601,11 @@ describe('NgSelectComponent', () => {
         it('should not mark optgroup item as marked', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectGroupingTestCmp,
-                `<ng-select [items]="accounts"
+                `<hc-pick-pane [items]="accounts"
                         groupBy="country"
                         bindValue="name"
                         [(ngModel)]="selectedAccountName">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
 
@@ -2699,11 +2616,11 @@ describe('NgSelectComponent', () => {
         it('should filter grouped items', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectGroupingTestCmp,
-                `<ng-select [items]="accounts"
+                `<hc-pick-pane [items]="accounts"
                         groupBy="country"
                         bindLabel="name"
                         [(ngModel)]="selectedAccount">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
             const select = fixture.componentInstance.select;
@@ -2721,13 +2638,13 @@ describe('NgSelectComponent', () => {
         it('should allow select optgroup items when [selectableGroup]="true"', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectGroupingTestCmp,
-                `<ng-select [items]="accounts"
+                `<hc-pick-pane [items]="accounts"
                         groupBy="country"
                         bindLabel="name"
                         bindValue="email"
                         [selectableGroup]="true"
                         [(ngModel)]="selectedAccount">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
             selectOption(fixture, KeyCode.ArrowDown, 0);
@@ -2740,13 +2657,13 @@ describe('NgSelectComponent', () => {
         it('should select group by default when [selectableGroup]="true"', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectGroupingTestCmp,
-                `<ng-select [items]="accounts"
+                `<hc-pick-pane [items]="accounts"
                         groupBy="country"
                         bindLabel="name"
                         bindValue="email"
                         [selectableGroup]="true"
                         [(ngModel)]="selectedAccount">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
 
             const select = fixture.componentInstance.select;
@@ -2760,12 +2677,12 @@ describe('NgSelectComponent', () => {
         it('Should have class ng-select', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectGroupingTestCmp,
-                `<ng-select [items]="accounts"
+                `<hc-pick-pane [items]="accounts"
                         groupBy="country"
                         bindLabel="name"
                         bindValue="email"
                         [(ngModel)]="selectedAccount">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
                 fixture.detectChanges();
                 const element = fixture.elementRef.nativeElement;
@@ -2778,13 +2695,13 @@ describe('NgSelectComponent', () => {
         it('Should have class ng-select and test', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectGroupingTestCmp,
-                `<ng-select [items]="accounts"
+                `<hc-pick-pane [items]="accounts"
                         groupBy="country"
                         bindLabel="name"
                         bindValue="email"
                         [(ngModel)]="selectedAccount"
                         [class]="'test'">
-                </ng-select>`);
+                </hc-pick-pane>`);
 
                 fixture.detectChanges();
                 const element = fixture.elementRef.nativeElement;
@@ -2798,19 +2715,19 @@ describe('NgSelectComponent', () => {
 
     describe('Input method composition', () => {
         let fixture: ComponentFixture<NgSelectTestCmp>;
-        let select: NgSelectComponent;
+        let select: HcPickPaneComponent;
         const originValue = '';
         const imeInputValue = 'zhangsan';
 
         beforeEach(() => {
             fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<ng-select [items]="citiesNames"
+                `<hc-pick-pane [items]="citiesNames"
                     [addTag]="true"
                     placeholder="select value"
                     [searchWhileComposing]="false"
                     [(ngModel)]="selectedCity">
-                </ng-select>`);
+                </hc-pick-pane>`);
             select = fixture.componentInstance.select;
         });
 
@@ -2823,17 +2740,6 @@ describe('NgSelectComponent', () => {
                 select.filter(imeInputValue);
 
                 expect(select.searchTerm).toBe(originValue);
-            }));
-
-            it('should be filtered even search term is empty', fakeAsync(() => {
-                select.filter('');
-                tickAndDetectChanges(fixture);
-                select.onCompositionStart();
-                tickAndDetectChanges(fixture);
-                select.filter(imeInputValue);
-
-                expect(select.searchTerm).toBe('');
-                expect(select.filtered).toBeTruthy();
             }));
         });
 
@@ -2863,7 +2769,7 @@ describe('NgSelectComponent', () => {
 function createTestingModule<T>(cmp: Type<T>, template: string, customNgSelectConfig: NgSelectConfig | null = null): ComponentFixture<T> {
 
     TestBed.configureTestingModule({
-        imports: [FormsModule, NgSelectModule],
+        imports: [FormsModule, HcPicklist2Module],
         declarations: [cmp],
         providers: [
             { provide: ErrorHandler, useClass: TestsErrorHandler },
@@ -2908,7 +2814,7 @@ function createEvent(target = {}) {
     template: ``
 })
 class NgSelectTestCmp {
-    @ViewChild(NgSelectComponent, { static: false }) select: NgSelectComponent;
+    @ViewChild(HcPickPaneComponent, { static: false }) select: HcPickPaneComponent;
     multiple = false;
     label = 'Yes';
     clearOnBackspace = false;
@@ -2998,14 +2904,14 @@ class NgSelectTestCmp {
     encapsulation: ViewEncapsulation.ShadowDom,
 })
 class EncapsulatedTestCmp extends NgSelectTestCmp {
-    @ViewChild(NgSelectComponent, { static: true }) select: NgSelectComponent;
+    @ViewChild(HcPickPaneComponent, { static: true }) select: HcPickPaneComponent;
 }
 
 @Component({
     template: ``,
 })
 class NgSelectGroupingTestCmp {
-    @ViewChild(NgSelectComponent, { static: true }) select: NgSelectComponent;
+    @ViewChild(HcPickPaneComponent, { static: true }) select: HcPickPaneComponent;
     selectedAccountName = 'Adam';
     selectedAccount = null;
     groupByFn = (item) => item.child.name;

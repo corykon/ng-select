@@ -1,6 +1,6 @@
-<div class="hc-picklists-container" [style.height]="height">
+<div class="hc-picklist2" [style.height]="height">
 
-    <div class="hc-picklist-pane">
+    <div class="hc-picklist-pane-container">
         <div class="hc-picklist-pane-header">
             <ng-template #defaultLeftHeaderTemplate>
                 <h2 class="hc-picklist-pane-header-default">Available</h2>
@@ -8,7 +8,7 @@
             <ng-template [ngTemplateOutlet]="paneHeaderLeftTemplate || defaultLeftHeaderTemplate"></ng-template>
         </div>
 
-        <ng-select #available
+        <hc-pick-pane #available
             [_isLeftPane]="true"
             [bindLabel]="bindLabel"
             [bindValue]="bindValue"
@@ -42,11 +42,11 @@
             [footerTemplate]="footerTemplate"
             [tagTemplate]="tagTemplate"
             (triggerMove)="moveLeftToRight()">
-        </ng-select>
+        </hc-pick-pane>
     </div>
     
 
-    <div class="hc-move-btns">
+    <div class="hc-picklist-move-btns">
         <button hc-button buttonStyle="primary-alt" type="button" name="addBtn"
                 (click)="moveLeftToRight()"
                 [disabled]="disabled || availablePane.selectedItems.length === 0">
@@ -59,14 +59,14 @@
         </button>
     </div>
 
-    <div class="hc-picklist-pane">
+    <div class="hc-picklist-pane-container">
         <div class="hc-picklist-pane-header">
             <ng-template #defaultRightHeaderTemplate>
                 <h2 class="hc-picklist-pane-header-default">Selected</h2>
             </ng-template>
             <ng-template [ngTemplateOutlet]="paneHeaderRightTemplate || defaultRightHeaderTemplate"></ng-template>
         </div>
-        <ng-select #selected
+        <hc-pick-pane #selected
             [bindLabel]="bindLabel"
             [bindValue]="bindValue"
             [placeholder]="placeholder"
@@ -98,6 +98,6 @@
             [footerTemplate]="footerTemplate"
             [tagTemplate]="tagTemplate"
             (triggerMove)="moveRightToLeft()">
-        </ng-select>
+        </hc-pick-pane>
     </div>
 </div>

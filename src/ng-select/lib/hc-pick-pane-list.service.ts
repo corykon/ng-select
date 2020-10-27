@@ -12,8 +12,11 @@ export interface PanelDimensions {
     itemsPerViewport: number;
 }
 
+/**
+ * Performs calculations for virtual scrolling.
+ */
 @Injectable()
-export class NgDropdownPanelService {
+export class HcPickPaneListService {
 
     private _dimensions: PanelDimensions = {
         itemHeight: 0,

@@ -5,12 +5,12 @@
 
 <hc-picklist2 [items]="transportOptions" bindLabel="name" [formControl]="selected" [sortFn]="sortFn" [searchFn]="customSearchFn" groupBy="type" [selectableGroup]="true" [selectableGroupAsModel]="false">
      <!-- Group header template -->
-     <ng-template ng-optgroup-tmp let-item="item">
+     <ng-template hc-pick-optgroup-tmp let-item="item">
         <div class="group-row">{{ item.type }}</div>
     </ng-template>
 
     <!-- Dropdown option template -->
-    <ng-template ng-option-tmp let-item="item" let-search="searchTerm">
+    <ng-template hc-pick-option-tmp let-item="item" let-search="searchTerm">
         <div class="opt-row" title="Travel by {{ item.type }}: {{ item.name }}">
             <span class="icon-wrapper {{ item.color }}"><hc-icon fontSet="fa" fontIcon="fa-{{ item.icon }}" hcIconSm></hc-icon></span>
             {{ item.name }}

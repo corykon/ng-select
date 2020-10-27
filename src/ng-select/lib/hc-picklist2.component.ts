@@ -16,7 +16,6 @@ import {
     ChangeDetectionStrategy,
     ContentChildren,
     QueryList,
-    InjectionToken,
     Attribute
 } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
@@ -24,28 +23,21 @@ import { takeUntil, startWith } from 'rxjs/operators';
 import { Subject, merge } from 'rxjs';
 
 import {
-    NgOptionTemplateDirective,
-    NgHeaderTemplateDirective,
-    NgFooterTemplateDirective,
-    NgOptgroupTemplateDirective,
-    NgTagTemplateDirective,
+    HcPickOptionTemplateDirective,
+    HcPaneListHeaderTemplateDirective,
+    HcPaneListFooterTemplateDirective,
+    HcPickOptgroupTemplateDirective,
+    HcPickTagTemplateDirective,
     HcPaneHeaderRightTemplateDirective,
     HcPaneHeaderLeftTemplateDirective
-} from './ng-templates.directive';
+} from './hc-pick-templates.directive';
 
 import { isDefined, isFunction, isObject } from './value-utils';
-import { SelectionModelFactory } from './selection-model';
-import { NgOptionComponent } from './ng-option.component';
+import { HcPickOptionComponent } from './hc-pick-option.component';
 import { ConsoleService } from './console.service';
-import { NgSelectComponent } from './ng-select.component';
+import { HcPickPaneComponent } from './hc-pick-pane.component';
 import { HcPicklist2Service } from './hc-picklist2.service';
-import { HcOption } from './ng-select.types';
-
-export const SELECTION_MODEL_FACTORY = new InjectionToken<SelectionModelFactory>('ng-select-selection-model');
-export type AddTagFn = ((term: string) => any | Promise<any>);
-export type CompareWithFn = (a: any, b: any) => boolean;
-export type GroupValueFn = (key: string | object, children: any[]) => string | object;
-export type SortFn = (a: HcOption, b: HcOption) => number;
+import { SortFn, GroupValueFn, CompareWithFn, AddTagFn } from './hc-pick.types';
 
 @Component({
     selector: 'hc-picklist2',
@@ -112,18 +104,18 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     @Output('scrollToEnd') scrollToEnd = new EventEmitter();
 
     // custom templates
-    @ContentChild(NgOptionTemplateDirective, { read: TemplateRef }) optionTemplate: TemplateRef<any>;
-    @ContentChild(NgOptgroupTemplateDirective, { read: TemplateRef }) optgroupTemplate: TemplateRef<any>;
-    @ContentChild(NgHeaderTemplateDirective, { read: TemplateRef }) headerTemplate: TemplateRef<any>;
-    @ContentChild(NgFooterTemplateDirective, { read: TemplateRef }) footerTemplate: TemplateRef<any>;
-    @ContentChild(NgTagTemplateDirective, { read: TemplateRef }) tagTemplate: TemplateRef<any>;
+    @ContentChild(HcPickOptionTemplateDirective, { read: TemplateRef }) optionTemplate: TemplateRef<any>;
+    @ContentChild(HcPickOptgroupTemplateDirective, { read: TemplateRef }) optgroupTemplate: TemplateRef<any>;
+    @ContentChild(HcPaneListHeaderTemplateDirective, { read: TemplateRef }) headerTemplate: TemplateRef<any>;
+    @ContentChild(HcPaneListFooterTemplateDirective, { read: TemplateRef }) footerTemplate: TemplateRef<any>;
+    @ContentChild(HcPickTagTemplateDirective, { read: TemplateRef }) tagTemplate: TemplateRef<any>;
     @ContentChild(HcPaneHeaderRightTemplateDirective, { read: TemplateRef }) paneHeaderRightTemplate: TemplateRef<any>;
     @ContentChild(HcPaneHeaderLeftTemplateDirective, { read: TemplateRef }) paneHeaderLeftTemplate: TemplateRef<any>;
 
-    @ContentChildren(NgOptionComponent, { descendants: true }) ngOptions: QueryList<NgOptionComponent>;
+    @ContentChildren(HcPickOptionComponent, { descendants: true }) ngOptions: QueryList<HcPickOptionComponent>;
 
-    @ViewChild('available', { static: true }) availablePane: NgSelectComponent;
-    @ViewChild('selected', { static: true }) selectedPane: NgSelectComponent;
+    @ViewChild('available', { static: true }) availablePane: HcPickPaneComponent;
+    @ViewChild('selected', { static: true }) selectedPane: HcPickPaneComponent;
 
     @HostBinding('class.hc-picklist2-disabled') get disabled() { return this.readonly || this._disabled };
 
@@ -195,7 +187,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     }
 
     /** Move selected (highlighted) options from one pane to the other */
-    move(source: NgSelectComponent, destination: NgSelectComponent) {
+    move(source: HcPickPaneComponent, destination: HcPickPaneComponent) {
         source.selectedItems.slice().forEach(i => {
             source.itemsList.removeOption(i);
             destination.itemsList.addOption(i);
@@ -218,9 +210,9 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
 
     
 
-    /** Convert <ng-option> components into HcOptions */
+    /** Convert <hc-pick-option> components into HcOptions */
     private _setItemsFromNgOptions() {
-        const mapNgOptions = (options: QueryList<NgOptionComponent>) => {
+        const mapNgOptions = (options: QueryList<HcPickOptionComponent>) => {
             const items = options.map(option => ({
                 $ngOptionValue: option.value,
                 $ngOptionLabel: option.elementRef.nativeElement.innerHTML,

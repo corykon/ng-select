@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { HcOption } from 'src/ng-select/lib/ng-select.types';
+import { HcOption } from 'src/ng-select/lib/hc-pick.types';
 
 @Component({
     selector: 'picklist-example-templates',

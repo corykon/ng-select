@@ -3,7 +3,6 @@ import {
     Component,
     ElementRef,
     EventEmitter,
-    HostListener,
     Input,
     NgZone,
     OnChanges,
@@ -17,9 +16,9 @@ import {
 } from '@angular/core';
 import { animationFrameScheduler, asapScheduler, fromEvent, Subject } from 'rxjs';
 import { auditTime, takeUntil } from 'rxjs/operators';
-import { NgDropdownPanelService, PanelDimensions } from './ng-dropdown-panel.service';
+import { HcPickPaneListService, PanelDimensions } from './hc-pick-pane-list.service';
 
-import { HcOption } from './ng-select.types';
+import { HcOption } from './hc-pick.types';
 import { isDefined } from './value-utils';
 
 const SCROLL_SCHEDULER = typeof requestAnimationFrame !== 'undefined' ? animationFrameScheduler : asapScheduler;
@@ -27,23 +26,23 @@ const SCROLL_SCHEDULER = typeof requestAnimationFrame !== 'undefined' ? animatio
 @Component({
     changeDetection: ChangeDetectionStrategy.OnPush,
     encapsulation: ViewEncapsulation.None,
-    selector: 'ng-dropdown-panel',
+    selector: 'hc-pick-pane-list',
     template: `
-        <div *ngIf="headerTemplate" class="ng-dropdown-header">
+        <div *ngIf="headerTemplate" class="hc-pick-pane-list-header">
             <ng-container [ngTemplateOutlet]="headerTemplate" [ngTemplateOutletContext]="{ searchTerm: filterValue }"></ng-container>
         </div>
-        <div #scroll class="ng-dropdown-panel-items scroll-host">
-            <div #padding [class.total-padding]="virtualScroll"></div>
-            <div #content [class.scrollable-content]="virtualScroll && items.length">
+        <div #scroll class="hc-pick-pane-list-items hc-pick-pane-list-scroll-host">
+            <div #padding [class.hc-pick-pane-list-total-padding]="virtualScroll"></div>
+            <div #content [class.hc-pick-pane-list-scrollable-content]="virtualScroll && items.length">
                 <ng-content></ng-content>
             </div>
         </div>
-        <div *ngIf="footerTemplate" class="ng-dropdown-footer">
+        <div *ngIf="footerTemplate" class="hc-pick-pane-list-footer ">
             <ng-container [ngTemplateOutlet]="footerTemplate" [ngTemplateOutletContext]="{ searchTerm: filterValue }"></ng-container>
         </div>
     `
 })
-export class NgDropdownPanelComponent implements OnInit, OnChanges, OnDestroy {
+export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
 
     @Input() items: HcOption[] = [];
     @Input() markedItem: HcOption;
@@ -70,7 +69,7 @@ export class NgDropdownPanelComponent implements OnInit, OnChanges, OnDestroy {
     private _updateScrollHeight = false;
     private _lastScrollPosition = 0;
 
-    constructor(private _zone: NgZone, private _panelService: NgDropdownPanelService, _elementRef: ElementRef) {
+    constructor(private _zone: NgZone, private _panelService: HcPickPaneListService, _elementRef: ElementRef) {
         this._panel = _elementRef.nativeElement;
     }
 

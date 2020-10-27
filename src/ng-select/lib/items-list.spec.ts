@@ -1,6 +1,6 @@
 import { NgSelectConfig } from './config.service';
 import { ItemsList } from './items-list';
-import { NgSelectComponent } from './ng-select.component';
+import { HcPickPaneComponent } from './hc-pick-pane.component';
 import { DefaultSelectionModel } from './selection-model';
 
 describe('ItemsList', () => {
@@ -26,7 +26,7 @@ describe('ItemsList', () => {
 
         describe('multiple', () => {
             let list: ItemsList;
-            let cmp: NgSelectComponent;
+            let cmp: HcPickPaneComponent;
             beforeEach(() => {
                 cmp = ngSelectFactory();
                 cmp.bindLabel = 'label';
@@ -205,7 +205,7 @@ describe('ItemsList', () => {
     describe('un-select', () => {
         describe('single', () => {
             let list: ItemsList;
-            let cmp: NgSelectComponent;
+            let cmp: HcPickPaneComponent;
             beforeEach(() => {
                 cmp = ngSelectFactory();
                 cmp.bindLabel = 'label';
@@ -225,7 +225,7 @@ describe('ItemsList', () => {
 
         describe('multiple', () => {
             let list: ItemsList;
-            let cmp: NgSelectComponent;
+            let cmp: HcPickPaneComponent;
             beforeEach(() => {
                 cmp = ngSelectFactory();
                 cmp.multiple = true;
@@ -397,7 +397,7 @@ describe('ItemsList', () => {
 
     describe('filter', () => {
         let list: ItemsList;
-        let cmp: NgSelectComponent;
+        let cmp: HcPickPaneComponent;
         beforeEach(() => {
             cmp = ngSelectFactory();
             cmp.bindLabel = 'label';
@@ -467,7 +467,7 @@ describe('ItemsList', () => {
 
     describe('map selected', () => {
         let list: ItemsList;
-        let cmp: NgSelectComponent;
+        let cmp: HcPickPaneComponent;
         beforeEach(() => {
             cmp = ngSelectFactory();
             cmp.multiple = true;
@@ -517,7 +517,7 @@ describe('ItemsList', () => {
 
     describe('markSelectedOrDefault', () => {
         let list: ItemsList;
-        let cmp: NgSelectComponent;
+        let cmp: HcPickPaneComponent;
 
         beforeEach(() => {
             cmp = ngSelectFactory();
@@ -558,11 +558,11 @@ describe('ItemsList', () => {
     describe('clearSelected', () => { });
     describe('selectAll', () => { });
 
-    function itemsListFactory(cmp: NgSelectComponent): ItemsList {
+    function itemsListFactory(cmp: HcPickPaneComponent): ItemsList {
         return new ItemsList(cmp, new DefaultSelectionModel());
     }
 
-    function ngSelectFactory(): NgSelectComponent {
-        return new NgSelectComponent(null, null, new NgSelectConfig(), () => new DefaultSelectionModel(), {} as any, null, null);
+    function ngSelectFactory(): HcPickPaneComponent {
+        return new HcPickPaneComponent(null, null, new NgSelectConfig(), () => new DefaultSelectionModel(), {} as any, null, null);
     }
 });

@@ -1,17 +1,17 @@
 import { Directive, ElementRef, Input, OnChanges, SimpleChanges, TemplateRef } from '@angular/core';
 import { escapeHTML } from './value-utils';
 
-@Directive({ selector: '[ngItemLabel]' })
-export class NgItemLabelDirective implements OnChanges {
-    @Input() ngItemLabel: string;
+@Directive({ selector: '[hcPickItemLabel]' })
+export class HcPickItemLabelDirective implements OnChanges {
+    @Input() hcPickItemLabel: string;
     @Input() escape = true;
 
     constructor(private element: ElementRef<HTMLElement>) { }
 
     ngOnChanges(changes: SimpleChanges) {
         this.element.nativeElement.innerHTML = this.escape ?
-            escapeHTML(this.ngItemLabel) :
-            this.ngItemLabel;
+            escapeHTML(this.hcPickItemLabel) :
+            this.hcPickItemLabel;
     }
 }
 
@@ -20,32 +20,32 @@ export class HcPaneHeaderLeftTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }
 
-@Directive({ selector: '[ng-pane-header-right-tmp]' })
+@Directive({ selector: '[hc-pane-header-right-tmp]' })
 export class HcPaneHeaderRightTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }
 
-@Directive({ selector: '[ng-option-tmp]' })
-export class NgOptionTemplateDirective {
+@Directive({ selector: '[hc-pick-option-tmp]' })
+export class HcPickOptionTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }
 
-@Directive({ selector: '[ng-optgroup-tmp]' })
-export class NgOptgroupTemplateDirective {
+@Directive({ selector: '[hc-pick-optgroup-tmp]' })
+export class HcPickOptgroupTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }
 
-@Directive({ selector: '[ng-header-tmp]' })
-export class NgHeaderTemplateDirective {
+@Directive({ selector: '[hc-pane-list-header-tmp]' })
+export class HcPaneListHeaderTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }
 
-@Directive({ selector: '[ng-footer-tmp]' })
-export class NgFooterTemplateDirective {
+@Directive({ selector: '[hc-pane-list-footer-tmp]' })
+export class HcPaneListFooterTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }
 
-@Directive({ selector: '[ng-tag-tmp]' })
-export class NgTagTemplateDirective {
+@Directive({ selector: '[hc-pick-tag-tmp]' })
+export class HcPickTagTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }

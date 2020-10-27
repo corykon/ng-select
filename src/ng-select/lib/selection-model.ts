@@ -1,12 +1,12 @@
-import { HcOption } from './ng-select.types';
+import { HcOption } from './hc-pick.types';
 
-export type SelectionModelFactory = () => SelectionModel;
+export type SelectionModelFactory = () => HcPickSelectionModel;
 
 export function DefaultSelectionModelFactory() {
     return new DefaultSelectionModel();
 }
 
-export interface SelectionModel {
+export interface HcPickSelectionModel {
     value: HcOption[];
     select(item: HcOption, selectableGroupAsModel: boolean);
     unselect(item: HcOption);
@@ -14,7 +14,7 @@ export interface SelectionModel {
     selectAll(items: Array<HcOption>, selectableGroup: boolean);
 }
 
-export class DefaultSelectionModel implements SelectionModel {
+export class DefaultSelectionModel implements HcPickSelectionModel {
     private _selected: HcOption[] = [];
 
     get value(): HcOption[] {

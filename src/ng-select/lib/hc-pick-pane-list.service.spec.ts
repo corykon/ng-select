@@ -1,16 +1,16 @@
 import { TestBed } from '@angular/core/testing';
-import { NgDropdownPanelService } from './ng-dropdown-panel.service';
+import { HcPickPaneListService } from './hc-pick-pane-list.service';
 
-describe('NgDropdownPanelService', () => {
+describe('HcPickPaneListService', () => {
 
-    let service: NgDropdownPanelService;
+    let service: HcPickPaneListService;
 
     beforeEach(() => {
         TestBed.configureTestingModule({
-            providers: [NgDropdownPanelService]
+            providers: [HcPickPaneListService]
         });
 
-        service = TestBed.inject(NgDropdownPanelService);
+        service = TestBed.inject(HcPickPaneListService);
     });
 
     describe('calculate items', () => {

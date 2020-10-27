@@ -11,11 +11,11 @@ import {
 import { Subject } from 'rxjs';
 
 @Component({
-    selector: 'ng-option',
+    selector: 'hc-pick-option',
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `<ng-content></ng-content>`
 })
-export class NgOptionComponent implements OnChanges, AfterViewChecked, OnDestroy {
+export class HcPickOptionComponent implements OnChanges, AfterViewChecked, OnDestroy {
 
     @Input() value: any;
     @Input()

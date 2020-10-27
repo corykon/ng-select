@@ -1,9 +1,8 @@
-import { newId } from './id';
-import { NgSelectComponent } from './ng-select.component';
-import { HcOption } from './ng-select.types';
+import { HcPickPaneComponent } from './hc-pick-pane.component';
+import { HcOption } from './hc-pick.types';
 import * as searchHelper from './search-helper';
-import { SelectionModel } from './selection-model';
-import { isDefined, isFunction, isObject } from './value-utils';
+import { HcPickSelectionModel } from './selection-model';
+import { isDefined, isFunction, isObject, newId } from './value-utils';
 
 type OptionGroups = Map<string | HcOption, HcOption[]>;
 
@@ -11,8 +10,8 @@ export class ItemsList {
     private _groups: OptionGroups;
 
     constructor(
-        private _ngSelect: NgSelectComponent,
-        private _selectionModel: SelectionModel) {
+        private _ngSelect: HcPickPaneComponent,
+        private _selectionModel: HcPickSelectionModel) {
     }
 
     private _items: HcOption[] = [];

@@ -9,42 +9,38 @@ import {
     EventEmitter,
     TemplateRef,
     ViewEncapsulation,
-    HostBinding,
     ViewChild,
     ElementRef,
     ChangeDetectionStrategy,
     Inject,
-    InjectionToken,
     OnChanges,
     SimpleChanges
 } from '@angular/core';
 import { takeUntil, tap, debounceTime, map, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
-import { isDefined, isFunction, isPromise, isObject } from './value-utils';
+import { isDefined, isFunction, isPromise, isObject, newId } from './value-utils';
 import { ItemsList } from './items-list';
-import { HcOption, KeyCode } from './ng-select.types';
-import { newId } from './id';
-import { NgDropdownPanelComponent } from './ng-dropdown-panel.component';
+import { HcOption, KeyCode } from './hc-pick.types';
+import { HcPickPaneListComponent } from './hc-pick-pane-list.component';
 import { SelectionModelFactory } from './selection-model';
-import { NgDropdownPanelService } from './ng-dropdown-panel.service';
+import { HcPickPaneListService } from './hc-pick-pane-list.service';
 import { HcPicklist2Service } from './hc-picklist2.service';
-import { HcPicklistPaneDragService } from './hc-picklist-pane-drag.service';
-import { AddTagFn, CompareWithFn, GroupValueFn, SortFn, SELECTION_MODEL_FACTORY } from './hc-picklist2.component';
+import { HcPickPaneDragService } from './hc-pick-pane-drag.service';
+import { SortFn, GroupValueFn, CompareWithFn, AddTagFn, SELECTION_MODEL_FACTORY } from './hc-pick.types';
 
 @Component({
-    selector: 'ng-select',
-    templateUrl: './ng-select.component.html',
-    styleUrls: ['./ng-select.component.scss'],
-    providers: [NgDropdownPanelService, HcPicklistPaneDragService],
+    selector: 'hc-pick-pane',
+    templateUrl: './hc-pick-pane.component.html',
+    providers: [HcPickPaneListService, HcPickPaneDragService],
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         'role': 'listbox',
-        '[class.ng-select]': 'useDefaultClass'
+        '[class.hc-pick-pane]': 'useDefaultClass'
     }
 })
-export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
+export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges {
     @Input() bindLabel: string;
     @Input() bindValue: string;
     @Input() placeholder: string;
@@ -104,11 +100,10 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
     @Output('scroll') scroll = new EventEmitter<{ start: number; end: number }>();
     @Output('scrollToEnd') scrollToEnd = new EventEmitter();
 
-    @ViewChild(forwardRef(() => NgDropdownPanelComponent)) dropdownPanel: NgDropdownPanelComponent;
+    @ViewChild(forwardRef(() => HcPickPaneListComponent)) dropdownPanel: HcPickPaneListComponent;
     @ViewChild('searchInput', { static: true }) searchInput: ElementRef<HTMLInputElement>;
 
-    @HostBinding('class.ng-select-disabled') get disabled() { return this.readonly || this._disabled };
-    @HostBinding('class.ng-select-filtered') get filtered() { return (!!this.searchTerm && this.searchable || this._isComposing) };
+    public get disabled() { return this.readonly || this._disabled };
 
     itemsList: ItemsList;
     viewPortItems: HcOption[] = [];
@@ -120,7 +115,7 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
     _isDragging = false;
     _willAcceptDrop = false;
     _paneIsActive = false;
-    public get _companionPane(): NgSelectComponent {
+    public get _companionPane(): HcPickPaneComponent {
         return this._isLeftPane ? this.picklistService.selectedPane : this.picklistService.availablePane; }
 
     private _itemsAreUsed: boolean;
@@ -145,7 +140,7 @@ export class NgSelectComponent implements OnDestroy, AfterViewInit, OnChanges {
         _elementRef: ElementRef<HTMLElement>,
         private picklistService: HcPicklist2Service,
         private _cd: ChangeDetectorRef,
-        public dragService: HcPicklistPaneDragService
+        public dragService: HcPickPaneDragService
     ) {
         this.itemsList = new ItemsList(this, newSelectionModel());
         this.element = _elementRef.nativeElement;

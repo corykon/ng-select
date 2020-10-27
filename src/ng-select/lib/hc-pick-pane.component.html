@@ -1,31 +1,20 @@
-<div
-    [class.ng-has-value]="hasSelectedItems"
-    class="ng-select-container">
+<div class="hc-pick-search-outer">
 
-    <div class="ng-value-container">
-        <div class="ng-input">
-            <input #searchInput
-                   [readOnly]="!searchable || itemsList.maxItemsSelected"
-                   [disabled]="disabled"
-                   [value]="searchTerm ? searchTerm : ''"
-                   (input)="filter(searchInput.value)"
-                   (compositionstart)="onCompositionStart()"
-                   (compositionend)="onCompositionEnd(searchInput.value)"
-                   (change)="$event.stopPropagation()"
-                   (keydown)="onInputKeydown($event)"
-                   [placeholder]="placeholder"
-                   role="combobox">
-        </div>
-    </div>
+    <input #searchInput
+        class="hc-pick-search-input"
+        [readOnly]="!searchable || itemsList.maxItemsSelected"
+        [disabled]="disabled"
+        [value]="searchTerm ? searchTerm : ''"
+        (input)="filter(searchInput.value)"
+        (compositionstart)="onCompositionStart()"
+        (compositionend)="onCompositionEnd(searchInput.value)"
+        (change)="$event.stopPropagation()"
+        (keydown)="onInputKeydown($event)"
+        [placeholder]="placeholder"
+        role="combobox">
 
     <ng-container *ngIf="loading">
-        <ng-template #defaultLoadingSpinnerTemplate>
-            <div class="ng-spinner-loader"></div>
-        </ng-template>
-
-        <ng-template
-            [ngTemplateOutlet]="loadingSpinnerTemplate || defaultLoadingSpinnerTemplate">
-        </ng-template>
+        Loading...
     </ng-container>
 </div>
 
@@ -48,7 +37,7 @@
     </div>
 </div>
 
-<ng-dropdown-panel class="ng-dropdown-panel ng-select-multiple"
+<hc-pick-pane-list class="hc-pick-pane-list"
     [ngClass]="{'hc-pane-will-accept-drop': _willAcceptDrop, 'pane-is-active': _paneIsActive}"
     [virtualScroll]="virtualScroll"
     [bufferAmount]="bufferAmount"
@@ -68,22 +57,22 @@
     [id]="dropdownId">
 
     <ng-container>
-        <div class="ng-option" [attr.role]="item.children ? 'group' : 'option'"
+        <div class="hc-pick-option" [attr.role]="item.children ? 'group' : 'option'"
             *ngFor="let item of viewPortItems; trackBy: trackByOption; let first = first;"
             (click)="onItemClick($event, item)"
             (dblclick)="onItemDoubledClicked($event, item)"
             draggable="true" (dragstart)="dragService.drag($event, itemsList, item)" (dragend)="dragService.dragEnd()"
-            [class.ng-option-disabled]="item.disabled"
-            [class.ng-option-selected]="item.selected"
-            [class.ng-optgroup]="item.children"
-            [class.ng-option]="!item.children"
-            [class.ng-option-child]="!!item.parent"
-            [class.ng-option-marked]="item === itemsList.markedItem"
+            [class.hc-pick-option-disabled]="item.disabled"
+            [class.hc-pick-option-selected]="item.selected"
+            [class.hc-pick-optgroup]="item.children"
+            [class.hc-pick-option]="!item.children"
+            [class.hc-pick-option-child]="!!item.parent"
+            [class.hc-pick-option-marked]="item === itemsList.markedItem"
             [attr.aria-selected]="item.selected"
             [attr.id]="item?.htmlId">
 
             <ng-template #defaultOptionTemplate>
-                <span class="ng-option-label" [ngItemLabel]="item.label" [escape]="escapeHTML"></span>
+                <span class="hc-pick-option-label" [hcPickItemLabel]="item.label" [escape]="escapeHTML"></span>
             </ng-template>
 
             <ng-template
@@ -92,9 +81,9 @@
             </ng-template>
         </div>
 
-        <div class="ng-option" [class.ng-option-marked]="!itemsList.markedItem" (mouseover)="itemsList.unmarkItem()" role="option" (click)="selectTag()" *ngIf="showAddTag">
+        <div class="hc-pick-option" [class.hc-pick-option-marked]="!itemsList.markedItem" (mouseover)="itemsList.unmarkItem()" role="option" (click)="selectTag()" *ngIf="showAddTag">
             <ng-template #defaultTagTemplate>
-                <span><span class="ng-tag-label">{{addTagText}}</span>"{{searchTerm}}"</span>
+                <span><span class="hc-pick-tag-label">{{addTagText}}</span>"{{searchTerm}}"</span>
             </ng-template>
 
             <ng-template
@@ -105,11 +94,11 @@
     </ng-container>
 
     <ng-container *ngIf="showNoItemsFound()">
-        <div class="hc-default-empty-msg"><span>{{notFoundText}}</span></div>
+        <div class="hc-pick-empty-msg"><span>{{notFoundText}}</span></div>
     </ng-container>
 
     <ng-container *ngIf="loading && itemsList.filteredItems.length === 0">
-        <div class="ng-option ng-option-disabled">{{loadingText}}</div>
+        <div class="hc-pick-option hc-pick-option-disabled">{{loadingText}}</div>
     </ng-container>
 
-</ng-dropdown-panel>
+</hc-pick-pane-list>

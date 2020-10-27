@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
-import { NgSelectComponent } from './ng-select.component';
+import { HcPickPaneComponent } from './hc-pick-pane.component';
 
 import { isDefined } from './value-utils';
 
 @Injectable()
 export class HcPicklist2Service {
-    availablePane: NgSelectComponent;
-    selectedPane: NgSelectComponent;
-    public reset(availablePane: NgSelectComponent, selectedPane: NgSelectComponent) {
+    availablePane: HcPickPaneComponent;
+    selectedPane: HcPickPaneComponent;
+    public reset(availablePane: HcPickPaneComponent, selectedPane: HcPickPaneComponent) {
         this.availablePane = availablePane;
         this.selectedPane = selectedPane;
     }
