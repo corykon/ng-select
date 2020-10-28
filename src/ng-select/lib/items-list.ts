@@ -14,6 +14,12 @@ export class ItemsList {
         private _selectionModel: HcPickSelectionModel) {
     }
 
+    private _itemsShownCount = '';
+    get itemsShownCount(): string { return this._itemsShownCount; }
+    
+    private _itemsTotalCount = '';
+    get itemsTotalCount(): string { return this._itemsTotalCount; }
+
     private _items: HcOption[] = [];
 
     get items(): HcOption[] {
@@ -139,6 +145,7 @@ export class ItemsList {
             this._sortChildrenWithinGroups();
         }
         this._filteredItems = [...this._items];
+        this._updateCounts();
     }
 
     private _sortChildrenWithinGroups() {
@@ -195,11 +202,13 @@ export class ItemsList {
                 this._filteredItems.push(...matchedItems);
             }
         }
+        this._updateCounts();
     }
 
     resetFilteredItems() {
         if (this._filteredItems.length === this._items.length) { return; }
         this._filteredItems = this._items;
+        this._updateCounts();
     }
 
     /** Wipe out selection state and marked state, then mark the first selectable option */
@@ -241,10 +250,8 @@ export class ItemsList {
 
     /** Obtain a nested value from a given object. It could be a direct property, or a nested property */
     resolveNested(option: any, key: string): any {
-        if (!isObject(option)) {
-            return option;
-        }
-        if (key.indexOf('.') === -1) {
+        if (!isObject(option)) { return option; }
+        if (!key || key.indexOf(".") === -1) {
             return option[key];
         } else {
             let keys: string[] = key.split('.');
@@ -273,6 +280,16 @@ export class ItemsList {
             disabled: item.disabled,
             htmlId: `${this._ngSelect.dropdownId}-${index}`,
         };
+    }
+
+    private _updateCounts() {
+        if (this._ngSelect.groupBy && (!this._ngSelect.selectableGroup || !this._ngSelect.selectableGroupAsModel)) {
+            this._itemsShownCount = this.filteredItems.filter(i => !i.children).length.toLocaleString();
+            this._itemsTotalCount = this.items.filter(i => !i.children).length.toLocaleString();
+        } else {
+            this._itemsShownCount = this.filteredItems.length.toLocaleString();
+            this._itemsTotalCount = this.items.length.toLocaleString();
+        }
     }
 
     private _defaultSearchFn(search: string, opt: HcOption) {

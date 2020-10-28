@@ -33,8 +33,9 @@ const SCROLL_SCHEDULER = typeof requestAnimationFrame !== 'undefined' ? animatio
         </div>
         <div #scroll class="hc-pick-pane-list-items hc-pick-pane-list-scroll-host">
             <div #padding [class.hc-pick-pane-list-total-padding]="virtualScroll"></div>
-            <div #content [class.hc-pick-pane-list-scrollable-content]="virtualScroll && items.length">
-                <ng-content></ng-content>
+            <div #content class="hc-pick-pane-list-scrollable-content"
+                [class.hc-pick-pane-list-scrollable-content-virtual]="virtualScroll && items.length">
+                    <ng-content></ng-content>
             </div>
         </div>
         <div *ngIf="footerTemplate" class="hc-pick-pane-list-footer ">
@@ -145,6 +146,16 @@ export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
         panel.scrollTop = panel.scrollHeight - panel.clientHeight;
     }
 
+    public refreshListLayout(isInitialList: boolean) {
+        if (this.virtualScroll) {
+            this._updateItemsRange(isInitialList);
+        } else {
+            this._setVirtualHeight();
+            this._updateItems(isInitialList);
+        }
+    }
+
+
     private _handleScroll() {
         this._zone.runOutsideAngular(() => {
             fromEvent(this.scrollElementRef.nativeElement, 'scroll')
@@ -162,12 +173,7 @@ export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
         this._scrollToEndFired = false;
         this.itemsLength = items.length;
 
-        if (this.virtualScroll) {
-            this._updateItemsRange(firstChange);
-        } else {
-            this._setVirtualHeight();
-            this._updateItems(firstChange);
-        }
+        this.refreshListLayout(firstChange);
     }
 
     private _updateItems(firstChange: boolean) {
@@ -254,6 +260,7 @@ export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
         const [first] = this.items;
         this.update.emit([first]);
 
+        // todo: watch for bug here, sometimes "first" gets out of sync with whats in the _panel
         return Promise.resolve().then(() => {
             const option = this._panel.querySelector(`#${first.htmlId}`);
             const optionHeight = option.clientHeight;

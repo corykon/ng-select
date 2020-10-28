@@ -390,6 +390,10 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         }
     }
 
+    refreshScrollArea() {
+        this.dropdownPanel.refreshListLayout(true);
+    }
+
     _setItems(items: any[]) {
         const firstItem = items[0];
         this.bindLabel = this.bindLabel || this._defaultLabel;

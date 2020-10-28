@@ -200,6 +200,14 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         this._onTouched();
     }
 
+    /** Refreshes the dimensions of the virtual scroll container and the items displayed within. Helpful when using virtual scrolling and
+     * the window changes such that the picklist was resized.
+     */
+    public refreshScrollArea() {
+        this.availablePane.refreshScrollArea();
+        this.selectedPane.refreshScrollArea();
+    }
+
     detectChanges() {
         if (!(<any>this._cd).destroyed) {
             this._cd.detectChanges();
