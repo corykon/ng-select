@@ -27,9 +27,7 @@ export class DefaultSelectionModel implements HcPickSelectionModel {
             this._selected.push(item);
         }
         if (item.parent) {
-            const childrenCount = item.parent.children.length;
-            const selectedCount = item.parent.children.filter(x => x.selected).length;
-            item.parent.selected = childrenCount === selectedCount;
+            item.parent.selected = item.parent.children.every(x => x.selected);
         } else if (item.children) {
             this._setChildrenSelectedState(item.children, true);
             this._removeChildren(item);

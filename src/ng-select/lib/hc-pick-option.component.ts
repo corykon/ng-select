@@ -20,7 +20,7 @@ export class HcPickOptionComponent implements OnChanges, AfterViewChecked, OnDes
     @Input() value: any;
     @Input()
     get disabled() { return this._disabled; }
-    set disabled(value: any) { this._disabled = this._isDisabled(value) }
+    set disabled(value: boolean) { this._disabled = this._isDisabled(value) }
 
     readonly stateChange$ = new Subject<{ value: any, disabled: boolean, label?: string }>();
 
@@ -48,7 +48,7 @@ export class HcPickOptionComponent implements OnChanges, AfterViewChecked, OnDes
             this.stateChange$.next({
                 value: this.value,
                 disabled: this._disabled,
-                label: this.elementRef.nativeElement.innerHTML
+                label: this.elementRef.nativeElement.textContent
             });
         }
     }

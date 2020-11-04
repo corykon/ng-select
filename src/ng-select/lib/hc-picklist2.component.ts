@@ -256,7 +256,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     }
 
     /** Apply value passed in from ngModel as the current selection in the component */
-    private _handleWriteValue(ngModel: any | any[]) {
+    private _handleWriteValue(ngModel: any[]) {
         if (!this._isValidWriteValue(ngModel)) {
             return
         }
@@ -286,7 +286,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
             }
         };
 
-        (<any[]>ngModel).forEach(item => select(item));
+        ngModel.forEach(item => select(item));
         this.refreshPanes();
     }
 
@@ -301,24 +301,32 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
             return false;
         }
 
-        const validateBinding = (item: any): boolean => {
-            if (!isDefined(this.compareWith) && isObject(item) && this.bindValue) {
-                this._console.warn(
-                    `Setting object(${JSON.stringify(item)}) as your model with bindValue is not allowed unless [compareWith] is used.`
-                );
-                return false;
-            }
-            return true;
-        };
-
         if (!Array.isArray(value)) {
             this._console.warn('Value must be an ngModel should be array.');
             return false;
         }
-        return value.every(item => validateBinding(item));
+        return value.every(item => this.validateBinding(item));
     }
 
+    private validateBinding = (item: any): boolean => {
+        if (!isDefined(this.compareWith) && isObject(item) && this.bindValue) {
+            this._console.warn(
+                `Setting object(${JSON.stringify(item)}) as your model with bindValue is not allowed unless [compareWith] is used.`
+            );
+            return false;
+        }
+        return true;
+    };
+
     // todo: more testing around this
+    // test case:
+    //        [items]="accounts"
+    //        bindLabel="name"
+    //        bindValue="name"
+    //        [groupBy]="groupByFn"
+    //        [selectableGroup]="true"
+    //        [multiple]="true"
+    //        [(ngModel)]="selectedAccounts"
     private _updateNgModel() {
         const model = [];
         let selectedItems = this.selectedPane.itemsList.items;
@@ -327,12 +335,13 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
             selectedItems = selectedItems.filter(item => !item.children);
         }
 
+        const hasGroupByFn = isFunction(this.groupBy);
         for (const item of selectedItems) {
             if (this.bindValue) {
                 let value = null;
                 if (item.children) {
-                    const groupKey = this.groupValue ? this.bindValue : <string>this.groupBy;
-                    value = item.value[groupKey || <string>this.groupBy];
+                    const groupKey = this.groupValue ? this.bindValue : (hasGroupByFn ? this.bindLabel : <string>this.groupBy);
+                    value = groupKey ? item.value[groupKey] : item.value;
                 } else {
                     value = this.selectedPane.itemsList.resolveNested(item.value, this.bindValue);
                 }

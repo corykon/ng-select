@@ -1,16 +1,22 @@
+@import "~@healthcatalyst/cashmere/scss/colors";
+
 @mixin rtl {
     @at-root [dir="rtl"] #{&} {
         @content
     }
 }
 
-$hc-pick-highlight: #007eff !default;
-$hc-pick-primary-text: #333 !default;
-$hc-pick-border: #ccc !default;
+@function tint($color, $percentage) {
+    @return mix(white, $color, $percentage);
+}
+
+$hc-pick-highlight: $azure !default;
+$hc-pick-primary-text: $offblack !default;
+$hc-pick-border: $gray-300 !default;
 $hc-pick-border-radius: 4px !default;
-$hc-pick-bg: #ffffff !default;
-$hc-pick-selected: lighten($hc-pick-highlight, 30) !default;
-$hc-pick-marked: lighten($hc-pick-highlight, 48) !default;
+$hc-pick-bg: $white !default;
+$hc-pick-selected: $hc-pick-highlight !default;
+$hc-pick-hover: tint($blue, 75) !default;
 $hc-pick-height: 36px !default;
 
 .hc-picklist2 {
@@ -132,7 +138,7 @@ $hc-pick-height: 36px !default;
     }
 
     &.pane-is-active {
-        .hc-pick-option-marked { outline: darken(#00aeff, 0.2) 2px solid; outline-offset: -2px; }
+        .hc-pick-option-marked { outline: lighten($blue, 15) 1px dotted; outline-offset: -2px; }
     }
 
     &:focus {
@@ -188,51 +194,42 @@ $hc-pick-height: 36px !default;
     padding: 5px 7px;
 }
 
-.hc-pick-optgroup {
-    user-select: none;
+.hc-pick-option, .hc-pick-optgroup {
     padding: 8px 10px;
-    font-weight: 500;
-    color: rgba(0, 0, 0, 0.54);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: pointer;
-    &.hc-pick-option-disabled {
-        cursor: default;
-    }
-    &.hc-pick-option-marked {
-        background-color: $hc-pick-marked;
-    }
-    &.hc-pick-option-selected, &.hc-pick-option-selected.hc-pick-option-marked {
-        background-color: $hc-pick-selected;
-        font-weight: 600;
-    }
-}
-
-.hc-pick-option {
-    background-color: $hc-pick-bg;
-    color: rgba(0, 0, 0, .87);
-    padding: 8px 10px;
+    color: $hc-pick-primary-text;
     box-sizing: border-box;
     display: block;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: pointer;
 
     &.hc-pick-option-selected, &.hc-pick-option-selected.hc-pick-option-marked {
-        color: $hc-pick-primary-text;
         background-color: $hc-pick-selected;
-        .hc-pick-option-label {
-            font-weight: 600;
-        }
+        color: $white;
     }
-    &:hover {
-        background-color: $hc-pick-marked;
+    &:not(.hc-pick-option-disabled):hover {
+        background-color: $hc-pick-hover;
         color: $hc-pick-primary-text;
     }
     &.hc-pick-option-selected:hover {
         background-color: lighten($hc-pick-selected, 5);
+        color: $white;
     }
+    &.hc-pick-option-disabled {
+        cursor: default;
+    }
+}
+
+.hc-pick-optgroup {
+    background-color: $gray-100;
+    user-select: none;
+    font-weight: 500;
+}
+
+.hc-pick-option {
+    background-color: $hc-pick-bg;
+
     &.hc-pick-option-disabled {
         color: lighten($hc-pick-primary-text, 60);
     }
@@ -251,11 +248,6 @@ $hc-pick-height: 36px !default;
             padding-left: 5px;
             padding-right: 0;
         }
-    }
-
-    .highlighted {
-        font-weight: bold;
-        text-decoration: underline;
     }
 }
 

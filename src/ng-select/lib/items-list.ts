@@ -305,9 +305,7 @@ export class ItemsList {
     }
 
     private _stepToItem(steps: number) {
-        if (this._filteredItems.length === 0 || this._filteredItems.every(x => x.disabled)) {
-            return;
-        }
+        if (this._filteredItems.every(x => x.disabled)) { return; }
 
         this._markedIndex = this._getNextItemIndex(steps);
         if (this.markedItem.disabled) {
