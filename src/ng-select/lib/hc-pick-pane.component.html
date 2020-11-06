@@ -19,30 +19,35 @@
 </div>
 
 <div class="hc-picklist-pane-tools">
-    <div class="selectbox-stats">
-        <ng-container *ngIf="!loading">
-            Showing {{itemsList.itemsShownCount}} of {{itemsList.itemsTotalCount}}
-        </ng-container>
-        <ng-container *ngIf="loading">
-            Loading...
-        </ng-container>
-    </div>
-    <div>
-        <button type="button" hc-button buttonStyle="link-inline" class="hc-font-xsm button-link-inline" (click)="selectAll()" [disabled]="itemsList.filteredItems.length === 0">
-            Select All
-        </button>
-        <button type="button" hc-button buttonStyle="link-inline" class="hc-font-xsm button-link-inline" (click)="deselectAll()" [disabled]="!this.hasSelectedItems">
-            Select None
-        </button>
-    </div>
+    <ng-template #defaultToolbarTemplate>
+        <div class="hc-picklist-pane-counts">
+            <ng-container *ngIf="!loading">
+                Showing {{itemsList.itemsShownCount}} of {{itemsList.itemsTotalCount}}
+            </ng-container>
+            <ng-container *ngIf="loading">
+                Loading...
+            </ng-container>
+        </div>
+        <div class="hc-picklist-pane-quick-links">
+            <button type="button" hc-button buttonStyle="link-inline" class="hc-font-xsm button-link-inline" (click)="selectAll()" [disabled]="itemsList.filteredItems.length === 0">
+                Select All
+            </button>
+            <button type="button" hc-button buttonStyle="link-inline" class="hc-font-xsm button-link-inline" (click)="deselectAll()" [disabled]="!this.hasSelectedItems">
+                Select None
+            </button>
+        </div>
+    </ng-template>
+
+    <ng-template
+        [ngTemplateOutlet]="toolbarTemplate || defaultToolbarTemplate"
+        [ngTemplateOutletContext]="{ itemsList: itemsList, searchTerm: searchTerm}">
+    </ng-template>
 </div>
 
 <hc-pick-pane-list class="hc-pick-pane-list"
     [ngClass]="{'hc-pane-will-accept-drop': _willAcceptDrop, 'pane-is-active': _paneIsActive}"
     [virtualScroll]="virtualScroll"
     [bufferAmount]="bufferAmount"
-    [headerTemplate]="headerTemplate"
-    [footerTemplate]="footerTemplate"
     [filterValue]="searchTerm"
     [items]="itemsList.filteredItems"
     [markedItem]="itemsList.markedItem"
@@ -72,12 +77,12 @@
             [attr.id]="item?.htmlId">
 
             <ng-template #defaultOptionTemplate>
-                <span class="hc-pick-option-label" [hcPickItemLabel]="item.label" [escape]="escapeHTML"></span>
+                <span class="hc-pick-option-label" [escape]="escapeHTML"></span>
             </ng-template>
 
             <ng-template
                 [ngTemplateOutlet]="item.children ? (optgroupTemplate || defaultOptionTemplate) : (optionTemplate || defaultOptionTemplate)"
-                [ngTemplateOutletContext]="{ item: item.value, item$:item, index: item.index, searchTerm: searchTerm }">
+                [ngTemplateOutletContext]="{ item: item.value, hcOption: item, index: item.index, searchTerm: searchTerm }">
             </ng-template>
         </div>
 
@@ -102,3 +107,16 @@
     </ng-container>
 
 </hc-pick-pane-list>
+
+
+
+<div class="hc-pick-pane-list-footer">
+    <ng-template #defaultFooterTemplate>
+        <span>{{itemsList.selectedItems.length?.toLocaleString() || 0}} selected</span>
+    </ng-template>
+    
+    <ng-template
+        [ngTemplateOutlet]="footerTemplate || defaultFooterTemplate"
+        [ngTemplateOutletContext]="{ itemsList: itemsList, searchTerm: searchTerm }">
+    </ng-template>
+</div>

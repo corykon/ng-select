@@ -28,18 +28,12 @@ const SCROLL_SCHEDULER = typeof requestAnimationFrame !== 'undefined' ? animatio
     encapsulation: ViewEncapsulation.None,
     selector: 'hc-pick-pane-list',
     template: `
-        <div *ngIf="headerTemplate" class="hc-pick-pane-list-header">
-            <ng-container [ngTemplateOutlet]="headerTemplate" [ngTemplateOutletContext]="{ searchTerm: filterValue }"></ng-container>
-        </div>
         <div #scroll class="hc-pick-pane-list-items hc-pick-pane-list-scroll-host">
             <div #padding [class.hc-pick-pane-list-total-padding]="virtualScroll"></div>
             <div #content class="hc-pick-pane-list-scrollable-content"
                 [class.hc-pick-pane-list-scrollable-content-virtual]="virtualScroll && items.length">
                     <ng-content></ng-content>
             </div>
-        </div>
-        <div *ngIf="footerTemplate" class="hc-pick-pane-list-footer ">
-            <ng-container [ngTemplateOutlet]="footerTemplate" [ngTemplateOutletContext]="{ searchTerm: filterValue }"></ng-container>
         </div>
     `
 })
@@ -49,8 +43,6 @@ export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
     @Input() markedItem: HcOption;
     @Input() bufferAmount: number;
     @Input() virtualScroll = false;
-    @Input() headerTemplate: TemplateRef<any>;
-    @Input() footerTemplate: TemplateRef<any>;
     @Input() filterValue: string = null;
 
     @Output() update = new EventEmitter<any[]>();

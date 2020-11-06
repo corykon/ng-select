@@ -1,19 +1,4 @@
-import { Directive, ElementRef, Input, OnChanges, SimpleChanges, TemplateRef } from '@angular/core';
-import { escapeHTML } from './value-utils';
-
-@Directive({ selector: '[hcPickItemLabel]' })
-export class HcPickItemLabelDirective implements OnChanges {
-    @Input() hcPickItemLabel: string;
-    @Input() escape = true;
-
-    constructor(private element: ElementRef<HTMLElement>) { }
-
-    ngOnChanges(changes: SimpleChanges) {
-        this.element.nativeElement.innerHTML = this.escape ?
-            escapeHTML(this.hcPickItemLabel) :
-            this.hcPickItemLabel;
-    }
-}
+import { Directive, TemplateRef } from '@angular/core';
 
 @Directive({ selector: '[hc-pane-header-left-tmp]' })
 export class HcPaneHeaderLeftTemplateDirective {
@@ -35,13 +20,13 @@ export class HcPickOptgroupTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }
 
-@Directive({ selector: '[hc-pane-list-header-tmp]' })
-export class HcPaneListHeaderTemplateDirective {
+@Directive({ selector: '[hc-pane-toolbar-tmp]' })
+export class HcPaneToolbarTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }
 
-@Directive({ selector: '[hc-pane-list-footer-tmp]' })
-export class HcPaneListFooterTemplateDirective {
+@Directive({ selector: '[hc-pane-footer-tmp]' })
+export class HcPaneFooterTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }
 

@@ -6,14 +6,13 @@ import { HcPickOptionComponent } from './hc-pick-option.component';
 import { HcPickPaneComponent } from './hc-pick-pane.component';
 import { SELECTION_MODEL_FACTORY } from './hc-pick.types';
 import {
-    HcPaneListFooterTemplateDirective,
-    HcPaneListHeaderTemplateDirective,
+    HcPaneFooterTemplateDirective,
+    HcPaneToolbarTemplateDirective,
     HcPickOptgroupTemplateDirective,
     HcPickOptionTemplateDirective,
     HcPaneHeaderLeftTemplateDirective,
     HcPaneHeaderRightTemplateDirective,
-    HcPickCustomItemTemplateDirective,
-    HcPickItemLabelDirective
+    HcPickCustomItemTemplateDirective
 } from './hc-pick-templates.directive';
 import { DefaultSelectionModelFactory } from './selection-model';
 
@@ -27,10 +26,9 @@ import { DefaultSelectionModelFactory } from './selection-model';
         HcPickOptionTemplateDirective,
         HcPaneHeaderLeftTemplateDirective,
         HcPaneHeaderRightTemplateDirective,
-        HcPaneListHeaderTemplateDirective,
-        HcPaneListFooterTemplateDirective,
-        HcPickCustomItemTemplateDirective,
-        HcPickItemLabelDirective
+        HcPaneToolbarTemplateDirective,
+        HcPaneFooterTemplateDirective,
+        HcPickCustomItemTemplateDirective
     ],
     imports: [
         CommonModule
@@ -43,8 +41,8 @@ import { DefaultSelectionModelFactory } from './selection-model';
         HcPickOptionTemplateDirective,
         HcPaneHeaderLeftTemplateDirective,
         HcPaneHeaderRightTemplateDirective,
-        HcPaneListHeaderTemplateDirective,
-        HcPaneListFooterTemplateDirective,
+        HcPaneToolbarTemplateDirective,
+        HcPaneFooterTemplateDirective,
         HcPickCustomItemTemplateDirective
     ],
     providers: [

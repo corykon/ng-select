@@ -4,23 +4,55 @@
 <br>
 
 <hc-picklist2
-    [items]="transportOptions"
+    [items]="animals"
     bindLabel="name"
     [formControl]="selected"
-    [sortFn]="sortFn"
     [searchFn]="customSearchFn"
-    groupBy="type"
-    [selectableGroup]="true">
-     <!-- Group header template -->
-     <ng-template hc-pick-optgroup-tmp let-item="item">
-        <div class="group-row">{{ item.type }}</div>
+    [addCustomItem]="true"
+    groupBy="type">
+
+    <!-- Left Pane Header -->
+    <ng-template hc-pane-header-left-tmp>
+        <div class="header-text"><span class="fa-paw"></span>Available Animals</div>
+        <span class="template-callout">This is a custom header template for the left pane.</span>
     </ng-template>
 
-    <!-- Dropdown option template -->
-    <ng-template hc-pick-option-tmp let-item="item" let-search="searchTerm">
-        <div class="opt-row" title="Travel by {{ item.type }}: {{ item.name }}">
-            <span class="icon-wrapper {{ item.color }}"><hc-icon fontSet="fa" fontIcon="fa-{{ item.icon }}" hcIconSm></hc-icon></span>
-            {{ item.name }}
+    <!-- Right Pane Header -->
+    <ng-template hc-pane-header-right-tmp>
+        <div class="header-text"><span class="fa-paw"></span>Selected Animals</div>
+        <span class="template-callout">This is a custom header template for the right pane.</span>
+    </ng-template>
+    
+    <!-- Pane Toolbar -->
+    <ng-template hc-pane-toolbar-tmp let-itemsList="itemsList" let-searchTerm="searchTerm">
+        <span class="template-callout">This is a custom pane toolbar. </span>
+        <span>Showing {{itemsList.itemsTotalCount}} | Searching for: "{{searchTerm}}"</span>
+    </ng-template>
+
+    <!-- Pane Footer -->
+    <ng-template hc-pane-footer-tmp let-itemsList="itemsList" let-searchTerm="searchTerm">
+        <span class="template-callout">This is a custom pane footer.</span>
+        (Selected {{itemsList.selectedItems.length?.toLocaleString() || 0}})
+    </ng-template>
+
+     <!-- Group header template -->
+    <ng-template hc-pick-optgroup-tmp let-item="item">
+        <div class="group-row"><span class="group-name">{{ item.type }}</span><span class="template-callout">This is a custom group template.</span></div>
+    </ng-template>
+
+    <!-- Individual option template -->
+    <ng-template hc-pick-option-tmp let-item="item" let-selected="hcOption.selected" let-search="searchTerm">
+        <div class="opt-row" [class.opt-row-selected]="selected">
+            <div>{{ item.name }}</div>
+            <span class="template-callout">This is a custom option template.</span>
+        </div>
+    </ng-template>
+
+    <!-- Custom Item template -->
+    <ng-template hc-pick-custom-item-tmp let-search="searchTerm">
+        <div class="opt-row custom-item">
+            <div>Add new animal option: {{search}}</div>
+            <span class="template-callout">This is a custom item template.</span>
         </div>
     </ng-template>
 </hc-picklist2>

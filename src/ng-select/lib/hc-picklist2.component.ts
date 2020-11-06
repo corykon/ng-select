@@ -24,8 +24,8 @@ import { Subject, merge } from 'rxjs';
 
 import {
     HcPickOptionTemplateDirective,
-    HcPaneListHeaderTemplateDirective,
-    HcPaneListFooterTemplateDirective,
+    HcPaneToolbarTemplateDirective,
+    HcPaneFooterTemplateDirective,
     HcPickOptgroupTemplateDirective,
     HcPickCustomItemTemplateDirective,
     HcPaneHeaderRightTemplateDirective,
@@ -62,13 +62,15 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     @Input() bufferAmount = 4;
     @Input() virtualScroll: boolean;
     @Input() selectableGroup = false;
-    @Input() searchFn = null;
     @Input() trackByFn = null;
     @Input() sortFn: SortFn = null;
     @Input() inputAttrs: { [key: string]: string } = {};
     @Input() readonly = false;
+    @Input() searchable = true;
+    @Input() searchFn = null;
     @Input() searchWhileComposing = true;
-    @Input() minTermLength = 0;
+    @Input() searchTermMinLength = 0;
+    @Input() searchTermSubject: Subject<string>;
     @Input() height = '400px';
 
     // todo: inputs that should be specific per pane (maybe)
@@ -76,8 +78,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     @Input() notFoundText = 'No options to show.';
     @Input() loadingText = 'Loading'
     @Input() loading = false;
-    @Input() typeahead: Subject<string>;
-    @Input() searchable = true;
+    
 
     @Input() get items() { return this._items };
     set items(value: any[]) {
@@ -105,8 +106,8 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     // custom templates
     @ContentChild(HcPickOptionTemplateDirective, { read: TemplateRef }) optionTemplate: TemplateRef<any>;
     @ContentChild(HcPickOptgroupTemplateDirective, { read: TemplateRef }) optgroupTemplate: TemplateRef<any>;
-    @ContentChild(HcPaneListHeaderTemplateDirective, { read: TemplateRef }) headerTemplate: TemplateRef<any>;
-    @ContentChild(HcPaneListFooterTemplateDirective, { read: TemplateRef }) footerTemplate: TemplateRef<any>;
+    @ContentChild(HcPaneToolbarTemplateDirective, { read: TemplateRef }) toolbarTemplate: TemplateRef<any>;
+    @ContentChild(HcPaneFooterTemplateDirective, { read: TemplateRef }) footerTemplate: TemplateRef<any>;
     @ContentChild(HcPickCustomItemTemplateDirective, { read: TemplateRef }) customItemTemplate: TemplateRef<any>;
     @ContentChild(HcPaneHeaderRightTemplateDirective, { read: TemplateRef }) paneHeaderRightTemplate: TemplateRef<any>;
     @ContentChild(HcPaneHeaderLeftTemplateDirective, { read: TemplateRef }) paneHeaderLeftTemplate: TemplateRef<any>;

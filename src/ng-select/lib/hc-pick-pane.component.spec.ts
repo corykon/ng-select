@@ -266,12 +266,12 @@ describe('HcPickPaneComponent', () => {
             expect(select.itemsList.items[0].label).toBe('Vilnius');
         }));
 
-        it('should set items correctly after ngModel set first when typeahead and single select is used', fakeAsync(() => {
+        it('should set items correctly after ngModel set first when searchTermSubject and single select is used', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
                 `<hc-pick-pane [items]="cities"
                     bindLabel="name"
-                    [typeahead]="filter"
+                    [searchTermSubject]="filter"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
                 </hc-pick-pane>`);
@@ -294,13 +294,13 @@ describe('HcPickPaneComponent', () => {
             expect(vilnius.selected).toBeTruthy();
         }));
 
-        it('should set items correctly after ngModel set first when typeahead and multi-select is used', fakeAsync(() => {
+        it('should set items correctly after ngModel set first when searchTermSubject and multi-select is used', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
                 `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [multiple]="true"
-                    [typeahead]="filter"
+                    [searchTermSubject]="filter"
                     placeholder="select value"
                     [(ngModel)]="selectedCities">
                 </hc-pick-pane>`);
@@ -1347,7 +1347,7 @@ describe('HcPickPaneComponent', () => {
                     <ng-template hc-pane-list-header-tmp>
                         <span class="header-label">header</span>
                     </ng-template>
-                    <ng-template hc-pane-list-footer-tmp>
+                    <ng-template hc-pane-footer-tmp>
                         <span class="footer-label">footer</span>
                     </ng-template>
                 </hc-pick-pane>`);
@@ -1536,8 +1536,8 @@ describe('HcPickPaneComponent', () => {
 
             it('should not insert option back to list if it is newly created option', fakeAsync(() => {
                 select.addCustomItem = true;
-                select.typeahead = new Subject();
-                select.typeahead.subscribe();
+                select.searchTermSubject = new Subject();
+                select.searchTermSubject.subscribe();
                 fixture.componentInstance.cities = [];
                 tickAndDetectChanges(fixture);
                 fixture.componentInstance.select.filter('New item');
@@ -1766,7 +1766,7 @@ describe('HcPickPaneComponent', () => {
 
             it('should be false when term is too short', () => {
                 select.searchTerm = 'vi';
-                select.minTermLength = 3;
+                select.searchTermMinLength = 3;
                 expect(select.showAddCustomOption).toBeFalsy();
             });
 
@@ -2031,14 +2031,14 @@ describe('HcPickPaneComponent', () => {
             expect(fixture.componentInstance.select.itemsList.filteredItems).toEqual(result);
         }));
 
-        describe('with typeahead', () => {
+        describe('with searchTermSubject', () => {
             let fixture: ComponentFixture<NgSelectTestCmp>;
             beforeEach(() => {
                 fixture = createTestingModule(
                     NgSelectTestCmp,
                     `<hc-pick-pane [items]="cities"
-                        [typeahead]="filter"
-                        [minTermLength]="minTermLength"
+                        [searchTermSubject]="filter"
+                        [searchTermMinLength]="searchTermMinLength"
                         bindLabel="name"
                         [hideSelected]="hideSelected"
                         [(ngModel)]="selectedCity">
@@ -2075,8 +2075,8 @@ describe('HcPickPaneComponent', () => {
                 expect(next).toHaveBeenCalledWith('')
             }));
 
-            it('should not push term to custom observable if length is less than minTermLength', fakeAsync(() => {
-                fixture.componentInstance.minTermLength = 2;
+            it('should not push term to custom observable if length is less than searchTermMinLength', fakeAsync(() => {
+                fixture.componentInstance.searchTermMinLength = 2;
                 tickAndDetectChanges(fixture);
                 fixture.componentInstance.filter.subscribe();
                 const next = spyOn(fixture.componentInstance.filter, 'next');
@@ -2091,7 +2091,7 @@ describe('HcPickPaneComponent', () => {
                 const fixture = createTestingModule(
                     NgSelectTestCmp,
                     `<hc-pick-pane [items]="cities"
-                        [typeahead]="filter"
+                        [searchTermSubject]="filter"
                         [editableSearchTerm]="true"
                         bindValue="id"
                         bindLabel="name"
@@ -2822,7 +2822,7 @@ class NgSelectTestCmp {
     readonly = false;
     dropdownPosition = 'bottom';
     visible = true;
-    minTermLength = 0;
+    searchTermMinLength = 0;
     filter = new Subject<string>();
     searchFn: (term: string, item: any) => boolean = null;
     selectOnTab = true;

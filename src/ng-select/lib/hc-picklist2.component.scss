@@ -182,14 +182,12 @@ $hc-pick-height: 36px !default;
     overflow-y: auto;
 }
 
-.hc-pick-pane-list-header {
-    border-bottom: 1px solid $hc-pick-border;
-    padding: 5px 7px;
-}
-
 .hc-pick-pane-list-footer {
-    border-top: 1px solid $hc-pick-border;
-    padding: 5px 7px;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2px;
+    flex: 0 0 auto;
+    font-size: 12px;
 }
 
 .hc-pick-option, .hc-pick-optgroup {

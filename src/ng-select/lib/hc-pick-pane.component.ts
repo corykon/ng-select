@@ -55,19 +55,19 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     @Input() bufferAmount = 4;
     @Input() virtualScroll: boolean;
     @Input() selectableGroup = false;
-    @Input() searchFn = null;
     @Input() trackByFn = null;
     @Input() sortFn: SortFn = null;
     @Input() inputAttrs: { [key: string]: string } = {};
     @Input() readonly = false;
+    @Input() searchFn = null;
     @Input() searchWhileComposing = true;
-    @Input() minTermLength = 0;
-    @Input() typeahead: Subject<string>;
+    @Input() searchTermMinLength = 0;
+    @Input() searchTermSubject: Subject<string>;
     @Input() searchable = true;
     @Input() _isLeftPane = false;
     @Input() optionTemplate: TemplateRef<any>;
     @Input() optgroupTemplate: TemplateRef<any>;
-    @Input() headerTemplate: TemplateRef<any>;
+    @Input() toolbarTemplate: TemplateRef<any>;
     @Input() footerTemplate: TemplateRef<any>;
     @Input() customItemTemplate: TemplateRef<any>;
 
@@ -335,7 +335,7 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     }
 
     _selectNewCustomOption(customItem: any) {
-        const newOption = this._isTypeahead ? this.itemsList.mapItem(customItem, null) : this.itemsList.addNewOption(customItem);
+        const newOption = this._isUsingSearchSubject ? this.itemsList.mapItem(customItem, null) : this.itemsList.addNewOption(customItem);
         this.filter();
         this.itemsList.markItem(newOption)
         this._selectAndScrollToItem(newOption);
@@ -367,8 +367,8 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
 
     showNoItemsFound() {
         const empty = this.itemsList.filteredItems.length === 0;
-        return ((empty && !this._isTypeahead && !this.loading) ||
-            (empty && this._isTypeahead && this._validTerm && !this.loading)) &&
+        return ((empty && !this._isUsingSearchSubject && !this.loading) ||
+            (empty && this._isUsingSearchSubject && this._validTerm && !this.loading)) &&
             !this.showAddCustomOption;
     }
 
@@ -391,11 +391,11 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         }
 
         this.searchTerm = term;
-        if (this._isTypeahead && (this._validTerm || this.minTermLength === 0)) {
-            this.typeahead.next(term);
+        if (this._isUsingSearchSubject && (this._validTerm || this.searchTermMinLength === 0)) {
+            this.searchTermSubject.next(term);
         }
 
-        if (!this._isTypeahead) {
+        if (!this._isUsingSearchSubject) {
             this.itemsList.filter(this.searchTerm);
         }
         this.itemsList.markSelectedOrDefault();
@@ -417,7 +417,7 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         this.bindLabel = this.bindLabel || this._defaultLabel;
         this._primitive = isDefined(firstItem) ? !isObject(firstItem) : this._primitive || this.bindLabel === this._defaultLabel;
         this.itemsList.setItems(items);
-        if (isDefined(this.searchTerm) && !this._isTypeahead) {
+        if (isDefined(this.searchTerm) && !this._isUsingSearchSubject) {
             this.itemsList.filter(this.searchTerm);
         }
         
@@ -468,8 +468,8 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
 
     private _changeSearch(searchTerm: string) {
         this.searchTerm = searchTerm;
-        if (this._isTypeahead) {
-            this.typeahead.next(searchTerm);
+        if (this._isUsingSearchSubject) {
+            this.searchTermSubject.next(searchTerm);
         }
     }
 
@@ -493,12 +493,12 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
             && (nextIndex < 0 || nextIndex === this.itemsList.filteredItems.length)
     }
 
-    private get _isTypeahead() {
-        return this.typeahead && this.typeahead.observers.length > 0;
+    private get _isUsingSearchSubject() {
+        return this.searchTermSubject && this.searchTermSubject.observers.length > 0;
     }
 
     private get _validTerm() {
         const term = this.searchTerm && this.searchTerm.trim();
-        return term && term.length >= this.minTermLength;
+        return term && term.length >= this.searchTermMinLength;
     }
 }
