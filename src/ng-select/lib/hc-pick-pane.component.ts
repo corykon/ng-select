@@ -27,7 +27,7 @@ import { SelectionModelFactory } from './selection-model';
 import { HcPickPaneListService } from './hc-pick-pane-list.service';
 import { HcPicklist2Service } from './hc-picklist2.service';
 import { HcPickPaneDragService } from './hc-pick-pane-drag.service';
-import { SortFn, GroupValueFn, CompareWithFn, AddTagFn, SELECTION_MODEL_FACTORY } from './hc-pick.types';
+import { SortFn, GroupValueFn, CompareWithFn, AddCustomItemFn, SELECTION_MODEL_FACTORY } from './hc-pick.types';
 
 @Component({
     selector: 'hc-pick-pane',
@@ -45,8 +45,8 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     @Input() bindValue: string;
     @Input() placeholder: string;
     @Input() notFoundText: string;
-    @Input() addTag: boolean | AddTagFn = false;
-    @Input() addTagText: string;
+    @Input() addCustomItem: boolean | AddCustomItemFn = false;
+    @Input() addCustomItemText: string;
     @Input() loadingText: string;
     @Input() loading = false;
     @Input() maxSelectedItems: number;
@@ -55,7 +55,6 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     @Input() bufferAmount = 4;
     @Input() virtualScroll: boolean;
     @Input() selectableGroup = false;
-    @Input() selectableGroupAsModel = true;
     @Input() searchFn = null;
     @Input() trackByFn = null;
     @Input() sortFn: SortFn = null;
@@ -70,7 +69,7 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     @Input() optgroupTemplate: TemplateRef<any>;
     @Input() headerTemplate: TemplateRef<any>;
     @Input() footerTemplate: TemplateRef<any>;
-    @Input() tagTemplate: TemplateRef<any>;
+    @Input() customItemTemplate: TemplateRef<any>;
 
     @Input() get items() { return this._items };
     set items(value: any[]) {
@@ -187,7 +186,11 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     onInputKeydown($event: KeyboardEvent) {
         if ($event.which === KeyCode.ArrowDown || $event.which === KeyCode.Enter) {
             $event.preventDefault();
-            this.panelFocus();
+            if (this.addCustomOptionIsHighlighted) {
+                this.addAndSelectCustomOption();
+            } else {
+                this.panelFocus();
+            }
         } else if ($event.key && $event.key.length === 1 && $event.target === this.searchInput.nativeElement) {
             this._keyPress$.next($event.key.toLocaleLowerCase());
         }
@@ -202,7 +205,11 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
                 this._handlePanelArrow($event, false);
                 break;
             case KeyCode.Enter:
-                this.triggerMoveEvent.emit();
+                if (this.addCustomOptionIsHighlighted) {
+                    this.addAndSelectCustomOption();
+                } else {
+                    this.triggerMoveEvent.emit();
+                }
                 break;
             case KeyCode.Esc:
                 this.itemsList.resetListSelectionState();
@@ -225,9 +232,10 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     }
 
     private _handlePanelArrow($event: KeyboardEvent, isDown: boolean) {
-        if (this._nextItemIsTag(isDown)) {
+        if (this._nextItemIsCustomItem(isDown)) {
             this.itemsList.unmark();
-            this._scrollToTag();
+            this.itemsList.clearSelected();
+            this._scrollToCustomItem();
         } else {
             this.itemsList.markNextItem(isDown);
             if (!$event.shiftKey && !$event.ctrlKey) { this.itemsList.clearSelected(); }
@@ -311,20 +319,26 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         this.searchInput.nativeElement.blur();
     }
 
-    selectTag() {
-        let tag;
-        if (isFunction(this.addTag)) {
-            tag = (<AddTagFn>this.addTag)(this.searchTerm);
+    addAndSelectCustomOption() {
+        let customItem;
+        if (isFunction(this.addCustomItem)) {
+            customItem = (<AddCustomItemFn>this.addCustomItem)(this.searchTerm);
         } else {
-            tag = this._primitive ? this.searchTerm : { [this.bindLabel]: this.searchTerm };
+            customItem = this._primitive ? this.searchTerm : { [this.bindLabel]: this.searchTerm };
         }
 
-        const handleTag = (item) => this._isTypeahead ? this.itemsList.mapItem(item, null) : this.itemsList.addNewOption(item);
-        if (isPromise(tag)) {
-            tag.then(item => this.select(handleTag(item))).catch(() => { });
-        } else if (tag) {
-            this.select(handleTag(tag));
+        if (isPromise(customItem)) {
+            customItem.then(i => this._selectNewCustomOption(i)).catch(() => { });
+        } else if (customItem) {
+            this._selectNewCustomOption(customItem);
         }
+    }
+
+    _selectNewCustomOption(customItem: any) {
+        const newOption = this._isTypeahead ? this.itemsList.mapItem(customItem, null) : this.itemsList.addNewOption(customItem);
+        this.filter();
+        this.itemsList.markItem(newOption)
+        this._selectAndScrollToItem(newOption);
     }
 
     trackByOption = (_: number, item: HcOption) => {
@@ -335,23 +349,27 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         return item;
     };
 
-    get showAddTag() {
+    get showAddCustomOption() {
         if (!this._validTerm) {
             return false;
         }
 
         const term = this.searchTerm.toLowerCase().trim();
-        return this.addTag &&
-            (!this.itemsList.filteredItems.some(x => x.label.toLowerCase() === term) &&
-                (!this.selectedItems.some(x => x.label.toLowerCase() === term))) &&
-                !this.loading;
+        return this.addCustomItem &&
+            !this.itemsList.items.some(x => x.label.toLowerCase() === term) &&
+            !this._companionPane.itemsList.items.some(x => x.label.toLowerCase() === term) &&
+            !this.loading;
+    }
+
+    get addCustomOptionIsHighlighted() {
+        return this.showAddCustomOption && !this.itemsList.markedItem;
     }
 
     showNoItemsFound() {
         const empty = this.itemsList.filteredItems.length === 0;
         return ((empty && !this._isTypeahead && !this.loading) ||
             (empty && this._isTypeahead && this._validTerm && !this.loading)) &&
-            !this.showAddTag;
+            !this.showAddCustomOption;
     }
 
     onCompositionStart() {
@@ -459,18 +477,18 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         this.dropdownPanel.scrollTo(this.itemsList.markedItem);
     }
 
-    private _scrollToTag() {
-        this.dropdownPanel.scrollToTag();
+    private _scrollToCustomItem() {
+        this.dropdownPanel.scrollToCustomOption();
     }
 
     private _onSelectionChanged() {
         this._cd.detectChanges();
     }
 
-    private _nextItemIsTag(nextStepIsDown: boolean): boolean {
+    private _nextItemIsCustomItem(nextStepIsDown: boolean): boolean {
         const nextStep = nextStepIsDown ? 1 : -1;
         const nextIndex = this.itemsList.markedIndex + nextStep;
-        return this.addTag && this.searchTerm
+        return this.addCustomItem && this.searchTerm
             && this.itemsList.markedItem
             && (nextIndex < 0 || nextIndex === this.itemsList.filteredItems.length)
     }

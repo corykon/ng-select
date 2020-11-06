@@ -45,7 +45,7 @@ export class HcPaneListFooterTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }
 
-@Directive({ selector: '[hc-pick-tag-tmp]' })
-export class HcPickTagTemplateDirective {
+@Directive({ selector: '[hc-pick-custom-item-tmp]' })
+export class HcPickCustomItemTemplateDirective {
     constructor(public template: TemplateRef<any>) { }
 }

@@ -8,7 +8,7 @@ export function DefaultSelectionModelFactory() {
 
 export interface HcPickSelectionModel {
     value: HcOption[];
-    select(item: HcOption, selectableGroupAsModel: boolean);
+    select(item: HcOption);
     unselect(item: HcOption);
     clear(keepDisabled: boolean);
     selectAll(items: Array<HcOption>, selectableGroup: boolean);
@@ -21,7 +21,7 @@ export class DefaultSelectionModel implements HcPickSelectionModel {
         return this._selected;
     }
 
-    select(item: HcOption, groupAsModel: boolean) {
+    select(item: HcOption) {
         item.selected = true;
         if (!item.children) {
             this._selected.push(item);
@@ -31,11 +31,7 @@ export class DefaultSelectionModel implements HcPickSelectionModel {
         } else if (item.children) {
             this._setChildrenSelectedState(item.children, true);
             this._removeChildren(item);
-            if (groupAsModel && this._activeChildren(item)) {
-                this._selected = [...this._selected.filter(x => x.parent !== item), item]
-            } else {
-                this._selected = [...this._selected, ...item.children.filter(x => !x.disabled)];
-            }
+            this._selected = [...this._selected, ...item.children.filter(x => !x.disabled)];
         }
     }
 

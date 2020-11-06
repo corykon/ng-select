@@ -1,0 +1,58 @@
+$slate-gray-100: #f0f3f6;
+$blue: #00aeff;
+$green: #00a859;
+$purple: #6e53a3;
+$teal: #00acac;
+$orange: #f8961d;
+$dark-blue: #006d9a;
+$offblack: #333;
+$white: #fff;
+
+.group-row {
+    background-color: $slate-gray-100;
+    color: $offblack;
+    font-size: 12px;
+    margin: -8px -10px;
+    padding: 5px 20px;
+    text-transform: capitalize;
+}
+
+.ng-value-label hc-icon {
+    margin-right: 3px;
+}
+
+.opt-row {
+    display: flex;
+    align-items: center;
+    color: $offblack;
+}
+
+.icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    height: 28px;
+    width: 28px;
+    margin-right: 7px;
+    color: $white;
+
+    &.blue {
+        background-color: $blue;
+    }
+    &.green {
+        background-color: $green;
+    }
+    &.teal {
+        background-color: $teal;
+    }
+    &.purple {
+        background-color: $purple;
+    }
+    &.orange {
+        background-color: $orange;
+    }
+    &.dark-blue {
+        background-color: $dark-blue;
+    }
+}

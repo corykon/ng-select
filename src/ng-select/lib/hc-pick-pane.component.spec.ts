@@ -550,7 +550,7 @@ describe('HcPickPaneComponent', () => {
             expect(select.selectedItems.length).toBe(0);
         }));
 
-        it('should not add selected items to new items list when [items] are changed', fakeAsync(() => {
+        it('should not add custom itemected items to new items list when [items] are changed', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
                 `<hc-pick-pane [items]="cities"
@@ -1362,20 +1362,20 @@ describe('HcPickPaneComponent', () => {
             });
         }));
 
-        it('should display custom tag template', async(() => {
+        it('should display custom item template', async(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities" [(ngModel)]="selectedCity" [addTag]="true">
-                    <ng-template hc-pick-tag-tmp let-search="searchTerm">
-                        <span class="tag-template">{{searchTerm}}</span>
+                `<hc-pick-pane [items]="cities" [(ngModel)]="selectedCity" [addCustomItem]="true">
+                    <ng-template hc-pick-custom-item-tmp let-search="searchTerm">
+                        <span class="custom-item-template">{{searchTerm}}</span>
                     </ng-template>
                 </hc-pick-pane>`);
 
-            fixture.componentInstance.select.searchTerm = 'tag';
+            fixture.componentInstance.select.searchTerm = 'custom-item';
             fixture.detectChanges();
 
             fixture.whenStable().then(() => {
-                const template = fixture.debugElement.query(By.css('.tag-template')).nativeElement;
+                const template = fixture.debugElement.query(By.css('.custom-item-template')).nativeElement;
                 expect(template).toBeDefined();
             });
         }));
@@ -1535,7 +1535,7 @@ describe('HcPickPaneComponent', () => {
             });
 
             it('should not insert option back to list if it is newly created option', fakeAsync(() => {
-                select.addTag = true;
+                select.addCustomItem = true;
                 select.typeahead = new Subject();
                 select.typeahead.subscribe();
                 fixture.componentInstance.cities = [];
@@ -1603,29 +1603,29 @@ describe('HcPickPaneComponent', () => {
         });
     });
 
-    describe('Tagging', () => {
-        it('should select default tag', fakeAsync(() => {
+    describe('Custom Options', () => {
+        it('should select default custom item', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
                 `<hc-pick-pane [items]="cities"
                     bindLabel="name"
-                    [addTag]="true"
+                    [addCustomItem]="true"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
                 </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
-            fixture.componentInstance.select.filter('new tag');
+            fixture.componentInstance.select.filter('new custom item');
             tickAndDetectChanges(fixture);
             triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode.Enter);
-            expect(fixture.componentInstance.selectedCity.name).toBe('new tag');
+            expect(fixture.componentInstance.selectedCity.name).toBe('new custom item');
         }));
 
-        it('should add tag as string', fakeAsync(() => {
+        it('should add custom item as string', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
                 `<hc-pick-pane [items]="citiesNames"
-                    [addTag]="true"
+                    [addCustomItem]="true"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
                 </hc-pick-pane>`);
@@ -1637,11 +1637,11 @@ describe('HcPickPaneComponent', () => {
             expect(fixture.componentInstance.selectedCity).toBe(<any>'Copenhagen');
         }));
 
-        it('should add tag as string when there are no items', fakeAsync(() => {
+        it('should add custom item as string when there are no items', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
                 `<hc-pick-pane [items]="[]"
-                    [addTag]="true"
+                    [addCustomItem]="true"
                     [(ngModel)]="selectedCity">
                 </hc-pick-pane>`);
 
@@ -1653,12 +1653,12 @@ describe('HcPickPaneComponent', () => {
             expect(fixture.componentInstance.select.itemsList.filteredItems.length).toBe(1);
         }));
 
-        it('should not add item to list when select is closed', fakeAsync(() => {
+        it('should not add custom itemm to list when select is closed', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
                 `<hc-pick-pane [items]="[]"
                     [isOpen]="false"
-                    [addTag]="true"
+                    [addCustomItem]="true"
                     [(ngModel)]="selectedCity">
                 </hc-pick-pane>`);
 
@@ -1669,11 +1669,11 @@ describe('HcPickPaneComponent', () => {
             expect(fixture.componentInstance.select.itemsList.filteredItems.length).toBe(0);
         }));
 
-        it('should add tag as string when tab pressed', fakeAsync(() => {
+        it('should add custom item as string when tab pressed', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
                 `<hc-pick-pane [items]="citiesNames"
-                    [addTag]="true"
+                    [addCustomItem]="true"
                     [selectOnTab]="true"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
@@ -1686,12 +1686,12 @@ describe('HcPickPaneComponent', () => {
             expect(fixture.componentInstance.selectedCity).toBe(<any>'Copenhagen');
         }));
 
-        it('should select tag even if there are filtered items that matches search term', fakeAsync(() => {
+        it('should select custom item even if there are filtered items that matches search term', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
                 `<hc-pick-pane [items]="cities"
                     bindLabel="name"
-                    [addTag]="true"
+                    [addCustomItem]="true"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
                 </hc-pick-pane>`);
@@ -1704,46 +1704,46 @@ describe('HcPickPaneComponent', () => {
             expect(fixture.componentInstance.selectedCity.name).toBe('Vil');
         }));
 
-        it('should select custom tag', fakeAsync(() => {
+        it('should select custom custom item', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
                 `<hc-pick-pane [items]="cities"
                     bindLabel="name"
-                    [addTag]="tagFunc"
+                    [addCustomItem]="customItemFunc"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
                 </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
-            fixture.componentInstance.select.filter('custom tag');
+            fixture.componentInstance.select.filter('custom item');
             tickAndDetectChanges(fixture);
             triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode.Enter);
             expect(<any>fixture.componentInstance.selectedCity).toEqual(jasmine.objectContaining({
-                id: 'custom tag', name: 'custom tag', custom: true
+                id: 'custom item', name: 'custom item', custom: true
             }));
         }));
 
-        it('should select custom tag with promise', fakeAsync(() => {
+        it('should select custom item with promise', fakeAsync(() => {
             let fixture = createTestingModule(
                 NgSelectTestCmp,
                 `<hc-pick-pane [items]="cities"
                     bindLabel="name"
-                    [addTag]="tagFuncPromise"
+                    [addCustomItem]="customItemFuncPromise"
                     placeholder="select value"
                     [(ngModel)]="selectedCity">
                 </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
-            fixture.componentInstance.select.filter('server side tag');
+            fixture.componentInstance.select.filter('server side custom item');
             tickAndDetectChanges(fixture);
             triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode.Enter);
             tick();
             expect(<any>fixture.componentInstance.selectedCity).toEqual(jasmine.objectContaining({
-                id: 5, name: 'server side tag', valid: true
+                id: 5, name: 'server side custom item', valid: true
             }));
         }));
 
-        describe('show add tag', () => {
+        describe('show add custom item', () => {
             let select: HcPickPaneComponent;
             let fixture: ComponentFixture<NgSelectTestCmp>;
             beforeEach(() => {
@@ -1752,7 +1752,7 @@ describe('HcPickPaneComponent', () => {
                     `<hc-pick-pane [items]="cities"
                     bindLabel="name"
                     [multiple]="true"
-                    [addTag]="true"
+                    [addCustomItem]="true"
                     placeholder="select value"
                     [(ngModel)]="selectedCities">
                 </hc-pick-pane>`);
@@ -1761,35 +1761,35 @@ describe('HcPickPaneComponent', () => {
 
             it('should be false when there is no search term', () => {
                 select.searchTerm = null;
-                expect(select.showAddTag).toBeFalsy();
+                expect(select.showAddCustomOption).toBeFalsy();
             });
 
             it('should be false when term is too short', () => {
                 select.searchTerm = 'vi';
                 select.minTermLength = 3;
-                expect(select.showAddTag).toBeFalsy();
+                expect(select.showAddCustomOption).toBeFalsy();
             });
 
             it('should be true when term not exists among items', () => {
                 select.searchTerm = 'Vil';
-                expect(select.showAddTag).toBeTruthy();
+                expect(select.showAddCustomOption).toBeTruthy();
             });
 
             it('should be false when term exists among items', () => {
                 select.searchTerm = 'Vilnius';
-                expect(select.showAddTag).toBeFalsy();
+                expect(select.showAddCustomOption).toBeFalsy();
             });
 
             it('should be false when term exists among selected items', fakeAsync(() => {
                 fixture.componentInstance.selectedCities = [{ name: 'Palanga', id: 9 }];
                 select.searchTerm = 'Palanga';
                 tickAndDetectChanges(fixture);
-                expect(select.showAddTag).toBeFalsy();
+                expect(select.showAddCustomOption).toBeFalsy();
             }));
 
             it('should be false when there is search term with only empty space', () => {
                 select.searchTerm = '   ';
-                expect(select.showAddTag).toBeFalsy();
+                expect(select.showAddCustomOption).toBeFalsy();
             });
         });
     });
@@ -2723,7 +2723,7 @@ describe('HcPickPaneComponent', () => {
             fixture = createTestingModule(
                 NgSelectTestCmp,
                 `<hc-pick-pane [items]="citiesNames"
-                    [addTag]="true"
+                    [addCustomItem]="true"
                     placeholder="select value"
                     [searchWhileComposing]="false"
                     [(ngModel)]="selectedCity">
@@ -2847,11 +2847,11 @@ class NgSelectTestCmp {
         { id: 3, description: { name: 'Australia', id: 'c' } }
     ];
 
-    tagFunc(term: string) {
+    customItemFunc(term: string) {
         return { id: term, name: term, custom: true }
     }
 
-    tagFuncPromise(term: string) {
+    customItemFuncPromise(term: string) {
         return Promise.resolve({
             id: 5, name: term, valid: true
         });

@@ -27,7 +27,7 @@ import {
     HcPaneListHeaderTemplateDirective,
     HcPaneListFooterTemplateDirective,
     HcPickOptgroupTemplateDirective,
-    HcPickTagTemplateDirective,
+    HcPickCustomItemTemplateDirective,
     HcPaneHeaderRightTemplateDirective,
     HcPaneHeaderLeftTemplateDirective
 } from './hc-pick-templates.directive';
@@ -37,7 +37,7 @@ import { HcPickOptionComponent } from './hc-pick-option.component';
 import { ConsoleService } from './console.service';
 import { HcPickPaneComponent } from './hc-pick-pane.component';
 import { HcPicklist2Service } from './hc-picklist2.service';
-import { SortFn, GroupValueFn, CompareWithFn, AddTagFn } from './hc-pick.types';
+import { SortFn, GroupValueFn, CompareWithFn, AddCustomItemFn } from './hc-pick.types';
 
 @Component({
     selector: 'hc-picklist2',
@@ -54,15 +54,14 @@ import { SortFn, GroupValueFn, CompareWithFn, AddTagFn } from './hc-pick.types';
 export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlValueAccessor {
     @Input() bindLabel: string;
     @Input() bindValue: string;
-    @Input() addTagText = 'Add custom option.'; // todo: keep this or no?
-    @Input() addTag: boolean | AddTagFn = false; // todo: keep this or no?
+    @Input() addCustomItemText = 'Add custom option.';
+    @Input() addCustomItem: boolean | AddCustomItemFn = false;
     @Input() maxSelectedItems: number;
     @Input() groupBy: string | Function;
     @Input() groupValue: GroupValueFn;
     @Input() bufferAmount = 4;
     @Input() virtualScroll: boolean;
     @Input() selectableGroup = false;
-    @Input() selectableGroupAsModel = true;
     @Input() searchFn = null;
     @Input() trackByFn = null;
     @Input() sortFn: SortFn = null;
@@ -108,7 +107,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     @ContentChild(HcPickOptgroupTemplateDirective, { read: TemplateRef }) optgroupTemplate: TemplateRef<any>;
     @ContentChild(HcPaneListHeaderTemplateDirective, { read: TemplateRef }) headerTemplate: TemplateRef<any>;
     @ContentChild(HcPaneListFooterTemplateDirective, { read: TemplateRef }) footerTemplate: TemplateRef<any>;
-    @ContentChild(HcPickTagTemplateDirective, { read: TemplateRef }) tagTemplate: TemplateRef<any>;
+    @ContentChild(HcPickCustomItemTemplateDirective, { read: TemplateRef }) customItemTemplate: TemplateRef<any>;
     @ContentChild(HcPaneHeaderRightTemplateDirective, { read: TemplateRef }) paneHeaderRightTemplate: TemplateRef<any>;
     @ContentChild(HcPaneHeaderLeftTemplateDirective, { read: TemplateRef }) paneHeaderLeftTemplate: TemplateRef<any>;
 
@@ -318,38 +317,14 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         return true;
     };
 
-    // todo: more testing around this
-    // test case:
-    //        [items]="accounts"
-    //        bindLabel="name"
-    //        bindValue="name"
-    //        [groupBy]="groupByFn"
-    //        [selectableGroup]="true"
-    //        [multiple]="true"
-    //        [(ngModel)]="selectedAccounts"
+    // todo: more unit testing around this
     private _updateNgModel() {
         const model = [];
-        let selectedItems = this.selectedPane.itemsList.items;
-
-        if (!this.selectableGroup || !this.selectableGroupAsModel) {
-            selectedItems = selectedItems.filter(item => !item.children);
-        }
-
-        const hasGroupByFn = isFunction(this.groupBy);
-        for (const item of selectedItems) {
-            if (this.bindValue) {
-                let value = null;
-                if (item.children) {
-                    const groupKey = this.groupValue ? this.bindValue : (hasGroupByFn ? this.bindLabel : <string>this.groupBy);
-                    value = groupKey ? item.value[groupKey] : item.value;
-                } else {
-                    value = this.selectedPane.itemsList.resolveNested(item.value, this.bindValue);
-                }
-                model.push(value);
-            } else {
-                model.push(item.value);
-            }
-        }
+        const selectedItems = this.selectedPane.itemsList.items.filter(i => !i.children);
+        selectedItems.forEach(i => {
+            let value = this.bindValue ? this.selectedPane.itemsList.resolveNested(i.value, this.bindValue) : i.value;
+            model.push(value);
+        });
 
         const selected = selectedItems.map(x => x.value);
         this._onChange(model);

@@ -1,5 +1,3 @@
-@import "~@healthcatalyst/cashmere/scss/colors";
-
 @mixin rtl {
     @at-root [dir="rtl"] #{&} {
         @content
@@ -10,13 +8,13 @@
     @return mix(white, $color, $percentage);
 }
 
-$hc-pick-highlight: $azure !default;
-$hc-pick-primary-text: $offblack !default;
-$hc-pick-border: $gray-300 !default;
+$hc-pick-highlight: #007bff !default;
+$hc-pick-primary-text: #333 !default;
+$hc-pick-border: #ccc !default;
 $hc-pick-border-radius: 4px !default;
-$hc-pick-bg: $white !default;
+$hc-pick-bg: #fff !default;
 $hc-pick-selected: $hc-pick-highlight !default;
-$hc-pick-hover: tint($blue, 75) !default;
+$hc-pick-hover: tint(#00aeff, 75) !default;
 $hc-pick-height: 36px !default;
 
 .hc-picklist2 {
@@ -138,7 +136,7 @@ $hc-pick-height: 36px !default;
     }
 
     &.pane-is-active {
-        .hc-pick-option-marked { outline: lighten($blue, 15) 1px dotted; outline-offset: -2px; }
+        .hc-pick-option-marked { outline: lighten(#00aeff, 15) 1px dotted; outline-offset: -2px; }
     }
 
     &:focus {
@@ -206,7 +204,7 @@ $hc-pick-height: 36px !default;
 
     &.hc-pick-option-selected, &.hc-pick-option-selected.hc-pick-option-marked {
         background-color: $hc-pick-selected;
-        color: $white;
+        color: #fff;
     }
     &:not(.hc-pick-option-disabled):hover {
         background-color: $hc-pick-hover;
@@ -214,15 +212,20 @@ $hc-pick-height: 36px !default;
     }
     &.hc-pick-option-selected:hover {
         background-color: lighten($hc-pick-selected, 5);
-        color: $white;
+        color: #fff;
     }
     &.hc-pick-option-disabled {
         cursor: default;
     }
+
+    &.hc-pick-custom-option.hc-pick-option-marked {
+        background-color: $hc-pick-hover;
+        color: $hc-pick-primary-text;
+    }
 }
 
 .hc-pick-optgroup {
-    background-color: $gray-100;
+    background-color: #e0e3e6;
     user-select: none;
     font-weight: 500;
 }
@@ -240,7 +243,7 @@ $hc-pick-height: 36px !default;
             padding-left: 0;
         }
     }
-    .hc-pick-tag-label {
+    .hc-pick-custom-item-label {
         font-size: 80%;
         font-weight: 400;
         padding-right: 5px;

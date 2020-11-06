@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 export class NgSelectConfig {
     placeholder: string;
     notFoundText = 'No items found';
-    addTagText = 'Add item';
+    addCustomItemText = 'Add item';
     loadingText = 'Loading...';
     disableVirtualScroll = true;
     bindValue: string;

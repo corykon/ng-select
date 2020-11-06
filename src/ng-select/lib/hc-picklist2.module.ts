@@ -12,7 +12,7 @@ import {
     HcPickOptionTemplateDirective,
     HcPaneHeaderLeftTemplateDirective,
     HcPaneHeaderRightTemplateDirective,
-    HcPickTagTemplateDirective,
+    HcPickCustomItemTemplateDirective,
     HcPickItemLabelDirective
 } from './hc-pick-templates.directive';
 import { DefaultSelectionModelFactory } from './selection-model';
@@ -29,7 +29,7 @@ import { DefaultSelectionModelFactory } from './selection-model';
         HcPaneHeaderRightTemplateDirective,
         HcPaneListHeaderTemplateDirective,
         HcPaneListFooterTemplateDirective,
-        HcPickTagTemplateDirective,
+        HcPickCustomItemTemplateDirective,
         HcPickItemLabelDirective
     ],
     imports: [
@@ -45,7 +45,7 @@ import { DefaultSelectionModelFactory } from './selection-model';
         HcPaneHeaderRightTemplateDirective,
         HcPaneListHeaderTemplateDirective,
         HcPaneListFooterTemplateDirective,
-        HcPickTagTemplateDirective
+        HcPickCustomItemTemplateDirective
     ],
     providers: [
         { provide: SELECTION_MODEL_FACTORY, useValue: DefaultSelectionModelFactory }

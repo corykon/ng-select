@@ -14,7 +14,7 @@
             [bindValue]="bindValue"
             [placeholder]="placeholder"
             [notFoundText]="notFoundText"
-            [addTagText]="addTagText"
+            [addCustomItemText]="addCustomItemText"
             [loadingText]="loadingText"
             [loading]="loading"
             [maxSelectedItems]="maxSelectedItems"
@@ -23,7 +23,6 @@
             [bufferAmount]="bufferAmount"
             [virtualScroll]="virtualScroll"
             [selectableGroup]="selectableGroup"
-            [selectableGroupAsModel]="selectableGroupAsModel"
             [searchFn]="searchFn"
             [trackByFn]="trackByFn"
             [sortFn]="sortFn"
@@ -32,7 +31,7 @@
             [searchWhileComposing]="searchWhileComposing"
             [minTermLength]="minTermLength"
             [typeahead]="typeahead"
-            [addTag]="addTag"
+            [addCustomItem]="addCustomItem"
             [searchable]="searchable"
             [items]="items"
             [compareWith]="compareWith"
@@ -40,7 +39,7 @@
             [optgroupTemplate]="optgroupTemplate"
             [headerTemplate]="headerTemplate"
             [footerTemplate]="footerTemplate"
-            [tagTemplate]="tagTemplate"
+            [customItemTemplate]="customItemTemplate"
             (triggerMove)="moveLeftToRight()">
         </hc-pick-pane>
     </div>
@@ -71,7 +70,7 @@
             [bindValue]="bindValue"
             [placeholder]="placeholder"
             [notFoundText]="notFoundText"
-            [addTagText]="addTagText"
+            [addCustomItemText]="addCustomItemText"
             [loadingText]="loadingText"
             [loading]="loading"
             [maxSelectedItems]="maxSelectedItems"
@@ -80,7 +79,6 @@
             [bufferAmount]="bufferAmount"
             [virtualScroll]="virtualScroll"
             [selectableGroup]="selectableGroup"
-            [selectableGroupAsModel]="selectableGroupAsModel"
             [searchFn]="searchFn"
             [trackByFn]="trackByFn"
             [sortFn]="sortFn"
@@ -89,14 +87,14 @@
             [searchWhileComposing]="searchWhileComposing"
             [minTermLength]="minTermLength"
             [typeahead]="typeahead"
-            [addTag]="addTag"
+            [addCustomItem]="addCustomItem"
             [searchable]="searchable"
             [compareWith]="compareWith"
             [optionTemplate]="optionTemplate"
             [optgroupTemplate]="optgroupTemplate"
             [headerTemplate]="headerTemplate"
             [footerTemplate]="footerTemplate"
-            [tagTemplate]="tagTemplate"
+            [customItemTemplate]="customItemTemplate"
             (triggerMove)="moveRightToLeft()">
         </hc-pick-pane>
     </div>

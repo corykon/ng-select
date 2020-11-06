@@ -141,7 +141,7 @@ export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
         }
     }
 
-    scrollToTag() {
+    scrollToCustomOption() {
         const panel = this._scrollablePanel;
         panel.scrollTop = panel.scrollHeight - panel.clientHeight;
     }

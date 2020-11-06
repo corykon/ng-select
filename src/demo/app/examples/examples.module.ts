@@ -6,12 +6,16 @@ import { HcPicklist2Module } from '@ng-select/ng-select';
 import { PicklistExampleComponent } from './picklist-example/picklist-example.component';
 import { PicklistExampleSimpleComponent } from './picklist-example-simple/picklist-example-simple.component';
 import { PicklistExampleTemplatesComponent } from './picklist-example-templates/picklist-example-templates.component';
+import { PicklistExampleTaggingComponent } from './picklist-example-tagging/picklist-example-tagging.component';
+import { PicklistExampleGroupingComponent } from './picklist-example-grouping/picklist-example-grouping.component';
 
 
 const examples = [
     PicklistExampleComponent,
     PicklistExampleSimpleComponent,
-    PicklistExampleTemplatesComponent
+    PicklistExampleTemplatesComponent,
+    PicklistExampleTaggingComponent,
+    PicklistExampleGroupingComponent
 ];
 
 @NgModule({

@@ -6,14 +6,15 @@
 <hc-picklist2
     [items]="transportOptions"
     bindLabel="name"
+    bindValue="name"
     [formControl]="selected"
     [sortFn]="sortFn"
     [searchFn]="customSearchFn"
-    groupBy="type"
+    [groupBy]="groupByFn"
     [selectableGroup]="true">
      <!-- Group header template -->
      <ng-template hc-pick-optgroup-tmp let-item="item">
-        <div class="group-row">{{ item.type }}</div>
+        <div class="group-row">{{ item.name }}</div>
     </ng-template>
 
     <!-- Dropdown option template -->

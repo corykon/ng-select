@@ -170,7 +170,6 @@ map: {
 | [groupBy] | `string` \| `Function` | null | no | Allow to group items by key or function expression |
 | [groupValue] |  `(groupKey: string, cildren: any[]) => Object` | - | no | Function expression to provide group value |
 | [selectableGroup] | `boolean` | false | no | Allow to select group when groupBy is used |
-| [selectableGroupAsModel] | `boolean` | true | no | Indicates whether to select all children or group itself  |
 | [items] | `Array<any>` | `[]` | yes | Items array |
 | [loading] | `boolean` |  `-` | no | You can set the loading state from the outside (e.g. async items loading) |
 | loadingText | `string` | `Loading...` | no | Set custom text when for loading items |

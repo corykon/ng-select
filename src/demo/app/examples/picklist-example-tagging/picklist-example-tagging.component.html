@@ -1,0 +1,16 @@
+
+
+<h3>User-added custom options</h3>
+<br>
+
+<hc-picklist2
+    [items]="transportOptions"
+    bindLabel="name"
+    bindValue="name"
+    [formControl]="selected"
+    [addCustomItem]="true">
+</hc-picklist2>
+
+<br>
+
+<br/>Selected: {{ selected.value | json }}

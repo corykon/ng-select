@@ -165,41 +165,6 @@ describe('ItemsList', () => {
 
                 expect(list.filteredItems.length).toBe(0); // remove all items since group was selected
             });
-
-            describe('group as model', () => {
-                beforeEach(() => {
-                    cmp.selectableGroupAsModel = false;
-                    cmp.groupBy = 'groupKey';
-                    list.setItems([
-                        { label: 'K1', val: 'V1', groupKey: 'G1' },
-                        { label: 'K2', val: 'V2', groupKey: 'G1' },
-                        { label: 'K3', val: 'V3', groupKey: 'G2'},
-                        { label: 'K4', val: 'V4', groupKey: 'G2', disabled: true},
-                    ]);
-                });
-
-                it('should select all group children', () => {
-                    list.select(list.items[0]);
-                    expect(list.selectedItems.length).toBe(2);
-                    expect(list.selectedItems[0].label).toBe('K1');
-                    expect(list.selectedItems[1].label).toBe('K2');
-                });
-
-                it('should select all group children when child already selected', () => {
-                    list.select(list.items[1]);
-                    list.select(list.items[0]);
-                    expect(list.selectedItems.length).toBe(2);
-                    expect(list.selectedItems[0].label).toBe('K1');
-                    expect(list.selectedItems[1].label).toBe('K2');
-                });
-
-                it('should not select disabled items', () => {
-                    list.select(list.items[3]); // G2
-                    expect(list.selectedItems.length).toBe(1);
-                    expect(list.selectedItems[0].label).toBe('K3');
-                });
-            })
-        });
     });
 
     describe('un-select', () => {
@@ -296,25 +261,6 @@ describe('ItemsList', () => {
                 list.unselect(list.findByLabel('G1'));
                 expect(list.selectedItems.length).toBe(2);
                 expect(list.selectedItems[0].label).toBe('G2');
-            });
-
-            it('should not unselect disabled items within a group (groupAsModel=false)', () => {
-                cmp.groupBy = 'groupKey';
-                cmp.selectableGroupAsModel = false;
-                list.setItems([
-                    { label: 'K1', val: 'V1', groupKey: 'G1' },
-                    { label: 'K2', val: 'V2', groupKey: 'G1', disabled: true },
-                ]);
-
-                list.select(list.items[2]); // K2
-                list.select(list.items[0]); // G1
-                expect(list.selectedItems.length).toBe(2);
-                expect(list.selectedItems.find(x => x.label === 'K1')).toBeDefined();
-                expect(list.selectedItems.find(x => x.label === 'K2')).toBeDefined();
-
-                list.unselect(list.items[0]); // G1
-                expect(list.selectedItems.length).toBe(1);
-                expect(list.selectedItems[0].label).toBe('K2');
             });
 
             it('should not affect disabled items when un-selecting a group', () => {
@@ -462,56 +408,6 @@ describe('ItemsList', () => {
             list.select(list.items[0]); // select group;
             list.filter('K1');
             expect(list.filteredItems.length).toBe(0);
-        });
-    });
-
-    describe('map selected', () => {
-        let list: ItemsList;
-        let cmp: HcPickPaneComponent;
-        beforeEach(() => {
-            cmp = ngSelectFactory();
-            cmp.multiple = true;
-            cmp.bindLabel = 'name';
-            cmp.bindValue = 'name';
-            cmp.groupBy = 'country';
-            cmp.selectableGroupAsModel = false;
-            list = itemsListFactory(cmp);
-        });
-
-        it('should map selected items from items', () => {
-            list.select(list.mapItem({ name: 'Adam' }, null));
-            list.select(list.mapItem({ name: 'Samantha' }, null));
-            list.select(list.mapItem({ name: 'Amalie' }, null));
-
-            list.setItems([
-                { name: 'Adam', country: 'United States' },
-                { name: 'Samantha', country: 'United States' },
-                { name: 'Amalie', country: 'Argentina' }]);
-
-            list.mapSelectedItems();
-
-            expect(list.selectedItems.length).toBe(3);
-            expect(list.selectedItems[0].parent.label).toBe('United States');
-            expect(list.selectedItems[0].selected).toBeTruthy();
-            expect(list.items[0].label).toBe('United States');
-            expect(list.items[0].selected).toBeTruthy();
-        });
-
-        it('should retain items order', () => {
-            list.select(list.mapItem({ name: 'Samantha' }, null));
-            list.select(list.mapItem({ name: 'Other' }, null));
-            list.select(list.mapItem({ name: 'Amalie' }, null));
-
-            list.setItems([
-                { name: 'Samantha', country: 'United States' },
-                { name: 'Amalie', country: 'Argentina' }]);
-
-            list.mapSelectedItems();
-
-            expect(list.selectedItems.length).toBe(3);
-            expect(list.selectedItems[0].label).toBe('Samantha');
-            expect(list.selectedItems[1].label).toBe('Other');
-            expect(list.selectedItems[2].label).toBe('Amalie');
         });
     });
 

@@ -81,7 +81,7 @@ export class ItemsList {
 
     select(item: HcOption) {
         if (item.selected) { return; }
-        this._selectionModel.select(item, this._ngSelect.selectableGroupAsModel);
+        this._selectionModel.select(item);
     }
 
     unselect(item: HcOption) {
@@ -185,6 +185,7 @@ export class ItemsList {
         term = this._ngSelect.searchFn ? term : searchHelper.stripSpecialChars(term).toLocaleLowerCase();
         const match = this._ngSelect.searchFn || this._defaultSearchFn;
 
+        if (!this._groups) { return; }
         for (const key of Array.from(this._groups.keys())) {
             const matchedItems = [];
             for (const item of this._groups.get(key)) {
@@ -283,13 +284,8 @@ export class ItemsList {
     }
 
     private _updateCounts() {
-        if (this._ngSelect.groupBy && (!this._ngSelect.selectableGroup || !this._ngSelect.selectableGroupAsModel)) {
-            this._itemsShownCount = this.filteredItems.filter(i => !i.children).length.toLocaleString();
-            this._itemsTotalCount = this.items.filter(i => !i.children).length.toLocaleString();
-        } else {
-            this._itemsShownCount = this.filteredItems.length.toLocaleString();
-            this._itemsTotalCount = this.items.length.toLocaleString();
-        }
+        this._itemsShownCount = this.filteredItems.filter(i => !i.children).length.toLocaleString();
+        this._itemsTotalCount = this.items.filter(i => !i.children).length.toLocaleString();
     }
 
     private _defaultSearchFn(search: string, opt: HcOption) {

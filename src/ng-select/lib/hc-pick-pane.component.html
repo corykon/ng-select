@@ -81,13 +81,13 @@
             </ng-template>
         </div>
 
-        <div class="hc-pick-option" [class.hc-pick-option-marked]="!itemsList.markedItem" (mouseover)="itemsList.unmarkItem()" role="option" (click)="selectTag()" *ngIf="showAddTag">
-            <ng-template #defaultTagTemplate>
-                <span><span class="hc-pick-tag-label">{{addTagText}}</span>"{{searchTerm}}"</span>
+        <div *ngIf="showAddCustomOption" class="hc-pick-option hc-pick-custom-option" [class.hc-pick-option-marked]="!itemsList.markedItem" role="option" (click)="addAndSelectCustomOption()">
+            <ng-template #defaultCustomItemTemplate>
+                <span><span class="hc-pick-custom-item-label">{{addCustomItemText}}</span>"{{searchTerm}}"</span>
             </ng-template>
 
             <ng-template
-                [ngTemplateOutlet]="tagTemplate || defaultTagTemplate"
+                [ngTemplateOutlet]="customItemTemplate || defaultCustomItemTemplate"
                 [ngTemplateOutletContext]="{ searchTerm: searchTerm }">
             </ng-template>
         </div>
