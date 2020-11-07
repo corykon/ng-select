@@ -33,7 +33,6 @@ import {
 } from './hc-pick-templates.directive';
 import { isDefined, isFunction, isObject } from './value-utils';
 import { HcPickOptionComponent } from './hc-pick-option.component';
-import { ConsoleService } from './console.service';
 import { HcPickPaneComponent } from './hc-pick-pane.component';
 import { HcPicklist2Service } from './hc-picklist2.service';
 import { SortFn, GroupValueFn, CompareWithFn, AddCustomItemFn, SearchFn } from './hc-pick.types';
@@ -50,6 +49,7 @@ import { SortFn, GroupValueFn, CompareWithFn, AddCustomItemFn, SearchFn } from '
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush
 })
+/** Form control helpful for selecting multiple items from a very large set options */
 export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlValueAccessor {
     /** If options are objects, this matches the object property to use for display in the list.
      * Can used nested properties. `myObject.property.nestedProperty`. Default is `'label'`. */
@@ -168,20 +168,14 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         _elementRef: ElementRef<HTMLElement>,
         private picklistService: HcPicklist2Service,
         private _cd: ChangeDetectorRef,
-        private _console: ConsoleService,
         @Attribute('autofocus') private autoFocus: any) {
             this._el = _elementRef.nativeElement;
     }
 
     ngAfterViewInit() {
         this.picklistService.reset(this.availablePane, this.selectedPane);
-        if (!this._itemsAreUsed) {
-            this._setItemsFromNgOptions();
-        }
-
-        if (isDefined(this.autoFocus)) {
-            this.availablePane.focus();
-        }
+        if (!this._itemsAreUsed) { this._setItemsFromNgOptions(); }
+        if (isDefined(this.autoFocus)) { this.availablePane.focus(); }
         this._detectChanges();
     }
 
@@ -209,7 +203,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         this._cd.markForCheck();
     }
 
-    /** Retuns true if any items are selected. */
+    /** Returns true if any items are selected. */
     get hasValue(): boolean {
         return this.selectedPane.itemsList.items.length > 0;
     }
@@ -219,8 +213,8 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         return Number.isFinite(this.maxSelectedItems) && this.selectedPane.itemsList.items.length >= this.maxSelectedItems;
     }
 
-    /** Returns true if the number of selected items exceeds the maximum number.
-     * Could be true if the model is manipulated or set outside of the component. */
+    /** Returns true if the number of selected items exceeds the maximum number. Could be true if the model is
+     * manipulated or set outside of the component. */
     get hasExceededMaxItemsSelected(): boolean {
         return Number.isFinite(this.maxSelectedItems) && this.selectedPane.itemsList.items.length > this.maxSelectedItems;
     }
@@ -277,19 +271,16 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         this.selectedPane.detectChanges();
     }
 
-    
-
     /** Convert <hc-pick-option> components into HcOptions */
     private _setItemsFromNgOptions() {
         const mapNgOptions = (options: QueryList<HcPickOptionComponent>) => {
             const items = options.map(option => ({
-                $ngOptionValue: option.value,
-                $ngOptionLabel: option.elementRef.nativeElement.innerHTML,
+                $hcOptionValue: option.value,
+                $hcOptionLabel: option.elementRef.nativeElement.innerHTML,
                 disabled: option.disabled
             }));
             this.availablePane.itemsList.setItems(items);
             if (this.hasValue) {
-                // todo: test this code path
                 this.picklistService.mapIncomingOptionsToSelected(this.bindValue);
             }
         };
@@ -318,9 +309,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
 
     /** Apply value passed in from ngModel as the current selection in the component */
     private _handleWriteValue(ngModel: any[]) {
-        if (!this._isValidWriteValue(ngModel)) {
-            return
-        }
+        if (!this._isValidWriteValue(ngModel)) { return; }
 
         const select = (val: any) => {
             let alreadySelected = this.selectedPane.itemsList.findOption(val, true);
@@ -364,7 +353,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         }
 
         if (!Array.isArray(value)) {
-            this._console.warn('Value must be an ngModel should be array.');
+            console.warn('ngModel should be array.');
             return false;
         }
         return value.every(item => this.validateBinding(item));
@@ -372,9 +361,8 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
 
     private validateBinding = (item: any): boolean => {
         if (!isDefined(this.compareWith) && isObject(item) && this.bindValue) {
-            this._console.warn(
-                `Setting object(${JSON.stringify(item)}) as your model with bindValue is not allowed unless [compareWith] is used.`
-            );
+            const msg = `Setting object(${JSON.stringify(item)}) as your model with bindValue is not allowed unless [compareWith] is used.`;
+            console.warn(msg);
             return false;
         }
         return true;

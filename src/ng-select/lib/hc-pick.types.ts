@@ -14,6 +14,7 @@ export interface HcOption {
     children?: HcOption[];
 }
 
+// todo - use cashmere keycodes
 export enum KeyCode {
     Tab = 9,
     Enter = 13,

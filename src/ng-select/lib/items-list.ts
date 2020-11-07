@@ -1,56 +1,39 @@
 import { HcPickPaneComponent } from './hc-pick-pane.component';
 import { HcOption } from './hc-pick.types';
-import * as searchHelper from './search-helper';
 import { HcPickSelectionModel } from './selection-model';
 import { isDefined, isFunction, isObject, newId } from './value-utils';
 
 type OptionGroups = Map<string | HcOption, HcOption[]>;
 
+/** Helps manage the state of the list */
 export class ItemsList {
-    private _groups: OptionGroups;
+    constructor(private _ngSelect: HcPickPaneComponent, private _selectionModel: HcPickSelectionModel) {}
 
-    constructor(
-        private _ngSelect: HcPickPaneComponent,
-        private _selectionModel: HcPickSelectionModel) {
-    }
-
-    private _itemsShownCount = '';
     get itemsShownCount(): string { return this._itemsShownCount; }
+    private _itemsShownCount = '';
     
-    private _itemsTotalCount = '';
     get itemsTotalCount(): string { return this._itemsTotalCount; }
+    private _itemsTotalCount = '';
 
+    get items(): HcOption[] { return this._items; }
     private _items: HcOption[] = [];
 
-    get items(): HcOption[] {
-        return this._items;
-    }
-
+    get filteredItems(): HcOption[] { return this._filteredItems; }
     private _filteredItems: HcOption[] = [];
 
-    get filteredItems(): HcOption[] {
-        return this._filteredItems;
-    }
-
+    private _groups: OptionGroups;
     private _markedIndex = -1;
 
-    get markedIndex(): number {
-        return this._markedIndex;
-    }
-
-    get hasMarkedItem(): boolean {
-        return this._markedIndex !== -1;
-    }
-
-    get selectedItems() {
-        return this._selectionModel.value;
-    }
-
-    get markedItem(): HcOption {
-        return this._filteredItems[this._markedIndex];
-    }
-
-    get lastSelectedItem() {
+    /** Represents the "focused" item */
+    get markedIndex(): number { return this._markedIndex; }
+    /** Return true if some item in the list should have focus. -1 means nothing is focused. */
+    get hasMarkedItem(): boolean { return this._markedIndex !== -1; }
+    /** The highlighted options in this list */
+    get selectedItems(): Array<HcOption> { return this._selectionModel.value; }
+    /** The HcOption that currently has focus */
+    get markedItem(): HcOption { return this._filteredItems[this._markedIndex]; }
+    /** The last option in the list to be highlighted */
+    get lastSelectedItem(): HcOption {
         let i = this.selectedItems.length - 1;
         for (; i >= 0; i--) {
             let item = this.selectedItems[i];
@@ -61,29 +44,32 @@ export class ItemsList {
         return null;
     }
 
+    /** Remove all options from the list */
     clearList() {
         this._items.length = 0;
         this._filteredItems.length = 0;
     }
 
+    /** Converts an array of raw values into HcOptions and set them on the list */
     setItems(items: any[]) {
         this._items = items.map((item, index) => this.mapItem(item, index));
         this._groupItems();
     }
 
+    /** Reset the indexes on each HcOption */
     reIndex() {
         this._items.forEach((o, index) => o.index = index);
     }
 
+    /** Highlight a given option in the list */
     select(item: HcOption) {
         if (item.selected) { return; }
         this._selectionModel.select(item);
     }
 
+    /** Remove highlight from a given option in the list */
     unselect(item: HcOption) {
-        if (!item.selected) {
-            return;
-        }
+        if (!item.selected) { return; }
         this._selectionModel.unselect(item);
     }
 
@@ -106,9 +92,7 @@ export class ItemsList {
         return this._items.find(item => findBy(item));
     }
 
-    /**
-     * Adds a new option, transforming the given raw value into an HcOption
-     */
+    /** Adds a new option, transforming a given raw value into an HcOption */
     addNewOption(item: any): HcOption {
         const option = this.mapItem(item, this._items.length);
         this._items.push(option);
@@ -116,12 +100,14 @@ export class ItemsList {
         return option;
     }
 
+    /** Adds an exisiting HcOption to the list. */
     addOption(option: HcOption) {
         option.index = this._items.length;
         this._items.push(option);
         this._reGroup();
     }
 
+    /** Removes an exisiting HcOption from the list */
     removeOption(item: HcOption) {
         const indexToRemove = this._items.findIndex(i => i.index === item.index);
         if (indexToRemove > -1) {
@@ -132,16 +118,19 @@ export class ItemsList {
         }
     }
 
+    /** Remove parent options from the list and then regroup the child items. */
     private _reGroup() {
         this._items = this._items.filter(i => !i.children);
         this._groupItems();
     }
 
+    /** Create item groups */
     private _groupItems() {
         if (this._ngSelect.groupBy) {
             this._groups = this._groupBy(this._items, this._ngSelect.groupBy);
             this._items = this._flatten(this._groups);
         } else {
+            // if the picklist is configured not to do grouping, put all the items in one unnamed group
             this._groups = new Map();
             this._groups.set(undefined, this._items)
             this._sortChildrenWithinGroups();
@@ -150,6 +139,7 @@ export class ItemsList {
         this._updateCounts();
     }
 
+    /** If a sort function was provided, sort the child items within their groups */
     private _sortChildrenWithinGroups() {
         if (!this._ngSelect.sortFn) { return; }
         for (let values of this._groups.values()) {
@@ -157,6 +147,10 @@ export class ItemsList {
         }
     }
 
+    /**
+     * Removed highlight from all items in the list.
+     * @param keepDisabled if true, don't deselect any options that are currently disabled
+    */
     clearSelected(keepDisabled = false) {
         this._selectionModel.clear(keepDisabled);
         this._items.forEach(item => {
@@ -165,26 +159,25 @@ export class ItemsList {
         });
     }
 
+    /** Highlight all the items in the list */
     selectAll() {
         this._selectionModel.selectAll(this._items, this._ngSelect.selectableGroup);
     }
 
-    findByLabel(term: string) {
-        term = searchHelper.stripSpecialChars(term).toLocaleLowerCase();
+    /** Find an item in the list by its label */
+    findByLabel(term: string): HcOption {
+        term = term.toLocaleLowerCase();
         return this.filteredItems.find(item => {
-            const label = searchHelper.stripSpecialChars(item.label).toLocaleLowerCase();
+            const label = item.label.toLocaleLowerCase();
             return label.substr(0, term.length) === term;
         });
     }
 
+    /** Filter the options in the list with the given search term */
     filter(term: string): void {
-        if (!term) {
-            this.resetFilteredItems();
-            return;
-        }
-
+        if (!term) { this.resetFilteredItems(); return; }
         this._filteredItems = [];
-        term = this._ngSelect.searchFn ? term : searchHelper.stripSpecialChars(term).toLocaleLowerCase();
+        term = this._ngSelect.searchFn ? term : term.toLocaleLowerCase();
         const match = this._ngSelect.searchFn || this._defaultSearchFn;
 
         if (!this._groups) { return; }
@@ -208,6 +201,7 @@ export class ItemsList {
         this._updateCounts();
     }
 
+    /** Unfilter the list */
     resetFilteredItems() {
         if (this._filteredItems.length === this._items.length) { return; }
         this._filteredItems = this._items;
@@ -220,23 +214,24 @@ export class ItemsList {
         this.markFirst();
     }
 
+    /** Remove focus from any of the list options */
     unmark() {
         this._markedIndex = -1;
     }
 
+    /** Move focus up or down in the list */
     markNextItem(stepIsDown: boolean) {
         this._stepToItem(stepIsDown ? 1 : -1);
     }
 
+    /** Focus the given item in the list */
     markItem(item: HcOption) {
         this._markedIndex = this._filteredItems.indexOf(item);
     }
 
+    /** Focus on the last selected item, or the first item in the list */
     markSelectedOrDefault() {
-        if (this._filteredItems.length === 0) {
-            return;
-        }
-
+        if (this._filteredItems.length === 0) { return; }
         const lastMarkedIndex = this._getLastMarkedIndex();
         if (lastMarkedIndex > -1) {
             this._markedIndex = lastMarkedIndex;
@@ -269,32 +264,33 @@ export class ItemsList {
         }
     }
 
-    /** Maps the given raw value into an HcOption.
-     * todo: refactor this to be a bit simpler to understand
-     *  - ngOptionLabel stuff for <ng-options>
-    */
+    /** Maps the given raw value into an HcOption. */
     mapItem(item: any, index: number): HcOption {
-        const label = isDefined(item.$ngOptionLabel) ? item.$ngOptionLabel : this.resolveNested(item, this._ngSelect.bindLabel);
-        const value = isDefined(item.$ngOptionValue) ? item.$ngOptionValue : item;
+        // $hcOptionLabel and $hcOptionValue will be used in the case of <hc-pick-option> components
+        const label = isDefined(item.$hcOptionLabel) ? item.$hcOptionLabel : this.resolveNested(item, this._ngSelect.bindLabel);
+        const value = isDefined(item.$hcOptionValue) ? item.$hcOptionValue : item;
         return {
             index: index,
             label: isDefined(label) ? label.toString() : '',
             value: value,
             disabled: item.disabled,
-            htmlId: `${this._ngSelect.dropdownId}-${index}`,
+            htmlId: `${this._ngSelect.paneId}-${index}`,
         };
     }
 
+    /** Update the 'Showing x of y' counts */
     private _updateCounts() {
         this._itemsShownCount = this.filteredItems.filter(i => !i.children).length.toLocaleString();
         this._itemsTotalCount = this.items.filter(i => !i.children).length.toLocaleString();
     }
 
+    /** If picklist is not configured with a search function, use this one. */
     private _defaultSearchFn(search: string, opt: HcOption) {
-        const label = searchHelper.stripSpecialChars(opt.label).toLocaleLowerCase();
+        const label = opt.label.toLocaleLowerCase();
         return label.indexOf(search) > -1
     }
 
+    /** Get index of an item a given number of steps above or below the current focus item */
     private _getNextItemIndex(steps: number) {
         if (steps > 0) {
             return (this._markedIndex === this._filteredItems.length - 1) ? 0 : (this._markedIndex + 1);
@@ -302,34 +298,26 @@ export class ItemsList {
         return (this._markedIndex <= 0) ? (this._filteredItems.length - 1) : (this._markedIndex - 1);
     }
 
+    /** Move focus a certain number of steps above or below the current focused item */
     private _stepToItem(steps: number) {
         if (this._filteredItems.every(x => x.disabled)) { return; }
-
         this._markedIndex = this._getNextItemIndex(steps);
-        if (this.markedItem.disabled) {
-            this._stepToItem(steps);
-        }
+        if (this.markedItem.disabled) { this._stepToItem(steps); }
     }
 
+    /** Figure out which item in the list was marked most recently */
     private _getLastMarkedIndex() {
-
-        if (this._markedIndex > -1 && this.markedItem === undefined) {
-            return -1;
-        }
+        if (this._markedIndex > -1 && this.markedItem === undefined) { return -1; }
 
         const selectedIndex = this._filteredItems.indexOf(this.lastSelectedItem);
-        if (this.lastSelectedItem && selectedIndex < 0) {
-            return -1;
-        }
-
+        if (this.lastSelectedItem && selectedIndex < 0) { return -1; }
         return Math.max(this.markedIndex, selectedIndex);
     }
 
+    /** Group the items in the list as configured */
     private _groupBy(items: HcOption[], prop: string | Function): OptionGroups {
         const groups = new Map<string | HcOption, HcOption[]>();
-        if (items.length === 0) {
-            return groups;
-        }
+        if (items.length === 0) { return groups; }
 
         // Check if items are already grouped by given key.
         if (Array.isArray(items[0].value[<string>prop])) {
@@ -359,6 +347,7 @@ export class ItemsList {
         return groups;
     }
 
+    /** Flatten the groups such that the parent is just above it children in a flattened array */
     private _flatten(groups: OptionGroups) {
         const isGroupByFn = isFunction(this._ngSelect.groupBy);
         this._sortChildrenWithinGroups();

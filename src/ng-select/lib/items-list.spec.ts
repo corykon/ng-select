@@ -1,7 +1,8 @@
-import { NgSelectConfig } from './config.service';
 import { ItemsList } from './items-list';
 import { HcPickPaneComponent } from './hc-pick-pane.component';
 import { DefaultSelectionModel } from './selection-model';
+import { HcPickPaneDragService } from './hc-pick-pane-drag.service';
+import { HcPicklist2Service } from './hc-picklist2.service';
 
 describe('ItemsList', () => {
     describe('select', () => {
@@ -459,6 +460,7 @@ describe('ItemsList', () => {
     }
 
     function ngSelectFactory(): HcPickPaneComponent {
-        return new HcPickPaneComponent(null, null, new NgSelectConfig(), () => new DefaultSelectionModel(), {} as any, null, null);
+        return new HcPickPaneComponent(
+            () => new DefaultSelectionModel(), {} as any, new HcPicklist2Service, null, new HcPickPaneDragService());
     }
 });

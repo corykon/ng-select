@@ -4,10 +4,10 @@
         [disabled]="disabled"
         [value]="searchTerm ? searchTerm : ''"
         (input)="filter(searchInput.value)"
-        (compositionstart)="onCompositionStart()"
-        (compositionend)="onCompositionEnd(searchInput.value)"
+        (compositionstart)="_onCompositionStart()"
+        (compositionend)="_onCompositionEnd(searchInput.value)"
         (change)="$event.stopPropagation()"
-        (keydown)="onInputKeydown($event)"
+        (keydown)="onSearchKeydown($event)"
         [placeholder]="searchPlaceholder"
         role="combobox">
 </div>
@@ -39,7 +39,7 @@
 </div>
 
 <hc-pick-pane-list class="hc-pick-pane-list"
-    [ngClass]="{'hc-pane-will-accept-drop': _willAcceptDrop, 'pane-is-active': _paneIsActive}"
+    [ngClass]="{'hc-pane-will-accept-drop': _willAcceptDrop, 'pane-is-active': _paneHasFocus}"
     [virtualScroll]="virtualScroll"
     [bufferAmount]="bufferAmount"
     [filterValue]="searchTerm"
@@ -49,11 +49,11 @@
     (scroll)="scroll.emit($event)"
     (scrollToEnd)="scrollToEnd.emit($event)"
     (keydown)="onPanelKeydown($event)"
-    (focus)="_paneIsActive = true"
-    (blur)="_paneIsActive = false"
+    (focus)="_paneHasFocus = true"
+    (blur)="_paneHasFocus = false"
     (drop)="dragService.drop($event)" (dragover)="dragService.allowDrop($event)" (dragleave)="dragService.dragLeave()"
     tabIndex="0"
-    [id]="dropdownId">
+    [id]="paneId">
 
     <ng-container *ngIf="!loading">
         <div class="hc-pick-option" [attr.role]="item.children ? 'group' : 'option'"
@@ -92,7 +92,7 @@
         </div>
     </ng-container>
 
-    <ng-container *ngIf="!loading && showNoItemsFound()">
+    <ng-container *ngIf="!loading && showNoItemsFound">
         <div class="hc-pick-empty-msg"><span>{{notFoundText}}</span></div>
     </ng-container>
 

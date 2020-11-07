@@ -1,7 +1,6 @@
 import { async, ComponentFixture, discardPeriodicTasks, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { Component, DebugElement, ErrorHandler, NgZone, Type, ViewChild, ViewEncapsulation } from '@angular/core';
-import { ConsoleService } from './console.service';
 import { FormsModule } from '@angular/forms';
 import { getNgSelectElement, selectOption, TestsErrorHandler, tickAndDetectChanges, triggerKeyDownEvent } from '../testing/helpers';
 import { KeyCode, HcOption } from './hc-pick.types';
@@ -9,7 +8,6 @@ import { MockConsole, MockNgZone } from '../testing/mocks';
 import { HcPickPaneComponent } from '@ng-select/ng-select';
 import { HcPicklist2Module } from './hc-picklist2.module';
 import { Subject } from 'rxjs';
-import { NgSelectConfig } from './config.service';
 
 describe('HcPickPaneComponent', () => {
 
@@ -66,7 +64,7 @@ describe('HcPickPaneComponent', () => {
             tickAndDetectChanges(fixture);
             expect(fixture.componentInstance.selectedCity).toEqual(jasmine.objectContaining(fixture.componentInstance.cities[1]));
 
-            fixture.componentInstance.select.clearModel();
+            fixture.componentInstance.select.itemsList.clearSelected();
             tickAndDetectChanges(fixture);
 
             expect(fixture.componentInstance.selectedCity).toEqual(null);
@@ -158,61 +156,6 @@ describe('HcPickPaneComponent', () => {
 
             fixture.componentInstance.cities = [];
             fixture.componentInstance.selectedCity = { id: 7, name: 'Pailgis' };
-            tickAndDetectChanges(fixture);
-
-            fixture.componentInstance.cities = [{ id: 7, name: 'Pailgis' }];
-            tickAndDetectChanges(fixture);
-
-            select = fixture.componentInstance.select;
-            expect(select.selectedItems[0]).toBe(select.itemsList.items[0]);
-            expect(select.selectedItems).toEqual([jasmine.objectContaining({
-                value: { id: 7, name: 'Pailgis' }
-            })]);
-        }));
-
-        it('should set items correctly after ngModel set first when bindValue is used from NgSelectConfig', fakeAsync(() => {
-            const config = new NgSelectConfig();
-            config.bindValue = 'id';
-            const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities"
-                        bindLabel="name"
-                        [clearable]="true"
-                        [(ngModel)]="selectedCityId">
-                </hc-pick-pane>`,
-                config
-            );
-
-            fixture.componentInstance.cities = [];
-            fixture.componentInstance.selectedCityId = 7;
-            tickAndDetectChanges(fixture);
-
-            fixture.componentInstance.cities = [{ id: 7, name: 'Pailgis' }];
-            tickAndDetectChanges(fixture);
-
-            select = fixture.componentInstance.select;
-            expect(select.selectedItems[0]).toBe(select.itemsList.items[0]);
-            expect(select.selectedItems).toEqual([jasmine.objectContaining({
-                value: { id: 7, name: 'Pailgis' }
-            })]);
-        }));
-
-        it('should not apply global bindValue from NgSelectConfig if bindValue prop explicitly provided in template', fakeAsync(() => {
-            const config = new NgSelectConfig();
-            config.bindValue = 'globalbindvalue';
-            const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities"
-                        bindLabel="name"
-                        bindValue="id"
-                        [clearable]="true"
-                        [(ngModel)]="selectedCityId">
-                </hc-pick-pane>`,
-                config
-            );
-
-            fixture.componentInstance.cities = [];
-            fixture.componentInstance.selectedCityId = 7;
             tickAndDetectChanges(fixture);
 
             fixture.componentInstance.cities = [{ id: 7, name: 'Pailgis' }];
@@ -408,7 +351,7 @@ describe('HcPickPaneComponent', () => {
 
             expect(fixture.componentInstance.selectedCity).toEqual(fixture.componentInstance.cities[1]);
 
-            fixture.componentInstance.select.clearModel();
+            fixture.componentInstance.select.itemsList.clearSelected();
             fixture.componentInstance.cities = [...fixture.componentInstance.cities];
             tickAndDetectChanges(fixture);
 
@@ -1250,62 +1193,6 @@ describe('HcPickPaneComponent', () => {
         });
     });
 
-    describe('Custom templates', () => {
-        it('should display custom header template', fakeAsync(() => {
-            const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities" [(ngModel)]="selectedCity">
-                    <ng-template ng-label-tmp let-item="item">
-                        <div class="custom-header">{{item.name}}</div>
-                    </ng-template>
-                </hc-pick-pane>`);
-
-            fixture.componentInstance.selectedCity = fixture.componentInstance.cities[0];
-            tickAndDetectChanges(fixture);
-            tickAndDetectChanges(fixture);
-
-            const el = fixture.debugElement.query(By.css('.custom-header'));
-            expect(el).not.toBeNull();
-            expect(el.nativeElement).not.toBeNull();
-        }));
-
-        it('should clear item using value', fakeAsync(() => {
-            const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities"
-                            bindLabel="name"
-                            [(ngModel)]="city">
-                </hc-pick-pane>`);
-
-            selectOption(fixture, KeyCode.ArrowDown, 0);
-            fixture.detectChanges();
-            expect(fixture.componentInstance.select.selectedItems.length).toBe(1);
-
-            fixture.componentInstance.select.clearItem(fixture.componentInstance.cities[0]);
-            expect(fixture.componentInstance.select.selectedItems.length).toBe(0);
-            tick();
-        }));
-
-        it('should clear item even if there are no items loaded', fakeAsync(() => {
-            const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities"
-                            bindLabel="name"
-                            [(ngModel)]="selectedCity">
-                </hc-pick-pane>`);
-
-            selectOption(fixture, KeyCode.ArrowDown, 0);
-            fixture.detectChanges();
-            expect(fixture.componentInstance.select.selectedItems.length).toBe(1);
-            const selected = fixture.componentInstance.selectedCity;
-            fixture.componentInstance.cities = [];
-            fixture.detectChanges();
-
-            fixture.componentInstance.select.clearItem(selected);
-            expect(fixture.componentInstance.select.selectedItems.length).toBe(0);
-            tick();
-        }));
-
         it('should display custom dropdown option template', async(() => {
             const fixture = createTestingModule(
                 NgSelectTestCmp,
@@ -2098,12 +1985,12 @@ describe('HcPickPaneComponent', () => {
                 .toBe(false);
         }));
 
-        it('should set aria-owns be set to dropdownId on open', fakeAsync(() => {
+        it('should set aria-owns be set to paneId on open', fakeAsync(() => {
             triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode.Space);
             tickAndDetectChanges(fixture);
 
             expect(input.getAttribute('aria-owns'))
-                .toBe(select.dropdownId);
+                .toBe(select.paneId);
         }));
 
         it('should set aria-activedecendant equal to chosen item on open', fakeAsync(() => {
@@ -2697,7 +2584,7 @@ describe('HcPickPaneComponent', () => {
             it('should not update search term', fakeAsync(() => {
                 select.filter(originValue);
                 tickAndDetectChanges(fixture);
-                select.onCompositionStart();
+                select._onCompositionStart();
                 tickAndDetectChanges(fixture);
                 select.filter(imeInputValue);
 
@@ -2709,7 +2596,7 @@ describe('HcPickPaneComponent', () => {
             it('should update search term', fakeAsync(() => {
                 select.filter(originValue);
                 tickAndDetectChanges(fixture);
-                select.onCompositionEnd(imeInputValue);
+                select._onCompositionEnd(imeInputValue);
                 tickAndDetectChanges(fixture);
 
                 expect(select.searchTerm).toBe(imeInputValue);
@@ -2717,8 +2604,8 @@ describe('HcPickPaneComponent', () => {
 
             it('should update search term when searchWhileComposing', fakeAsync(() => {
                 select.searchWhileComposing = true;
-                select.onCompositionStart();
-                select.onCompositionEnd(imeInputValue);
+                select._onCompositionStart();
+                select._onCompositionEnd(imeInputValue);
                 select.filter('new term');
 
                 expect(select.searchTerm).toBe('new term');
@@ -2728,15 +2615,14 @@ describe('HcPickPaneComponent', () => {
 });
 
 
-function createTestingModule<T>(cmp: Type<T>, template: string, customNgSelectConfig: NgSelectConfig | null = null): ComponentFixture<T> {
+function createTestingModule<T>(cmp: Type<T>, template: string): ComponentFixture<T> {
 
     TestBed.configureTestingModule({
         imports: [FormsModule, HcPicklist2Module],
         declarations: [cmp],
         providers: [
             { provide: ErrorHandler, useClass: TestsErrorHandler },
-            { provide: NgZone, useFactory: () => new MockNgZone() },
-            { provide: ConsoleService, useFactory: () => new MockConsole() }
+            { provide: NgZone, useFactory: () => new MockNgZone() }
         ]
     })
         .overrideComponent(cmp, {
@@ -2744,10 +2630,6 @@ function createTestingModule<T>(cmp: Type<T>, template: string, customNgSelectCo
                 template: template
             }
         });
-
-    if (customNgSelectConfig) {
-        TestBed.overrideProvider(NgSelectConfig, { useValue: customNgSelectConfig });
-    }
 
     TestBed.compileComponents();
 

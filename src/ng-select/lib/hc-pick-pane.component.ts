@@ -39,6 +39,7 @@ import { SortFn, GroupValueFn, CompareWithFn, AddCustomItemFn, SELECTION_MODEL_F
         '[class.hc-pick-pane]': 'useDefaultClass'
     }
 })
+/** A single pane containing the searchbar, toolbar, items list, and footer. */
 export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges {
     @Input() _isLeftPane = false;
     @Input() bindLabel: string;
@@ -64,6 +65,13 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     @Input() loading = false;
     @Input() hasToolbar = true;
     @Input() hasFooter = true;
+    @Input() get items() { return this._items };
+    set items(value: any[]) { this._itemsAreUsed = true; this._items = value; };
+    @Input() get compareWith() { return this._compareWith; }
+    set compareWith(fn: CompareWithFn) {
+        if (isDefined(fn) && !isFunction(fn)) { throw Error('`compareWith` must be a function.'); }
+        this._compareWith = fn;
+    }
 
     // custom templates
     @Input() optionTemplate: TemplateRef<any>;
@@ -71,20 +79,6 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     @Input() toolbarTemplate: TemplateRef<any>;
     @Input() footerTemplate: TemplateRef<any>;
     @Input() customItemTemplate: TemplateRef<any>;
-
-    @Input() get items() { return this._items };
-    set items(value: any[]) {
-        this._itemsAreUsed = true;
-        this._items = value;
-    };
-
-    @Input() get compareWith() { return this._compareWith; }
-    set compareWith(fn: CompareWithFn) {
-        if (isDefined(fn) && !isFunction(fn)) {
-            throw Error('`compareWith` must be a function.');
-        }
-        this._compareWith = fn;
-    }
 
     /** Fires when option are being moved via an enter keypress. */
     @Output('triggerMove') triggerMoveEvent = new EventEmitter();
@@ -98,36 +92,38 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     @ViewChild(forwardRef(() => HcPickPaneListComponent)) dropdownPanel: HcPickPaneListComponent;
     @ViewChild('searchInput', { static: true }) searchInput: ElementRef<HTMLInputElement>;
 
-    public get disabled() { return this.readonly || this._disabled };
-
     itemsList: ItemsList;
+    /** items displayed in the viewport. important for virtual scrolling */
     viewPortItems: HcOption[] = [];
+    /** what this pane is being filtered by */
     searchTerm: string = null;
-    dropdownId = newId();
+    /** unique identifier used as the HTML id on the list element */
+    paneId = newId();
     element: HTMLElement;
+    /** whether or not we need to escape html in the default option template */
     escapeHTML = true;
     useDefaultClass = true;
+    /** true if an item is being dragged from this pane */
     _isDragging = false;
+    /** true if the pane has an item being dragged over it from another pane */
     _willAcceptDrop = false;
-    _paneIsActive = false;
+    /** true if the item list has focus.
+     * using this property and adding a css class works more smoothly than relying on :focus psuedo selector */
+    _paneHasFocus = false;
+    public get disabled() { return this.readonly || this._disabled };
     public get _companionPane(): HcPickPaneComponent {
         return this._isLeftPane ? this.picklistService.selectedPane : this.picklistService.availablePane; }
 
     private _itemsAreUsed: boolean;
     private _items = [];
+    private _disabled: boolean;
     private _defaultLabel = 'label';
     private _primitive;
-    private _disabled: boolean;
     private _compareWith: CompareWithFn;
     private _isComposing = false;
 
     private readonly _destroy$ = new Subject<void>();
     private readonly _keyPress$ = new Subject<string>();
-
-    clearItem = (item: any) => {
-        const option = this.selectedItems.find(x => x.value === item);
-        this.unselect(option);
-    };
 
     constructor(
         @Inject(SELECTION_MODEL_FACTORY) newSelectionModel: SelectionModelFactory,
@@ -141,17 +137,9 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         this.dragService.reset(this);
     }
 
-    get selectedItems(): HcOption[] {
-        return this.itemsList.selectedItems;
-    }
-
-    get selectedValues() {
-        return this.selectedItems.map(x => x.value);
-    }
-
-    get hasSelectedItems() {
-        return this.selectedItems.length > 0;
-    }
+    get selectedItems(): HcOption[] { return this.itemsList.selectedItems; }
+    get selectedValues() { return this.selectedItems.map(x => x.value); }
+    get hasSelectedItems() { return this.selectedItems.length > 0; }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.items) {
@@ -173,10 +161,11 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         this._destroy$.complete();
     }
 
-    onInputKeydown($event: KeyboardEvent) {
+    /** Called when a key is pressed in the search input box */
+    onSearchKeydown($event: KeyboardEvent) {
         if ($event.which === KeyCode.ArrowDown || $event.which === KeyCode.Enter) {
             $event.preventDefault();
-            if (this.addCustomOptionIsHighlighted) {
+            if (this.addCustomOptionIsMarked) {
                 this.addAndSelectCustomOption();
             } else {
                 this.panelFocus();
@@ -186,16 +175,17 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         }
     }
 
+    /** Called when a key is pressed while the list has focus */
     onPanelKeydown($event: KeyboardEvent) {
         switch ($event.which) {
             case KeyCode.ArrowDown:
-                this._handlePanelArrow($event, true);
+                this._handlePanelArrowKeyPress($event, true);
                 break;
             case KeyCode.ArrowUp:
-                this._handlePanelArrow($event, false);
+                this._handlePanelArrowKeyPress($event, false);
                 break;
             case KeyCode.Enter:
-                if (this.addCustomOptionIsHighlighted) {
+                if (this.addCustomOptionIsMarked) {
                     this.addAndSelectCustomOption();
                 } else {
                     this.triggerMoveEvent.emit();
@@ -203,11 +193,12 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
                 break;
             case KeyCode.Esc:
                 this.itemsList.resetListSelectionState();
-                this.dropdownPanel._panel.blur();
+                this.panelBlur();
                 break;
         }
     }
 
+    /** Place focus on the list pane */
     panelFocus() {
         this.dropdownPanel._panel.focus();
         if (!this.hasSelectedItems) {
@@ -215,13 +206,20 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         }
     }
 
+    /** Remove focus from the list pane */
+    panelBlur() {
+        this.dropdownPanel._panel.blur();
+    }
+
+    /** Focus on the first item in the list, scrolling as needed */
     private _jumpFocusToFirstItem() {
         if (this.itemsList.filteredItems.length === 0) { return; }
         this.itemsList.resetListSelectionState();
         this._selectAndScrollToItem(this.itemsList.markedItem);
     }
 
-    private _handlePanelArrow($event: KeyboardEvent, isDown: boolean) {
+    /** Moves focus, or moves or expands the highlighted options in the list */
+    private _handlePanelArrowKeyPress($event: KeyboardEvent, isDown: boolean) {
         if (this._nextItemIsCustomItem(isDown)) {
             this.itemsList.unmark();
             this.itemsList.clearSelected();
@@ -235,24 +233,23 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         $event.preventDefault();
     }
 
+    /** Selects a given item, scrolling to keep it in the viewport as needed */
     private _selectAndScrollToItem(item: HcOption) {
         if (!item) { return; }
         this.itemsList.select(item);
         this._scrollToMarked();
     }
 
+    /** Remove highlight from all items in the list */
     deselectAll() {
         this.itemsList.resetListSelectionState();
-        this._onSelectionChanged();
+        this._cd.detectChanges();
     }
 
+    /** Highlight all items in the list */
     selectAll() {
         this.itemsList.selectAll();
-        this._onSelectionChanged();
-    }
-
-    clearModel() {
-        this.itemsList.clearSelected();
+        this._cd.detectChanges();
     }
 
     /**
@@ -282,35 +279,44 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
             }
         }
 
-        this._onSelectionChanged();
+        this._cd.detectChanges();
     }
 
+    /** Selects items as needed, and moves options to the companion pane */
     onItemDoubledClicked($event: MouseEvent, item: HcOption) {
         if (!$event.shiftKey) { this.itemsList.clearSelected(true); }
         this.select(item);
         this.triggerMoveEvent.emit();
     }
 
+    /** If not already selected, selects a given item if that option or the entire pane are not disabled */
     select(item: HcOption) {
         if (!item || item.disabled || this.disabled || item.selected) { return; }
         this.itemsList.select(item);
     }
 
+    /** If not already unselected, unselects a given item if that option or the entire pane are not disabled */
     unselect(item: HcOption) {
         if (!item || item.disabled || this.disabled || !item.selected) { return; }
         this.itemsList.unselect(item);
     }
 
+    /** Place focus in the searchbar, or the list if searchbar is not available */
     focus() {
-        if (!this.hasSearch) { return; }
-        this.searchInput.nativeElement.focus();
+        if (this.hasSearch) { 
+            this.searchInput.nativeElement.focus();
+        } else {
+            this.panelFocus();
+        }
     }
 
+    /** Remove focus from searchbar and list */
     blur() {
-        if (!this.hasSearch) { return; }
         this.searchInput.nativeElement.blur();
+        this.panelBlur();
     }
 
+    /** Create as custom item from a search term that didn't match available options from either pane */
     addAndSelectCustomOption() {
         let customItem;
         if (isFunction(this.addCustomItem)) {
@@ -326,6 +332,7 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         }
     }
 
+    /** Convert the given custom item into an HcOption, add it to the list, and then highlight it */
     _selectNewCustomOption(customItem: any) {
         const newOption = this._isUsingSearchSubject ? this.itemsList.mapItem(customItem, null) : this.itemsList.addNewOption(customItem);
         this.filter();
@@ -333,19 +340,15 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         this._selectAndScrollToItem(newOption);
     }
 
+    /** Used in the ngFor of the list to maximize DOM reusage */
     trackByOption = (_: number, item: HcOption) => {
-        if (this.trackByFn) {
-            return this.trackByFn(item.value);
-        }
-
+        if (this.trackByFn) { return this.trackByFn(item.value); }
         return item;
     };
 
+    /** If true, the "add custom" option should be displayed */
     get showAddCustomOption() {
-        if (!this._validTerm) {
-            return false;
-        }
-
+        if (!this._validTerm) { return false; }
         const term = this.searchTerm.toLowerCase().trim();
         return this.addCustomItem &&
             !this.itemsList.items.some(x => x.label.toLowerCase() === term) &&
@@ -353,34 +356,34 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
             !this.loading;
     }
 
-    get addCustomOptionIsHighlighted() {
+    /** If true, the "add custom" option currently has focus */
+    get addCustomOptionIsMarked() {
         return this.showAddCustomOption && !this.itemsList.markedItem;
     }
 
-    showNoItemsFound() {
+    /** If true, the empty pane message should be displayed */
+    get showNoItemsFound() {
         const empty = this.itemsList.filteredItems.length === 0;
         return ((empty && !this._isUsingSearchSubject && !this.loading) ||
             (empty && this._isUsingSearchSubject && this._validTerm && !this.loading)) &&
             !this.showAddCustomOption;
     }
 
-    onCompositionStart() {
+    /** Called when user begins typing in the searchbox */
+    _onCompositionStart() {
         this._isComposing = true;
     }
 
-    onCompositionEnd(term: string) {
+    /** Called when user finsihes typing in the searchbox */
+    _onCompositionEnd(term: string) {
         this._isComposing = false;
-        if (this.searchWhileComposing) {
-            return;
-        }
-
+        if (this.searchWhileComposing) { return; }
         this.filter(term);
     }
 
+    /** Search the items in the list */
     filter(term: string = this.searchTerm) {
-        if (this._isComposing && !this.searchWhileComposing) {
-            return;
-        }
+        if (this._isComposing && !this.searchWhileComposing) { return; }
 
         this.searchTerm = term;
         if (this._isUsingSearchSubject && (this._validTerm || this.externalSearchTermMinLength === 0)) {
@@ -394,16 +397,19 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         this.searchEvent.emit({ term, items: this.itemsList.filteredItems.map(x => x.value) });
     }
 
+    /** Force change detection to refresh the UI */
     detectChanges() {
         if (!(<any>this._cd).destroyed) {
             this._cd.detectChanges();
         }
     }
 
+    /** Refreshes the dimensions of the virtual scroll container and the items displayed within */
     refreshScrollArea() {
         this.dropdownPanel.refreshListLayout(true);
     }
 
+    /** Creates HcOptions according to the configured options, sets them on this list, and selects the first option. */
     _setItems(items: any[]) {
         const firstItem = items[0];
         this.bindLabel = this.bindLabel || this._defaultLabel;
@@ -416,12 +422,14 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         this.itemsList.markSelectedOrDefault();
     }
 
+    /** Clear out search term if any and refresh the list */
     private _clearSearch() {
         if (!this.searchTerm) { return; }
         this._changeSearch(null);
         this.itemsList.resetFilteredItems();
     }
 
+    /** Update search term and notify external search as needed */
     private _changeSearch(searchTerm: string) {
         this.searchTerm = searchTerm;
         if (this._isUsingSearchSubject) {
@@ -429,18 +437,17 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         }
     }
 
+    /** Scroll the list to he currently "focused" item. */
     private _scrollToMarked() {
         this.dropdownPanel.scrollTo(this.itemsList.markedItem);
     }
 
+    /** Scroll the list to the option a user can select to create a custom option */
     private _scrollToCustomItem() {
         this.dropdownPanel.scrollToCustomOption();
     }
 
-    private _onSelectionChanged() {
-        this._cd.detectChanges();
-    }
-
+    /** Returns true if the next item that would be highlighted is the "add custom" option */
     private _nextItemIsCustomItem(nextStepIsDown: boolean): boolean {
         const nextStep = nextStepIsDown ? 1 : -1;
         const nextIndex = this.itemsList.markedIndex + nextStep;
@@ -449,10 +456,12 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
             && (nextIndex < 0 || nextIndex === this.itemsList.filteredItems.length)
     }
 
+    /** Returns true if external search is being used */
     private get _isUsingSearchSubject() {
         return this.externalSearchSubject && this.externalSearchSubject.observers.length > 0;
     }
 
+    /** Returns true if the search term is long enough to be considered valid */
     private get _validTerm() {
         const term = this.searchTerm && this.searchTerm.trim();
         return term && term.length >= this.externalSearchTermMinLength;

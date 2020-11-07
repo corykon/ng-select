@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { HcPickPaneComponent } from './hc-pick-pane.component';
-
 import { isDefined } from './value-utils';
 
 @Injectable()

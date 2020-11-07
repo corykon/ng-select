@@ -35,6 +35,7 @@ const SCROLL_SCHEDULER = typeof requestAnimationFrame !== 'undefined' ? animatio
         </div>
     `
 })
+/** Component that contains the options list and manages virtual scroll as needed. */
 export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
     @Input() items: HcOption[] = [];
     @Input() markedItem: HcOption;
@@ -113,7 +114,7 @@ export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
             return;
         }
 
-        let scrollTo;
+        let scrollTo: number;
         if (this.virtualScroll) {
             const itemHeight = this._panelService.dimensions.itemHeight;
             scrollTo = this._panelService.getScrollTo(index * itemHeight, itemHeight, this._lastScrollPosition);
@@ -141,7 +142,6 @@ export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
             this._updateItems(isInitialList);
         }
     }
-
 
     private _handleScroll() {
         this._zone.runOutsideAngular(() => {
@@ -206,11 +206,7 @@ export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     private _setVirtualHeight() {
-
-        if (!this._virtualPadding) {
-            return;
-        }
-
+        if (!this._virtualPadding) { return; }
         this._virtualPadding.style.height = `0px`;
     }
 
@@ -219,9 +215,7 @@ export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     private _renderItemsRange(scrollTop = null) {
-        if (scrollTop && this._lastScrollPosition === scrollTop) {
-            return;
-        }
+        if (scrollTop && this._lastScrollPosition === scrollTop) { return; }
 
         scrollTop = scrollTop || this._scrollablePanel.scrollTop;
         const range = this._panelService.calculateItems(scrollTop, this.itemsLength, this.bufferAmount);
@@ -259,9 +253,7 @@ export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     private _fireScrollToEnd(scrollTop: number) {
-        if (this._scrollToEndFired || scrollTop === 0) {
-            return;
-        }
+        if (this._scrollToEndFired || scrollTop === 0) { return; }
 
         const padding = this.virtualScroll ?
             this._virtualPadding :

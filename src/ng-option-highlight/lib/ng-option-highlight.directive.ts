@@ -1,4 +1,3 @@
-import * as searchHelper from './search-helper';
 import {
     AfterViewInit,
     Directive,

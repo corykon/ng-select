@@ -4,6 +4,7 @@ import { HcPickPaneComponent } from './hc-pick-pane.component';
 import { HcOption } from './hc-pick.types';
 
 @Injectable()
+/** Contains logic for dragging and dropping items between picklist panes. */
 export class HcPickPaneDragService {
     private pane: HcPickPaneComponent;
 
@@ -13,9 +14,7 @@ export class HcPickPaneDragService {
 
     public drag(event: DragEvent, list: ItemsList, item: HcOption) {
         event.stopPropagation();
-        if (!item.selected) {
-            list.clearSelected(true);
-        }
+        if (!item.selected) { list.clearSelected(true); }
         list.select(item);
         this.pane._isDragging = true;
     }

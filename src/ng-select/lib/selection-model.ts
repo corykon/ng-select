@@ -17,9 +17,7 @@ export interface HcPickSelectionModel {
 export class DefaultSelectionModel implements HcPickSelectionModel {
     private _selected: HcOption[] = [];
 
-    get value(): HcOption[] {
-        return this._selected;
-    }
+    get value(): HcOption[] { return this._selected; }
 
     select(item: HcOption) {
         item.selected = true;

@@ -15,12 +15,11 @@ import { Subject } from 'rxjs';
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `<ng-content></ng-content>`
 })
+/** Component used to add options to a picklist in declarative way. */
 export class HcPickOptionComponent implements OnChanges, AfterViewChecked, OnDestroy {
-
     @Input() value: any;
-    @Input()
+    @Input() set disabled(value: boolean) { this._disabled = this._isDisabled(value) }
     get disabled() { return this._disabled; }
-    set disabled(value: boolean) { this._disabled = this._isDisabled(value) }
 
     readonly stateChange$ = new Subject<{ value: any, disabled: boolean, label?: string }>();
 
@@ -29,9 +28,7 @@ export class HcPickOptionComponent implements OnChanges, AfterViewChecked, OnDes
 
     constructor(public elementRef: ElementRef<HTMLElement>) { }
 
-    get label(): string {
-        return (this.elementRef.nativeElement.textContent || '').trim();
-    }
+    get label(): string { return (this.elementRef.nativeElement.textContent || '').trim(); }
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.disabled) {

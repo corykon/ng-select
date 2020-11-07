@@ -12,10 +12,8 @@ export interface PanelDimensions {
     itemsPerViewport: number;
 }
 
-/**
- * Performs calculations for virtual scrolling.
- */
 @Injectable()
+/** Performs calculations for virtual scrolling. */
 export class HcPickPaneListService {
 
     private _dimensions: PanelDimensions = {

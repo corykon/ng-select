@@ -17,13 +17,13 @@ export const EXAMPLE_COMPONENTS: { [key: string]: Example } = {
     'picklist-example-component': {
         component: PicklistExampleComponent,
         title: 'Picklist'
+    },
+    'picklist-example-templates': {
+        component: PicklistExampleTemplatesComponent,
+        title: 'Picklist Templates'
+    },
+    'picklist-example-custom-items': {
+        component: PicklistExampleTaggingComponent,
+        title: 'Picklist Tagging'
     }
-    // 'picklist-example-templates': {
-    //     component: PicklistExampleTemplatesComponent,
-    //     title: 'Picklist Templates'
-    // },
-    // 'picklist-example-custom-items': {
-    //     component: PicklistExampleTaggingComponent,
-    //     title: 'Picklist Tagging'
-    // }
 };

@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { filter, map, mergeMap } from 'rxjs/operators';
-import { NgSelectConfig } from '@ng-select/ng-select';
 
 @Component({
     selector: 'demo-app',
@@ -20,10 +19,7 @@ export class AppComponent {
         private router: Router,
         private activatedRoute: ActivatedRoute,
         private titleService: Title,
-        private config: NgSelectConfig
-    ) {
-        this.config.placeholder = 'Select item';
-    }
+    ) {}
 
     ngOnInit() {
         this.setTitle();
