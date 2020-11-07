@@ -29,3 +29,4 @@ export type AddCustomItemFn = ((term: string) => any | Promise<any>);
 export type CompareWithFn = (a: any, b: any) => boolean;
 export type GroupValueFn = (key: string | object, children: any[]) => string | object;
 export type SortFn = (a: HcOption, b: HcOption) => number;
+export type SearchFn = (term: string, item: any) => boolean;

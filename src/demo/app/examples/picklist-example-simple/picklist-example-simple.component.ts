@@ -1,39 +1,37 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
     selector: 'picklist-example-simple',
     templateUrl: './picklist-example-simple.component.html',
     styleUrls: ['./picklist-example-simple.component.scss']
 })
-export class PicklistExampleSimpleComponent implements OnInit {
+export class PicklistExampleSimpleComponent {
 
     cars = [
-        { id: 1, name: 'Volvo' },
-        { id: 2, name: 'Saab' },
-        { id: 3, name: 'Opel' },
-        { id: 4, name: 'Audi' },
-        { id: 5, name: 'Toyota' },
-        { id: 6, name: 'Ford' },
-        { id: 7, name: 'GM' },
-        { id: 8, name: 'Nissan' },
-        { id: 9, name: 'Honda' },
-        { id: 10, name: 'Chevy' }
+        { id: 1, details: { name: 'Volvo' }},
+        { id: 2, details: { name: 'Saab' }},
+        { id: 3, details: { name: 'Opel' }},
+        { id: 4, details: { name: 'Audi' }},
+        { id: 5, details: { name: 'Toyota' }},
+        { id: 6, details: { name: 'Ford' }},
+        { id: 7, details: { name: 'GM' }},
+        { id: 8, details: { name: 'Nissan' }},
+        { id: 9, details: { name: 'Honda' }},
+        { id: 10, details: { name: 'Chevy' }}
     ];
-    selectedCars = [{ id: 3, name: 'Opel' }];
+
+    selectedCars = [3];
+
     compareWith(a, b) {
         return a.id === b.id;
     }
 
-    ngOnInit() {
-
-    }
-
     updateOpts() {
         this.cars = [
-            { id: 1, name: 'Volvo' },
-            { id: 2, name: 'Saab' },
-            { id: 3, name: 'Opel' },
-            { id: 4, name: 'Audi' }
-        ]
+            { id: 1, details: { name: 'Volvo' }},
+            { id: 2, details: { name: 'Saab' }},
+            { id: 3, details: { name: 'Opel' }},
+            { id: 4, details: { name: 'Audi' }}
+        ];
     }
 }

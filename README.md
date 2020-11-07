@@ -190,9 +190,9 @@ map: {
 | [editableSearchTerm] | `boolean` |  `false` | no | Allow to edit search query if option selected. Default `false`. Works only if multiple is `false`. |
 | [selectOnTab] | `boolean` | `false` | no | Select marked dropdown item using tab. Default `false`|
 | [openOnEnter] | `boolean` | `true` | no | Open dropdown using enter. Default `true`|
-| [searchTermSubject] | `Subject` |  `-` | no | Custom autocomplete or advanced filter. |
-| [searchTermMinLength] | `number` |  `0` | no | Minimum term length to start a search. Should be used with `searchTermSubject` |
-| typeToSearchText | `string` | `Type to search` | no | Set custom text when using searchTermSubject |
+| [externalSearchSubject] | `Subject` |  `-` | no | Custom autocomplete or advanced filter. |
+| [externalSearchTermMinLength] | `number` |  `0` | no | Minimum term length to start a search. Should be used with `externalSearchSubject` |
+| typeToSearchText | `string` | `Type to search` | no | Set custom text when using externalSearchSubject |
 | [virtualScroll] | `boolean` |  false | no | Enable virtual scroll for better performance when rendering a lot of data |
 | [inputAttrs] | `{ [key: string]: string }` |  `-` | no | Pass custom attributes to underlying `input` element |
 | [tabIndex] | `number` |  `-` | no | Set tabindex on ng-select |

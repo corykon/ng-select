@@ -1,9 +1,14 @@
 
 
-<h3>Array of objects</h3>
+<h3>Simple Example</h3>
 <br>
 
-<hc-picklist2 [items]="cars" bindLabel="name" [(ngModel)]="selectedCars" [compareWith]="compareWith" autofocus>
+<hc-picklist2
+    [items]="cars"
+    bindLabel="details.name"
+    bindValue="id"
+    [(ngModel)]="selectedCars"
+    autofocus>
 </hc-picklist2>
 
 <br>

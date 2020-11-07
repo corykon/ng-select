@@ -50,10 +50,6 @@ export class ItemsList {
         return this._filteredItems[this._markedIndex];
     }
 
-    get maxItemsSelected(): boolean {
-        return this._ngSelect.maxSelectedItems <= this.selectedItems.length;
-    }
-
     get lastSelectedItem() {
         let i = this.selectedItems.length - 1;
         for (; i >= 0; i--) {
@@ -91,9 +87,15 @@ export class ItemsList {
         this._selectionModel.unselect(item);
     }
 
-    findOption(value: any): HcOption {
+    /**
+     * Find the option in this list for a given value
+     * @param value the value we are searching for in this list
+     * @param favorBindValueSetting if true, favor the bindValue matching strategy. This will be the case
+     * when the value we are searching for is the bound value instead of the entire object.
+     */
+    findOption(value: any, favorBindValueStrategy: boolean = false): HcOption {
         let findBy: (item: HcOption) => boolean;
-        if (this._ngSelect.compareWith) {
+        if (this._ngSelect.compareWith && !(favorBindValueStrategy && this._ngSelect.bindValue)) {
             findBy = item => this._ngSelect.compareWith(item.value, value)
         } else if (this._ngSelect.bindValue) {
             findBy = item => !item.children && this.resolveNested(item.value, this._ngSelect.bindValue) === value

@@ -37,8 +37,17 @@ $hc-pick-height: 36px !default;
     .hc-picklist-pane-header-default {
         font-size: 16px;
         font-weight: bold;
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
     }
-    
+
+    .hc-picklist-max-limit-msg {
+        font-size: 12px;
+        font-weight: 400;
+        font-style: italic;
+    }
+
     .hc-pick-pane, .hc-pick-pane-list {
         flex: 1 1 auto;
         display: flex;
@@ -112,6 +121,10 @@ $hc-pick-height: 36px !default;
         overflow: hidden;
     }
 
+    .hc-pick-pane-search-no-toolbar {
+        margin-bottom: 10px;
+    }
+    
     .hc-pick-search-input {
         width: 100%;
         padding: 0 10px;

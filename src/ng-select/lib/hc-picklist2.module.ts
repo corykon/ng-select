@@ -12,6 +12,7 @@ import {
     HcPickOptionTemplateDirective,
     HcPaneHeaderLeftTemplateDirective,
     HcPaneHeaderRightTemplateDirective,
+    HcPickItemLabelDirective,
     HcPickCustomItemTemplateDirective
 } from './hc-pick-templates.directive';
 import { DefaultSelectionModelFactory } from './selection-model';
@@ -26,6 +27,7 @@ import { DefaultSelectionModelFactory } from './selection-model';
         HcPickOptionTemplateDirective,
         HcPaneHeaderLeftTemplateDirective,
         HcPaneHeaderRightTemplateDirective,
+        HcPickItemLabelDirective,
         HcPaneToolbarTemplateDirective,
         HcPaneFooterTemplateDirective,
         HcPickCustomItemTemplateDirective

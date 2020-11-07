@@ -16,7 +16,6 @@ import {
     OnChanges,
     SimpleChanges
 } from '@angular/core';
-import { takeUntil, tap, debounceTime, map, filter } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
 import { isDefined, isFunction, isPromise, isObject, newId } from './value-utils';
@@ -41,30 +40,32 @@ import { SortFn, GroupValueFn, CompareWithFn, AddCustomItemFn, SELECTION_MODEL_F
     }
 })
 export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges {
+    @Input() _isLeftPane = false;
     @Input() bindLabel: string;
     @Input() bindValue: string;
-    @Input() placeholder: string;
-    @Input() notFoundText: string;
     @Input() addCustomItem: boolean | AddCustomItemFn = false;
     @Input() addCustomItemText: string;
-    @Input() loadingText: string;
-    @Input() loading = false;
-    @Input() maxSelectedItems: number;
     @Input() groupBy: string | Function;
     @Input() groupValue: GroupValueFn;
-    @Input() bufferAmount = 4;
-    @Input() virtualScroll: boolean;
     @Input() selectableGroup = false;
+    @Input() virtualScroll: boolean;
+    @Input() bufferAmount = 4;
     @Input() trackByFn = null;
     @Input() sortFn: SortFn = null;
-    @Input() inputAttrs: { [key: string]: string } = {};
     @Input() readonly = false;
+    @Input() hasSearch = true;
+    @Input() searchPlaceholder: string;
     @Input() searchFn = null;
     @Input() searchWhileComposing = true;
-    @Input() searchTermMinLength = 0;
-    @Input() searchTermSubject: Subject<string>;
-    @Input() searchable = true;
-    @Input() _isLeftPane = false;
+    @Input() externalSearchTermMinLength = 0;
+    @Input() externalSearchSubject: Subject<string>;
+    @Input() externalTotalOptionCount: number;
+    @Input() notFoundText: string;
+    @Input() loading = false;
+    @Input() hasToolbar = true;
+    @Input() hasFooter = true;
+
+    // custom templates
     @Input() optionTemplate: TemplateRef<any>;
     @Input() optgroupTemplate: TemplateRef<any>;
     @Input() toolbarTemplate: TemplateRef<any>;
@@ -85,18 +86,13 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         this._compareWith = fn;
     }
 
-    // output events
-    // todo: likely wont need
-    @Output('change') changeEvent = new EventEmitter();
-    @Output('open') openEvent = new EventEmitter();
-    @Output('close') closeEvent = new EventEmitter();
-    @Output('add') addEvent = new EventEmitter();
-    @Output('remove') removeEvent = new EventEmitter();
-    
-    // todo: probably need
+    /** Fires when option are being moved via an enter keypress. */
     @Output('triggerMove') triggerMoveEvent = new EventEmitter();
+    /** Fires when search is triggered on the pane. */
     @Output('search') searchEvent = new EventEmitter<{ term: string, items: any[] }>();
+    /** Fires when pane is scrolled. */
     @Output('scroll') scroll = new EventEmitter<{ start: number; end: number }>();
+    /** Fires when pane has been scrolled to the bottom. */
     @Output('scrollToEnd') scrollToEnd = new EventEmitter();
 
     @ViewChild(forwardRef(() => HcPickPaneListComponent)) dropdownPanel: HcPickPaneListComponent;
@@ -122,7 +118,6 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     private _defaultLabel = 'label';
     private _primitive;
     private _disabled: boolean;
-    private _pressedKeys: string[] = [];
     private _compareWith: CompareWithFn;
     private _isComposing = false;
 
@@ -165,11 +160,6 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
             this.filter();
             this.detectChanges();
         }
-    }
-
-    ngOnInit() {
-        this._handleKeyPresses();
-        this._setInputAttributes();
     }
 
     ngAfterViewInit() {
@@ -312,10 +302,12 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     }
 
     focus() {
+        if (!this.hasSearch) { return; }
         this.searchInput.nativeElement.focus();
     }
 
     blur() {
+        if (!this.hasSearch) { return; }
         this.searchInput.nativeElement.blur();
     }
 
@@ -391,8 +383,8 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         }
 
         this.searchTerm = term;
-        if (this._isUsingSearchSubject && (this._validTerm || this.searchTermMinLength === 0)) {
-            this.searchTermSubject.next(term);
+        if (this._isUsingSearchSubject && (this._validTerm || this.externalSearchTermMinLength === 0)) {
+            this.externalSearchSubject.next(term);
         }
 
         if (!this._isUsingSearchSubject) {
@@ -424,42 +416,6 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         this.itemsList.markSelectedOrDefault();
     }
 
-    private _handleKeyPresses() {
-        if (this.searchable) {
-            return;
-        }
-
-        this._keyPress$
-            .pipe(takeUntil(this._destroy$),
-                tap(letter => this._pressedKeys.push(letter)),
-                debounceTime(200),
-                filter(() => this._pressedKeys.length > 0),
-                map(() => this._pressedKeys.join('')))
-            .subscribe(term => {
-                const item = this.itemsList.findByLabel(term);
-                if (item) {
-                    this.itemsList.markItem(item);
-                    this._cd.markForCheck();
-                }
-                this._pressedKeys = [];
-            });
-    }
-
-    private _setInputAttributes() {
-        const input = this.searchInput.nativeElement;
-        const attributes = {
-            type: 'text',
-            autocorrect: 'off',
-            autocapitalize: 'off',
-            autocomplete: 'off',
-            ...this.inputAttrs
-        };
-
-        for (const key of Object.keys(attributes)) {
-            input.setAttribute(key, attributes[key]);
-        }
-    }
-
     private _clearSearch() {
         if (!this.searchTerm) { return; }
         this._changeSearch(null);
@@ -469,7 +425,7 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     private _changeSearch(searchTerm: string) {
         this.searchTerm = searchTerm;
         if (this._isUsingSearchSubject) {
-            this.searchTermSubject.next(searchTerm);
+            this.externalSearchSubject.next(searchTerm);
         }
     }
 
@@ -494,11 +450,11 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     }
 
     private get _isUsingSearchSubject() {
-        return this.searchTermSubject && this.searchTermSubject.observers.length > 0;
+        return this.externalSearchSubject && this.externalSearchSubject.observers.length > 0;
     }
 
     private get _validTerm() {
         const term = this.searchTerm && this.searchTerm.trim();
-        return term && term.length >= this.searchTermMinLength;
+        return term && term.length >= this.externalSearchTermMinLength;
     }
 }

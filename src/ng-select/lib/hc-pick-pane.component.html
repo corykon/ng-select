@@ -1,8 +1,6 @@
-<div class="hc-pick-search-outer">
-
+<div [hidden]="!hasSearch" class="hc-pick-search-outer" [class.hc-pick-pane-search-no-toolbar]="!hasToolbar">
     <input #searchInput
         class="hc-pick-search-input"
-        [readOnly]="!searchable || itemsList.maxItemsSelected"
         [disabled]="disabled"
         [value]="searchTerm ? searchTerm : ''"
         (input)="filter(searchInput.value)"
@@ -10,19 +8,15 @@
         (compositionend)="onCompositionEnd(searchInput.value)"
         (change)="$event.stopPropagation()"
         (keydown)="onInputKeydown($event)"
-        [placeholder]="placeholder"
+        [placeholder]="searchPlaceholder"
         role="combobox">
-
-    <ng-container *ngIf="loading">
-        Loading...
-    </ng-container>
 </div>
 
-<div class="hc-picklist-pane-tools">
+<div *ngIf="hasToolbar" class="hc-picklist-pane-tools">
     <ng-template #defaultToolbarTemplate>
         <div class="hc-picklist-pane-counts">
             <ng-container *ngIf="!loading">
-                Showing {{itemsList.itemsShownCount}} of {{itemsList.itemsTotalCount}}
+                Showing {{itemsList.itemsShownCount}} of {{externalTotalOptionCount || itemsList.itemsTotalCount}}
             </ng-container>
             <ng-container *ngIf="loading">
                 Loading...
@@ -61,7 +55,7 @@
     tabIndex="0"
     [id]="dropdownId">
 
-    <ng-container>
+    <ng-container *ngIf="!loading">
         <div class="hc-pick-option" [attr.role]="item.children ? 'group' : 'option'"
             *ngFor="let item of viewPortItems; trackBy: trackByOption; let first = first;"
             (click)="onItemClick($event, item)"
@@ -77,7 +71,7 @@
             [attr.id]="item?.htmlId">
 
             <ng-template #defaultOptionTemplate>
-                <span class="hc-pick-option-label" [escape]="escapeHTML"></span>
+                <span class="hc-pick-option-label" [hcPickItemLabel]="item.label" [escape]="escapeHTML"></span>
             </ng-template>
 
             <ng-template
@@ -98,19 +92,16 @@
         </div>
     </ng-container>
 
-    <ng-container *ngIf="showNoItemsFound()">
+    <ng-container *ngIf="!loading && showNoItemsFound()">
         <div class="hc-pick-empty-msg"><span>{{notFoundText}}</span></div>
     </ng-container>
 
-    <ng-container *ngIf="loading && itemsList.filteredItems.length === 0">
-        <div class="hc-pick-option hc-pick-option-disabled">{{loadingText}}</div>
+    <ng-container *ngIf="loading">
+        <div class="hc-pick-option hc-pick-option-disabled">Loading...</div>
     </ng-container>
-
 </hc-pick-pane-list>
 
-
-
-<div class="hc-pick-pane-list-footer">
+<div *ngIf="hasFooter" class="hc-pick-pane-list-footer">
     <ng-template #defaultFooterTemplate>
         <span>{{itemsList.selectedItems.length?.toLocaleString() || 0}} selected</span>
     </ng-template>

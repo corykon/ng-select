@@ -1,7 +1,7 @@
 <div class="hc-picklist2" [style.height]="height">
 
     <div class="hc-picklist-pane-container">
-        <div class="hc-picklist-pane-header">
+        <div *ngIf="hasHeader" class="hc-picklist-pane-header">
             <ng-template #defaultLeftHeaderTemplate>
                 <h2 class="hc-picklist-pane-header-default">Available</h2>
             </ng-template>
@@ -12,27 +12,27 @@
             [_isLeftPane]="true"
             [bindLabel]="bindLabel"
             [bindValue]="bindValue"
-            [placeholder]="placeholder"
-            [notFoundText]="notFoundText"
+            [addCustomItem]="addCustomItem"
             [addCustomItemText]="addCustomItemText"
-            [loadingText]="loadingText"
-            [loading]="loading"
-            [maxSelectedItems]="maxSelectedItems"
             [groupBy]="groupBy"
             [groupValue]="groupValue"
-            [bufferAmount]="bufferAmount"
-            [virtualScroll]="virtualScroll"
             [selectableGroup]="selectableGroup"
-            [searchFn]="searchFn"
+            [virtualScroll]="virtualScroll"
+            [bufferAmount]="bufferAmount"
             [trackByFn]="trackByFn"
             [sortFn]="sortFn"
-            [inputAttrs]="inputAttrs"
-            [readonly]="readonly"
+            [readonly]="readonly || disabled"
+            [hasSearch]="hasSearch"
+            [searchPlaceholder]="searchPlaceholder"
+            [searchFn]="searchFn"
             [searchWhileComposing]="searchWhileComposing"
-            [searchTermMinLength]="searchTermMinLength"
-            [searchTermSubject]="searchTermSubject"
-            [addCustomItem]="addCustomItem"
-            [searchable]="searchable"
+            [externalSearchTermMinLength]="externalSearchTermMinLength"
+            [externalSearchSubject]="externalSearchSubject"
+            [externalTotalOptionCount]="externalTotalOptionCount"
+            [notFoundText]="notFoundText"
+            [loading]="leftPaneLoading"
+            [hasToolbar]="hasToolbar"
+            [hasFooter]="hasFooter"
             [items]="items"
             [compareWith]="compareWith"
             [optionTemplate]="optionTemplate"
@@ -43,13 +43,13 @@
             (triggerMove)="moveLeftToRight()">
         </hc-pick-pane>
     </div>
-    
 
     <div class="hc-picklist-move-btns">
         <button hc-button buttonStyle="primary-alt" type="button" name="addBtn"
-                (click)="moveLeftToRight()"
-                [disabled]="disabled || availablePane.selectedItems.length === 0">
-            <span class="icon icon-arrow-right"> -> </span>
+            [title]="hasMaxItemsSelected ? 'Cannot select more than 3 items.' : ''"
+            (click)="moveLeftToRight()"
+            [disabled]="disabled || availablePane.selectedItems.length === 0 || hasMaxItemsSelected">
+                <span class="icon icon-arrow-right"> -> </span>
         </button>
         <button hc-button buttonStyle="primary-alt" type="button" name="removeBtn"
                 (click)="moveRightToLeft()"
@@ -58,36 +58,36 @@
         </button>
     </div>
 
-    <div class="hc-picklist-pane-container">
-        <div class="hc-picklist-pane-header">
+    <div class="hc-picklist-pane-container hc-picklist-pane-right">
+        <div *ngIf="hasHeader" class="hc-picklist-pane-header">
             <ng-template #defaultRightHeaderTemplate>
-                <h2 class="hc-picklist-pane-header-default">Selected</h2>
+                <h2 class="hc-picklist-pane-header-default">Selected
+                    <span *ngIf="maxSelectedItems" class="hc-picklist-max-limit-msg">*Select up to {{maxSelectedItems}} options</span>
+                </h2>
             </ng-template>
             <ng-template [ngTemplateOutlet]="paneHeaderRightTemplate || defaultRightHeaderTemplate"></ng-template>
         </div>
         <hc-pick-pane #selected
             [bindLabel]="bindLabel"
             [bindValue]="bindValue"
-            [placeholder]="placeholder"
-            [notFoundText]="notFoundText"
+            [addCustomItem]="addCustomItem"
             [addCustomItemText]="addCustomItemText"
-            [loadingText]="loadingText"
-            [loading]="loading"
-            [maxSelectedItems]="maxSelectedItems"
             [groupBy]="groupBy"
             [groupValue]="groupValue"
-            [bufferAmount]="bufferAmount"
-            [virtualScroll]="virtualScroll"
             [selectableGroup]="selectableGroup"
-            [searchFn]="searchFn"
+            [virtualScroll]="virtualScroll"
+            [bufferAmount]="bufferAmount"
             [trackByFn]="trackByFn"
             [sortFn]="sortFn"
-            [inputAttrs]="inputAttrs"
-            [readonly]="readonly"
+            [readonly]="readonly || disabled"
+            [hasSearch]="hasSearch"
+            [searchPlaceholder]="searchPlaceholder"
+            [searchFn]="searchFn"
             [searchWhileComposing]="searchWhileComposing"
-            [searchTermMinLength]="searchTermMinLength"
-            [addCustomItem]="addCustomItem"
-            [searchable]="searchable"
+            [notFoundText]="notFoundText"
+            [loading]="rightPaneLoading"
+            [hasToolbar]="hasToolbar"
+            [hasFooter]="hasFooter"
             [compareWith]="compareWith"
             [optionTemplate]="optionTemplate"
             [optgroupTemplate]="optgroupTemplate"

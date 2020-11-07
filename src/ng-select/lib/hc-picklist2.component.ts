@@ -31,13 +31,12 @@ import {
     HcPaneHeaderRightTemplateDirective,
     HcPaneHeaderLeftTemplateDirective
 } from './hc-pick-templates.directive';
-
 import { isDefined, isFunction, isObject } from './value-utils';
 import { HcPickOptionComponent } from './hc-pick-option.component';
 import { ConsoleService } from './console.service';
 import { HcPickPaneComponent } from './hc-pick-pane.component';
 import { HcPicklist2Service } from './hc-picklist2.service';
-import { SortFn, GroupValueFn, CompareWithFn, AddCustomItemFn } from './hc-pick.types';
+import { SortFn, GroupValueFn, CompareWithFn, AddCustomItemFn, SearchFn } from './hc-pick.types';
 
 @Component({
     selector: 'hc-picklist2',
@@ -52,40 +51,75 @@ import { SortFn, GroupValueFn, CompareWithFn, AddCustomItemFn } from './hc-pick.
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlValueAccessor {
+    /** If options are objects, this matches the object property to use for display in the list.
+     * Can used nested properties. `myObject.property.nestedProperty`. Default is `'label'`. */
     @Input() bindLabel: string;
+    /** If options are objects, this matches the object property to use for the selected model.
+     * Can used nested properties. `myObject.property.nestedProperty`. By default binds to whole object. */
     @Input() bindValue: string;
+    /** When addCustomItem is true, this changes the default message on the option to add a new item. */
     @Input() addCustomItemText = 'Add custom option.';
+    /** True if user should be able to add custom items. These options will appear when a search term is not exactly matched. */
     @Input() addCustomItem: boolean | AddCustomItemFn = false;
-    @Input() maxSelectedItems: number;
+    /** Group items by property or function expression */
     @Input() groupBy: string | Function;
+    /** Function expression to provide group value */
     @Input() groupValue: GroupValueFn;
-    @Input() bufferAmount = 4;
-    @Input() virtualScroll: boolean;
+    /** True if group should be clickable. Clicking the group will select all its children. Defaults to false. */
     @Input() selectableGroup = false;
+    /** True to enable virtual scroll for better performance when rendering a lot of data. Defaults to false. */
+    @Input() virtualScroll = false;
+    /** When using virtual scroll, how many extra items on top and bottom should be rendered outside the viewport? Deafults to four. */
+    @Input() bufferAmount = 4;
+    /** Provide custom trackBy function for better DOM reusage by angular's *ngFor over the items list. */
     @Input() trackByFn = null;
+    /** Function used to sort the groups and items in the list. */
     @Input() sortFn: SortFn = null;
-    @Input() inputAttrs: { [key: string]: string } = {};
+    /** If true, items can be viewed but not highlighted or moved from pane to pane. Same as adding `disabled` attribute. */
     @Input() readonly = false;
-    @Input() searchable = true;
-    @Input() searchFn = null;
+    /** True if search bar should be present. Defaults to true. */
+    @Input() hasSearch = true;
+    /** Placeholder for the search input. Defaults to 'Search'. */
+    @Input() searchPlaceholder = 'Search';
+    /** A custom search function. */
+    @Input() searchFn: SearchFn = null;
+    /** True if items should be filtered while user is still typing. Defaults to true. */
     @Input() searchWhileComposing = true;
-    @Input() searchTermMinLength = 0;
-    @Input() searchTermSubject: Subject<string>;
+    /** Number of character required for search to be fired. Only applies when using `externalSearchSubject`. */
+    @Input() externalSearchTermMinLength = 0;
+    /** A subject through which an updated search term will be sent. Use for advanced searching functionality, like searching over http. */
+    @Input() externalSearchSubject: Subject<string>;
+    /** For the left pane, force the 'Showing x of y' message to be the given number. Useful when using external search and you want
+     * to display the total number of items available on the server rather than just those currently available in the component. */
+    @Input() externalTotalOptionCount: number;
+    /** Message shown in each pane when empty. Defaults to 'No options to show.' */
+    @Input() notFoundText = 'No options to show.';
+    /** True when pane left pane should show as loading Often used in conjunction with external search. */
+    @Input() leftPaneLoading = false;
+    /** True when right left pane should show as loading. */
+    @Input() rightPaneLoading = false;
+    /** True if each pane should have a header. Defaults to true. */
+    @Input() hasHeader = true;
+    /** True if each pane should have a toolber section. Defaults to true. */
+    @Input() hasToolbar = true;
+    /** True if each pane should have a footer section. Defaults to true. */
+    @Input() hasFooter = true;
+    /** Set a limit to the number of selected items.
+     * Note, this will not prevent more than limit from being added to the model outside the component. */
+    @Input() maxSelectedItems: number;
+    /** Total height of the picklist control in pixels, percentage, rem, etc. Defaults to '400px'. */
     @Input() height = '400px';
 
-    // todo: inputs that should be specific per pane (maybe)
-    @Input() placeholder = 'Search';
-    @Input() notFoundText = 'No options to show.';
-    @Input() loadingText = 'Loading'
-    @Input() loading = false;
-    
-
+    /** An array of options for the picklist. Options can be of any type, and the array can be an observable stream. Can alternatively use
+     * `<hc-pick-option>` components too pass in options. */
     @Input() get items() { return this._items };
     set items(value: any[]) {
         this._itemsAreUsed = true;
         this._items = value;
-    };
-
+    }
+    /** A function to compare the option values with the selected values. The first argument is a value from an option.
+     * The second is a value from the selection(model). A boolean should be returned.
+     * Same as used by https://angular.io/api/forms/SelectControlValueAccessor */
     @Input() get compareWith() { return this._compareWith; }
     set compareWith(fn: CompareWithFn) {
         if (!isFunction(fn)) {
@@ -94,14 +128,12 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         this._compareWith = fn;
     }
 
-    @Output('change') changeEvent = new EventEmitter();
-    @Output('add') addEvent = new EventEmitter();
-    @Output('remove') removeEvent = new EventEmitter();
-
-    // todo - duplicate for each pane?
-    @Output('search') searchEvent = new EventEmitter<{ term: string, items: any[] }>();
-    @Output('scroll') scroll = new EventEmitter<{ start: number; end: number }>();
-    @Output('scrollToEnd') scrollToEnd = new EventEmitter();
+    /** Fires when model is updated. */
+    @Output('change') changeEvent = new EventEmitter<Array<string|Object>>();
+    /** Fires when options are added. */
+    @Output('add') addEvent = new EventEmitter<Array<string|Object>>();
+    /** Fires when options are removed. */
+    @Output('remove') removeEvent = new EventEmitter<Array<string|Object>>();
 
     // custom templates
     @ContentChild(HcPickOptionTemplateDirective, { read: TemplateRef }) optionTemplate: TemplateRef<any>;
@@ -112,14 +144,17 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     @ContentChild(HcPaneHeaderRightTemplateDirective, { read: TemplateRef }) paneHeaderRightTemplate: TemplateRef<any>;
     @ContentChild(HcPaneHeaderLeftTemplateDirective, { read: TemplateRef }) paneHeaderLeftTemplate: TemplateRef<any>;
 
+    /** A template-based/declarative way to pass options available in the picklist. */
     @ContentChildren(HcPickOptionComponent, { descendants: true }) ngOptions: QueryList<HcPickOptionComponent>;
 
+    /** Left picklist pane */
     @ViewChild('available', { static: true }) availablePane: HcPickPaneComponent;
+    /** Right picklist pane */
     @ViewChild('selected', { static: true }) selectedPane: HcPickPaneComponent;
 
     @HostBinding('class.hc-picklist2-disabled') get disabled() { return this.readonly || this._disabled };
 
-    element: HTMLElement;
+    _el: HTMLElement;
     private _items = [];
     private _itemsAreUsed: boolean;
     private _defaultLabel = 'label';
@@ -135,7 +170,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         private _cd: ChangeDetectorRef,
         private _console: ConsoleService,
         @Attribute('autofocus') private autoFocus: any) {
-            this.element = _elementRef.nativeElement;
+            this._el = _elementRef.nativeElement;
     }
 
     ngAfterViewInit() {
@@ -147,7 +182,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         if (isDefined(this.autoFocus)) {
             this.availablePane.focus();
         }
-        this.detectChanges();
+        this._detectChanges();
     }
 
     ngOnDestroy() {
@@ -174,24 +209,49 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         this._cd.markForCheck();
     }
 
-    get hasValue() {
+    /** Retuns true if any items are selected. */
+    get hasValue(): boolean {
         return this.selectedPane.itemsList.items.length > 0;
     }
 
-    moveLeftToRight() {
-        this.move(this.availablePane, this.selectedPane);
+    /** Returns true if the number of selected items matches or exceeds the maximum number */
+    get hasMaxItemsSelected(): boolean {
+        return Number.isFinite(this.maxSelectedItems) && this.selectedPane.itemsList.items.length >= this.maxSelectedItems;
     }
 
+    /** Returns true if the number of selected items exceeds the maximum number.
+     * Could be true if the model is manipulated or set outside of the component. */
+    get hasExceededMaxItemsSelected(): boolean {
+        return Number.isFinite(this.maxSelectedItems) && this.selectedPane.itemsList.items.length > this.maxSelectedItems;
+    }
+
+    /** Move highlighted items from the left pane over to the right pane. */
+    moveLeftToRight() {
+        this._move(this.availablePane, this.selectedPane, true);
+    }
+
+    /** Move highlighted items from the right pane over to the left pane. */
     moveRightToLeft() {
-        this.move(this.selectedPane, this.availablePane);
+        this._move(this.selectedPane, this.availablePane);
     }
 
     /** Move selected (highlighted) options from one pane to the other */
-    move(source: HcPickPaneComponent, destination: HcPickPaneComponent) {
-        source.selectedItems.slice().forEach(i => {
+    _move(source: HcPickPaneComponent, destination: HcPickPaneComponent, isAdding: boolean = false) {
+        let maxLimitEnforced = false;
+        let overLimitBy = 0;
+        if (isAdding && this.maxSelectedItems) {
+            overLimitBy = this.selectedPane.itemsList.items.length + source.selectedItems.length - this.maxSelectedItems;
+            maxLimitEnforced = overLimitBy > 0;
+        }
+        const optionsToMove = maxLimitEnforced ? source.selectedItems.slice(0, source.selectedItems.length - overLimitBy)
+            : source.selectedItems;
+        optionsToMove.slice().forEach(i => {
             source.itemsList.removeOption(i);
             destination.itemsList.addOption(i);
         });
+
+        const eventToFire = isAdding ? this.addEvent : this.removeEvent;
+        eventToFire.emit(optionsToMove.map(x => x.value));
         source.itemsList.reIndex();
         this.availablePane.itemsList.clearSelected();
         this.selectedPane.itemsList.clearSelected();
@@ -208,7 +268,8 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         this.selectedPane.refreshScrollArea();
     }
 
-    detectChanges() {
+    /** Manually trigger change detection to update the UI. */
+    _detectChanges() {
         if (!(<any>this._cd).destroyed) {
             this._cd.detectChanges();
         }
@@ -241,7 +302,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
                     const item = this.availablePane.itemsList.findOption(option.value);
                     item.disabled = option.disabled;
                     item.label = option.label || item.label;
-                    this.detectChanges();
+                    this._detectChanges();
                 });
         };
 
@@ -251,7 +312,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
                 this.bindLabel = this._defaultLabel;
                 mapNgOptions(options);
                 handleOptionChange();
-                this.detectChanges();
+                this._detectChanges();
             });
     }
 
@@ -262,10 +323,10 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         }
 
         const select = (val: any) => {
-            let alreadySelected = this.selectedPane.itemsList.findOption(val);
+            let alreadySelected = this.selectedPane.itemsList.findOption(val, true);
             if (alreadySelected) { return; }
 
-            let item = this.availablePane.itemsList.findOption(val);
+            let item = this.availablePane.itemsList.findOption(val, true);
             if (item) {
                 this.availablePane.itemsList.removeOption(item);
                 this.selectedPane.itemsList.addOption(item);
@@ -290,10 +351,11 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         this.refreshPanes();
     }
 
+    /** Rerun filters and grouping logic in each pane, than force UI refresh. */
     private refreshPanes() {
         this.availablePane.filter();
         this.selectedPane.filter();
-        this.detectChanges();
+        this._detectChanges();
     }
 
     private _isValidWriteValue(value: any): boolean {
@@ -318,7 +380,6 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         return true;
     };
 
-    // todo: more unit testing around this
     private _updateNgModel() {
         const model = [];
         const selectedItems = this.selectedPane.itemsList.items.filter(i => !i.children);

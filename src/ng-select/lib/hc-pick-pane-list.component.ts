@@ -10,14 +10,12 @@ import {
     OnInit,
     Output,
     SimpleChanges,
-    TemplateRef,
     ViewChild,
     ViewEncapsulation
 } from '@angular/core';
 import { animationFrameScheduler, asapScheduler, fromEvent, Subject } from 'rxjs';
 import { auditTime, takeUntil } from 'rxjs/operators';
 import { HcPickPaneListService, PanelDimensions } from './hc-pick-pane-list.service';
-
 import { HcOption } from './hc-pick.types';
 import { isDefined } from './value-utils';
 
@@ -38,17 +36,14 @@ const SCROLL_SCHEDULER = typeof requestAnimationFrame !== 'undefined' ? animatio
     `
 })
 export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
-
     @Input() items: HcOption[] = [];
     @Input() markedItem: HcOption;
     @Input() bufferAmount: number;
     @Input() virtualScroll = false;
     @Input() filterValue: string = null;
-
     @Output() update = new EventEmitter<any[]>();
     @Output() scroll = new EventEmitter<{ start: number; end: number }>();
     @Output() scrollToEnd = new EventEmitter<void>();
-
     @ViewChild('content', { read: ElementRef, static: true }) contentElementRef: ElementRef;
     @ViewChild('scroll', { read: ElementRef, static: true }) scrollElementRef: ElementRef;
     @ViewChild('padding', { read: ElementRef, static: true }) paddingElementRef: ElementRef;
@@ -124,8 +119,8 @@ export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
             scrollTo = this._panelService.getScrollTo(index * itemHeight, itemHeight, this._lastScrollPosition);
         } else {
             const item: HTMLElement = this._panel.querySelector(`#${option.htmlId}`);
-            const lastScroll = startFromOption ? item.offsetTop : this._lastScrollPosition;
-            scrollTo = this._panelService.getScrollTo(item.offsetTop, item.clientHeight, lastScroll);
+            const lastScroll = startFromOption ? item?.offsetTop || 0 : this._lastScrollPosition;
+            scrollTo = this._panelService.getScrollTo(item?.offsetTop || 0, item?.clientHeight || 0, lastScroll);
         }
 
         if (isDefined(scrollTo)) {
@@ -252,7 +247,6 @@ export class HcPickPaneListComponent implements OnInit, OnChanges, OnDestroy {
         const [first] = this.items;
         this.update.emit([first]);
 
-        // todo: watch for bug here, sometimes "first" gets out of sync with whats in the _panel
         return Promise.resolve().then(() => {
             const option = this._panel.querySelector(`#${first.htmlId}`);
             const optionHeight = option.clientHeight;

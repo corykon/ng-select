@@ -1,4 +1,19 @@
-import { Directive, TemplateRef } from '@angular/core';
+import { Directive, ElementRef, Input, OnChanges, SimpleChanges, TemplateRef } from '@angular/core';
+import { escapeHTML } from './value-utils';
+
+@Directive({ selector: '[hcPickItemLabel]' })
+export class HcPickItemLabelDirective implements OnChanges {
+    @Input() hcPickItemLabel: string;
+    @Input() escape = true;
+
+    constructor(private element: ElementRef<HTMLElement>) { }
+
+    ngOnChanges(changes: SimpleChanges) {
+        this.element.nativeElement.innerHTML = this.escape ?
+            escapeHTML(this.hcPickItemLabel) :
+            this.hcPickItemLabel;
+    }
+}
 
 @Directive({ selector: '[hc-pane-header-left-tmp]' })
 export class HcPaneHeaderLeftTemplateDirective {

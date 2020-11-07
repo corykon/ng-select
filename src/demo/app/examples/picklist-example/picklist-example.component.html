@@ -2,8 +2,22 @@
 
 <h3>Using hc-pick-options</h3>
 <br>
-
-<hc-picklist2 [(ngModel)]="selectedCars" autofocus>
+<!-- todo add form controls for some of these various inputs -->
+<hc-picklist2
+    [(ngModel)]="selectedCars"
+    autofocus
+    [externalTotalOptionCount]="300"
+    [hasSearch]="false"
+    [readonly]="false"
+    [leftPaneLoading]="false"
+    [rightPaneLoading]="false"
+    [maxSelectedItems]="3"
+    [hasHeader]="false"
+    [hasToolbar]="false"
+    [hasFooter]="false"
+    height="300px"
+    searchPlaceholder="Search for cars"
+    notFoundText="Nothing to see here.">
     <hc-pick-option *ngFor="let car of cars" [value]="car.id" [disabled]="car.disabled">{{car.name}}</hc-pick-option>
     <hc-pick-option [value]="'custom'">Custom</hc-pick-option>
 </hc-picklist2>
