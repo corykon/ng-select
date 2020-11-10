@@ -254,6 +254,11 @@ $hc-pick-height: 36px !default;
             padding-left: 0;
         }
     }
+
+    &.hc-pick-option-hide {
+        display: none;
+    }
+
     .hc-pick-custom-item-label {
         font-size: 80%;
         font-weight: 400;

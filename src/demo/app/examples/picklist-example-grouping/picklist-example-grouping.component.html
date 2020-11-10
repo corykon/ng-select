@@ -1,6 +1,6 @@
 
 
-<h3>Array of objects</h3>
+<h3>Grouping</h3>
 <br>
 
 <hc-picklist2
@@ -11,10 +11,19 @@
     [sortFn]="sortFn"
     [searchFn]="customSearchFn"
     [groupBy]="groupByFn"
-    [selectableGroup]="true">
+    [canSelectGroup]="true"
+    [canCollapseGroup]="true">
      <!-- Group header template -->
-     <ng-template hc-pick-optgroup-tmp let-item="item">
-        <div class="group-row">{{ item.name }}</div>
+     <ng-template hc-pick-optgroup-tmp let-item="hcOption">
+        <div class="hc-pick-optgroup-inner group-row">
+            <span class="hc-pick-group-icon" [class.hc-pick-group-icon-open]="!item.isClosed" 
+                (dblclick)="$event.stopPropagation()"
+                (click)="item.toggleOpenState($event)">
+                F
+            </span>
+            <span>{{ item.value.name }}</span>
+            <span> ({{item.children.length}})</span>
+        </div>
     </ng-template>
 
     <!-- Dropdown option template -->

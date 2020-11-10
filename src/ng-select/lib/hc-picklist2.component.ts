@@ -35,7 +35,7 @@ import { isDefined, isFunction, isObject } from './value-utils';
 import { HcPickOptionComponent } from './hc-pick-option.component';
 import { HcPickPaneComponent } from './hc-pick-pane.component';
 import { HcPicklist2Service } from './hc-picklist2.service';
-import { SortFn, GroupValueFn, CompareWithFn, AddCustomItemFn, SearchFn } from './hc-pick.types';
+import { SortFn, GroupValueFn, CompareWithFn, AddCustomItemFn, SearchFn, HcOption } from './hc-pick.types';
 
 @Component({
     selector: 'hc-picklist2',
@@ -66,7 +66,9 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     /** Function expression to provide group value */
     @Input() groupValue: GroupValueFn;
     /** True if group should be clickable. Clicking the group will select all its children. Defaults to false. */
-    @Input() selectableGroup = false;
+    @Input() canSelectGroup = false;
+    /** True if group can be closed to hide its children options. Clicking the group will select all its children. Defaults to false. */
+    @Input() canCollapseGroup = false;
     /** True to enable virtual scroll for better performance when rendering a lot of data. Defaults to false. */
     @Input() virtualScroll = false;
     /** When using virtual scroll, how many extra items on top and bottom should be rendered outside the viewport? Deafults to four. */
@@ -327,11 +329,11 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
                     this.selectedPane.itemsList.addOption(this.selectedPane.itemsList.mapItem(val, null));
                 } else if (this.bindValue) {
                     // todo: test this code path
-                    item = {
+                    const rawitem = {
                         [this.bindLabel]: null,
                         [this.bindValue]: val
                     };
-                    this.selectedPane.itemsList.addOption(this.selectedPane.itemsList.mapItem(item, null));
+                    this.selectedPane.itemsList.addOption(this.selectedPane.itemsList.mapItem(rawitem, null));
                 }
             }
         };

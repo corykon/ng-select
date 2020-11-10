@@ -48,7 +48,8 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     @Input() addCustomItemText: string;
     @Input() groupBy: string | Function;
     @Input() groupValue: GroupValueFn;
-    @Input() selectableGroup = false;
+    @Input() canSelectGroup = false;
+    @Input() canCollapseGroup = false;
     @Input() virtualScroll: boolean;
     @Input() bufferAmount = 4;
     @Input() trackByFn = null;

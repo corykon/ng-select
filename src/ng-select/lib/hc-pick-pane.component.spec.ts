@@ -2484,14 +2484,14 @@ describe('HcPickPaneComponent', () => {
             expect(select.itemsList.filteredItems.length).toBe(0);
         }));
 
-        it('should allow select optgroup items when [selectableGroup]="true"', fakeAsync(() => {
+        it('should allow select optgroup items when [canSelectGroup]="true"', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectGroupingTestCmp,
                 `<hc-pick-pane [items]="accounts"
                         groupBy="country"
                         bindLabel="name"
                         bindValue="email"
-                        [selectableGroup]="true"
+                        [canSelectGroup]="true"
                         [(ngModel)]="selectedAccount">
                 </hc-pick-pane>`);
 
@@ -2503,14 +2503,14 @@ describe('HcPickPaneComponent', () => {
             expect(fixture.componentInstance.selectedAccount).toBe('adam@email.com');
         }));
 
-        it('should select group by default when [selectableGroup]="true"', fakeAsync(() => {
+        it('should select group by default when [canSelectGroup]="true"', fakeAsync(() => {
             const fixture = createTestingModule(
                 NgSelectGroupingTestCmp,
                 `<hc-pick-pane [items]="accounts"
                         groupBy="country"
                         bindLabel="name"
                         bindValue="email"
-                        [selectableGroup]="true"
+                        [canSelectGroup]="true"
                         [(ngModel)]="selectedAccount">
                 </hc-pick-pane>`);
 

@@ -67,15 +67,27 @@
             [class.hc-pick-option]="!item.children"
             [class.hc-pick-option-child]="!!item.parent"
             [class.hc-pick-option-marked]="item === itemsList.markedItem"
+            [class.hc-pick-option-hide]="item.parent?.isClosed"
             [attr.aria-selected]="item.selected"
             [attr.id]="item?.htmlId">
 
             <ng-template #defaultOptionTemplate>
-                <span class="hc-pick-option-label" [hcPickItemLabel]="item.label" [escape]="escapeHTML"></span>
+                <span class="hc-pick-option-label" [class.hc-pick-parent-closed]="item.parent?.isClosed" [hcPickItemLabel]="item.label" [escape]="escapeHTML"></span>
+            </ng-template>
+
+            <ng-template #defaultOptGroupTemplate>
+                <div class="hc-pick-optgroup-inner">
+                    <span *ngIf="canCollapseGroup" class="hc-pick-group-icon" [class.hc-pick-group-icon-open]="!item.isClosed" 
+                        (dblclick)="$event.stopPropagation()"
+                        (click)="item.toggleOpenState($event)">
+                        F
+                    </span>
+                    <span class="hc-pick-option-label" [hcPickItemLabel]="item.label" [escape]="escapeHTML"></span>
+                </div>
             </ng-template>
 
             <ng-template
-                [ngTemplateOutlet]="item.children ? (optgroupTemplate || defaultOptionTemplate) : (optionTemplate || defaultOptionTemplate)"
+                [ngTemplateOutlet]="item.children ? (optgroupTemplate || defaultOptGroupTemplate) : (optionTemplate || defaultOptionTemplate)"
                 [ngTemplateOutletContext]="{ item: item.value, hcOption: item, index: item.index, searchTerm: searchTerm }">
             </ng-template>
         </div>

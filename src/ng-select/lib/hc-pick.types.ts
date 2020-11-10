@@ -1,7 +1,7 @@
 import { InjectionToken } from '@angular/core';
 import { SelectionModelFactory } from './selection-model';
 
-export interface HcOption {
+export class HcOption {
     [name: string]: any;
     index?: number;
     htmlId?: string;
@@ -12,7 +12,19 @@ export interface HcOption {
     value?: string | Object;
     parent?: HcOption;
     children?: HcOption[];
+    isClosed = false;
+
+    constructor(config: IHcOption) {
+        Object.assign(this, config);
+    }
+
+    toggleOpenState(event: MouseEvent) {
+        event.stopPropagation();
+        this.isClosed = !this.isClosed;
+    }
 }
+
+export type IHcOption = Partial<HcOption>;
 
 // todo - use cashmere keycodes
 export enum KeyCode {

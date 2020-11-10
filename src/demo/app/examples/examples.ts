@@ -14,16 +14,20 @@ export const EXAMPLE_COMPONENTS: { [key: string]: Example } = {
         component: PicklistExampleSimpleComponent,
         title: 'Picklist Simple'
     },
-    'picklist-example-component': {
+    'picklist-example-grouping': {
+        component: PicklistExampleGroupingComponent,
+        title: 'Grouping'
+    },
+    'picklist-example': {
         component: PicklistExampleComponent,
         title: 'Picklist'
     },
     'picklist-example-templates': {
         component: PicklistExampleTemplatesComponent,
-        title: 'Picklist Templates'
+        title: 'Templates'
     },
     'picklist-example-custom-items': {
         component: PicklistExampleTaggingComponent,
-        title: 'Picklist Tagging'
+        title: 'Custom Options'
     }
 };

@@ -7,7 +7,7 @@ type OptionGroups = Map<string | HcOption, HcOption[]>;
 
 /** Helps manage the state of the list */
 export class ItemsList {
-    constructor(private _ngSelect: HcPickPaneComponent, private _selectionModel: HcPickSelectionModel) {}
+    constructor(private _pickPane: HcPickPaneComponent, private _selectionModel: HcPickSelectionModel) {}
 
     get itemsShownCount(): string { return this._itemsShownCount; }
     private _itemsShownCount = '';
@@ -64,7 +64,12 @@ export class ItemsList {
     /** Highlight a given option in the list */
     select(item: HcOption) {
         if (item.selected) { return; }
-        this._selectionModel.select(item);
+        if (item.children) {
+            const availableChildren = item.children.filter(i => this._filteredItems.some(fi => fi.htmlId === i.htmlId))
+            availableChildren.forEach(child => this._selectionModel.select(child));
+        } else {
+            this._selectionModel.select(item);
+        }
     }
 
     /** Remove highlight from a given option in the list */
@@ -81,13 +86,13 @@ export class ItemsList {
      */
     findOption(value: any, favorBindValueStrategy: boolean = false): HcOption {
         let findBy: (item: HcOption) => boolean;
-        if (this._ngSelect.compareWith && !(favorBindValueStrategy && this._ngSelect.bindValue)) {
-            findBy = item => this._ngSelect.compareWith(item.value, value)
-        } else if (this._ngSelect.bindValue) {
-            findBy = item => !item.children && this.resolveNested(item.value, this._ngSelect.bindValue) === value
+        if (this._pickPane.compareWith && !(favorBindValueStrategy && this._pickPane.bindValue)) {
+            findBy = item => this._pickPane.compareWith(item.value, value)
+        } else if (this._pickPane.bindValue) {
+            findBy = item => !item.children && this.resolveNested(item.value, this._pickPane.bindValue) === value
         } else {
             findBy = item => item.value === value ||
-                !item.children && item.label && item.label === this.resolveNested(value, this._ngSelect.bindLabel)
+                !item.children && item.label && item.label === this.resolveNested(value, this._pickPane.bindLabel)
         }
         return this._items.find(item => findBy(item));
     }
@@ -126,8 +131,8 @@ export class ItemsList {
 
     /** Create item groups */
     private _groupItems() {
-        if (this._ngSelect.groupBy) {
-            this._groups = this._groupBy(this._items, this._ngSelect.groupBy);
+        if (this._pickPane.groupBy) {
+            this._groups = this._groupBy(this._items, this._pickPane.groupBy);
             this._items = this._flatten(this._groups);
         } else {
             // if the picklist is configured not to do grouping, put all the items in one unnamed group
@@ -141,9 +146,9 @@ export class ItemsList {
 
     /** If a sort function was provided, sort the child items within their groups */
     private _sortChildrenWithinGroups() {
-        if (!this._ngSelect.sortFn) { return; }
+        if (!this._pickPane.sortFn) { return; }
         for (let values of this._groups.values()) {
-            values.sort(this._ngSelect.sortFn)
+            values.sort(this._pickPane.sortFn)
         }
     }
 
@@ -161,7 +166,7 @@ export class ItemsList {
 
     /** Highlight all the items in the list */
     selectAll() {
-        this._selectionModel.selectAll(this._items, this._ngSelect.selectableGroup);
+        this._selectionModel.selectAll(this._filteredItems, this._pickPane.canSelectGroup);
     }
 
     /** Find an item in the list by its label */
@@ -177,14 +182,14 @@ export class ItemsList {
     filter(term: string): void {
         if (!term) { this.resetFilteredItems(); return; }
         this._filteredItems = [];
-        term = this._ngSelect.searchFn ? term : term.toLocaleLowerCase();
-        const match = this._ngSelect.searchFn || this._defaultSearchFn;
+        term = this._pickPane.searchFn ? term : term.toLocaleLowerCase();
+        const match = this._pickPane.searchFn || this._defaultSearchFn;
 
         if (!this._groups) { return; }
         for (const key of Array.from(this._groups.keys())) {
             const matchedItems = [];
             for (const item of this._groups.get(key)) {
-                const searchItem = this._ngSelect.searchFn ? item.value : item;
+                const searchItem = this._pickPane.searchFn ? item.value : item;
                 if (match(term, searchItem)) {
                     matchedItems.push(item);
                 }
@@ -267,15 +272,15 @@ export class ItemsList {
     /** Maps the given raw value into an HcOption. */
     mapItem(item: any, index: number): HcOption {
         // $hcOptionLabel and $hcOptionValue will be used in the case of <hc-pick-option> components
-        const label = isDefined(item.$hcOptionLabel) ? item.$hcOptionLabel : this.resolveNested(item, this._ngSelect.bindLabel);
+        const label = isDefined(item.$hcOptionLabel) ? item.$hcOptionLabel : this.resolveNested(item, this._pickPane.bindLabel);
         const value = isDefined(item.$hcOptionValue) ? item.$hcOptionValue : item;
-        return {
+        return new HcOption({
             index: index,
             label: isDefined(label) ? label.toString() : '',
             value: value,
             disabled: item.disabled,
-            htmlId: `${this._ngSelect.paneId}-${index}`,
-        };
+            htmlId: `${this._pickPane.paneId}-${index}`,
+        });
     }
 
     /** Update the 'Showing x of y' counts */
@@ -328,7 +333,7 @@ export class ItemsList {
             return groups;
         }
 
-        const isFnKey = isFunction(this._ngSelect.groupBy);
+        const isFnKey = isFunction(this._pickPane.groupBy);
         const keyFn = (item: HcOption) => {
             let key = isFnKey ? (<Function>prop)(item.value) : item.value[<string>prop];
             return isDefined(key) ? key : undefined;
@@ -349,27 +354,29 @@ export class ItemsList {
 
     /** Flatten the groups such that the parent is just above it children in a flattened array */
     private _flatten(groups: OptionGroups) {
-        const isGroupByFn = isFunction(this._ngSelect.groupBy);
+        const isGroupByFn = isFunction(this._pickPane.groupBy);
         this._sortChildrenWithinGroups();
         const flattenedSortedItems = new Array<HcOption>()
         const groupItems = new Array<HcOption>();
         for (const key of Array.from(groups.keys())) {
             if (key === undefined) {
                 const withoutGroup = groups.get(undefined) || [];
-                flattenedSortedItems.push(...withoutGroup.map((item, index) => ({ ...item, index: index })));
+                withoutGroup.forEach((item, index) => item.index = index);
+                flattenedSortedItems.push(...withoutGroup);
                 continue;
             }
 
             const isObjectKey = isObject(key);
-            const parent: HcOption = {
+            const parent = new HcOption({
                 label: isObjectKey ? '' : String(key),
                 children: undefined,
                 parent: null,
-                disabled: !this._ngSelect.selectableGroup,
+                disabled: !this._pickPane.canSelectGroup,
                 htmlId: newId(),
-            };
-            const groupKey = isGroupByFn ? this._ngSelect.bindLabel : <string>this._ngSelect.groupBy;
-            const groupValue = this._ngSelect.groupValue || (() => {
+                isClosed: this._pickPane.canCollapseGroup
+            });
+            const groupKey = isGroupByFn ? this._pickPane.bindLabel : <string>this._pickPane.groupBy;
+            const groupValue = this._pickPane.groupValue || (() => {
                 if (isObjectKey) {
                     return (<HcOption>key).value;
                 }
@@ -384,7 +391,7 @@ export class ItemsList {
             parent.value = groupValue(key, children.map(x => x.value));
             groupItems.push(parent)
         }
-        if (this._ngSelect.sortFn) { groupItems.sort(this._ngSelect.sortFn); }
+        if (this._pickPane.sortFn) { groupItems.sort(this._pickPane.sortFn); }
 
         groupItems.forEach(groupItem => {
             let i = flattenedSortedItems.length;
