@@ -11,7 +11,8 @@ export class HcPicklist2Service {
         this.selectedPane = selectedPane;
     }
 
-    /** When the option/items are updated, update them in the selected pane and make sure they aren't sitting in the available pane */
+    /** When the option/items are updated, update corresponding selected options in the selected pane.
+     *  Make sure they aren't duplicated in the available pane */
     public mapIncomingOptionsToSelected(bindValue?: string) {
         if (!isDefined(this.availablePane) || !isDefined(this.selectedPane)) { return; }
         const selectedItems = this.selectedPane.itemsList.items.slice();

@@ -46,8 +46,9 @@ export class ItemsList {
 
     /** Remove all options from the list */
     clearList() {
-        this._items.length = 0;
-        this._filteredItems.length = 0;
+        this._items = [];
+        this._filteredItems = [];
+        this._reGroup();
     }
 
     /** Converts an array of raw values into HcOptions and set them on the list */

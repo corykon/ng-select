@@ -350,7 +350,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     }
 
     private _isValidWriteValue(value: any): boolean {
-        if (!isDefined(value) || value === '' || Array.isArray(value) && value.length === 0) {
+        if (!isDefined(value) || value === '') {
             return false;
         }
 
