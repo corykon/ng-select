@@ -67,8 +67,13 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     @Input() groupValue: GroupValueFn;
     /** True if group should be clickable. Clicking the group will select all its children. Defaults to false. */
     @Input() canSelectGroup = false;
-    /** True if group can be closed to hide its children options. Clicking the group will select all its children. Defaults to false. */
-    @Input() canCollapseGroup = false;
+    /** True if group can be closed to hide its children options. Defaults to false. */
+    @Input() canCloseGroup = false;
+    /** True if groups should be closed to begin with. Must have `canCloseGroup` set to true to use. Defaults to true. */
+    @Input() closeGroupsByDefault = true;
+    /** If grouping, all items that are not able to be grouped will put together in an orphan group.
+     * What should that group be labeled as? Defaults to `"Other Items"` */
+    @Input() orphanItemsGroupName = 'Other Items';
     /** True to enable virtual scroll for better performance when rendering a lot of data. Defaults to false. */
     @Input() virtualScroll = false;
     /** When using virtual scroll, how many extra items on top and bottom should be rendered outside the viewport? Deafults to four. */
@@ -326,14 +331,14 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
                 const isValObject = isObject(val);
                 const isPrimitive = !isValObject && !this.bindValue;
                 if ((isValObject || isPrimitive)) {
-                    this.selectedPane.itemsList.addOption(this.selectedPane.itemsList.mapItem(val, null));
+                    this.selectedPane.itemsList.addOption(this.selectedPane.itemsList.createHcOption(val, null));
                 } else if (this.bindValue) {
                     // todo: test this code path
                     const rawitem = {
                         [this.bindLabel]: null,
                         [this.bindValue]: val
                     };
-                    this.selectedPane.itemsList.addOption(this.selectedPane.itemsList.mapItem(rawitem, null));
+                    this.selectedPane.itemsList.addOption(this.selectedPane.itemsList.createHcOption(rawitem, null));
                 }
             }
         };

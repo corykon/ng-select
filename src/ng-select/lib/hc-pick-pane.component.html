@@ -56,18 +56,18 @@
     [id]="paneId">
 
     <ng-container *ngIf="!loading">
-        <div class="hc-pick-option" [attr.role]="item.children ? 'group' : 'option'"
+        <div class="hc-pick-option" [attr.role]="item.isParent ? 'group' : 'option'"
             *ngFor="let item of viewPortItems; trackBy: trackByOption; let first = first;"
             (click)="onItemClick($event, item)"
             (dblclick)="onItemDoubledClicked($event, item)"
             draggable="true" (dragstart)="dragService.drag($event, itemsList, item)" (dragend)="dragService.dragEnd()"
             [class.hc-pick-option-disabled]="item.disabled"
             [class.hc-pick-option-selected]="item.selected"
-            [class.hc-pick-optgroup]="item.children"
-            [class.hc-pick-option]="!item.children"
-            [class.hc-pick-option-child]="!!item.parent"
+            [class.hc-pick-optgroup]="item.isParent"
+            [class.hc-pick-option]="item.isChild"
+            [class.hc-pick-option-child]="item.isChild"
             [class.hc-pick-option-marked]="item === itemsList.markedItem"
-            [class.hc-pick-option-hide]="item.parent?.isClosed"
+            [class.hc-pick-option-hide]="item.parent?.isClosed || (item.isParent && !groupBy)"
             [attr.aria-selected]="item.selected"
             [attr.id]="item?.htmlId">
 
@@ -77,7 +77,7 @@
 
             <ng-template #defaultOptGroupTemplate>
                 <div class="hc-pick-optgroup-inner">
-                    <span *ngIf="canCollapseGroup" class="hc-pick-group-icon" [class.hc-pick-group-icon-open]="!item.isClosed" 
+                    <span *ngIf="canCloseGroup" class="hc-pick-group-icon" [class.hc-pick-group-icon-open]="!item.isClosed" 
                         (dblclick)="$event.stopPropagation()"
                         (click)="item.toggleOpenState($event)">
                         F
@@ -87,7 +87,7 @@
             </ng-template>
 
             <ng-template
-                [ngTemplateOutlet]="item.children ? (optgroupTemplate || defaultOptGroupTemplate) : (optionTemplate || defaultOptionTemplate)"
+                [ngTemplateOutlet]="item.isParent ? (optgroupTemplate || defaultOptGroupTemplate) : (optionTemplate || defaultOptionTemplate)"
                 [ngTemplateOutletContext]="{ item: item.value, hcOption: item, index: item.index, searchTerm: searchTerm }">
             </ng-template>
         </div>

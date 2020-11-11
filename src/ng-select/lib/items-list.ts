@@ -3,7 +3,8 @@ import { HcOption } from './hc-pick.types';
 import { HcPickSelectionModel } from './selection-model';
 import { isDefined, isFunction, isObject, newId } from './value-utils';
 
-type OptionGroups = Map<string | HcOption, HcOption[]>;
+/** Keys may be a unique string or an HcOption itself. HcOption will be used as a key when the developer provides pregrouped options. */
+type ChildrenByGroupKeyMap = Map<string | HcOption, Array<HcOption>>;
 
 /** Helps manage the state of the list */
 export class ItemsList {
@@ -15,13 +16,14 @@ export class ItemsList {
     get itemsTotalCount(): string { return this._itemsTotalCount; }
     private _itemsTotalCount = '';
 
-    get items(): HcOption[] { return this._items; }
-    private _items: HcOption[] = [];
+    get items(): Array<HcOption> { return this._items; }
+    private _items = new Array<HcOption>();
 
-    get filteredItems(): HcOption[] { return this._filteredItems; }
-    private _filteredItems: HcOption[] = [];
+    get filteredItems(): Array<HcOption> { return this._filteredItems; }
+    private _filteredItems = new Array<HcOption>();
 
-    private _groups: OptionGroups;
+    private _optionGroups = new Array<HcOption>();
+    private readonly DEFAULT_GROUP_KEY = 'HC_PICK_PANE_DEFAULT_GROUP_KEY';
     private _markedIndex = -1;
 
     /** Represents the "focused" item */
@@ -48,13 +50,16 @@ export class ItemsList {
     clearList() {
         this._items = [];
         this._filteredItems = [];
-        this._reGroup();
+        this._optionGroups = [];
     }
 
     /** Converts an array of raw values into HcOptions and set them on the list */
     setItems(items: any[]) {
-        this._items = items.map((item, index) => this.mapItem(item, index));
-        this._groupItems();
+        const hcOptionItems = items.map((item, index) => this.createHcOption(item, index));
+        this._optionGroups = this._groupItems(hcOptionItems, this._pickPane.groupBy);
+        this._items = this.sortAndIndex(this._optionGroups);
+        this._filteredItems = [...this._items];
+        this._updateCounts();
     }
 
     /** Reset the indexes on each HcOption */
@@ -98,59 +103,71 @@ export class ItemsList {
         return this._items.find(item => findBy(item));
     }
 
-    /** Adds a new option, transforming a given raw value into an HcOption */
-    addNewOption(item: any): HcOption {
-        const option = this.mapItem(item, this._items.length);
-        this._items.push(option);
-        this._reGroup();
-        return option;
-    }
-
-    /** Adds an exisiting HcOption to the list. */
+    /** Adds an existing HcOption to the list. */
     addOption(option: HcOption) {
-        option.index = this._items.length;
-        this._items.push(option);
-        this._reGroup();
-    }
-
-    /** Removes an exisiting HcOption from the list */
-    removeOption(item: HcOption) {
-        const indexToRemove = this._items.findIndex(i => i.index === item.index);
-        if (indexToRemove > -1) {
-            this._items.splice(indexToRemove, 1);
-            this._reGroup();
+        if (!option.parent) { throw new Error(`Trying to add an option that does not have a parent: ${option}`); }
+        const parentKey = option.parent.groupKey;
+        const parentGroup = this._optionGroups.find(pg => pg.groupKey === parentKey);
+        if (parentGroup) {
+            parentGroup?.children.push(option);
+            option.parent = parentGroup;
         } else {
-            console.error(`Couldn't find the item to remove: ${item}`);
+            const newParentGroup = new HcOption({
+                groupKey: parentKey,
+                label: option.parent.label,
+                children: [option],
+                parent: null,
+                disabled: option.parent.disabled,
+                htmlId: newId(),
+                isClosed: option.parent.isClosed,
+                value: option.parent.value
+            });
+            option.parent = newParentGroup;
+            this._optionGroups.push(newParentGroup);
         }
+
+        this._items = this.sortAndIndex(this._optionGroups);
     }
 
-    /** Remove parent options from the list and then regroup the child items. */
-    private _reGroup() {
-        this._items = this._items.filter(i => !i.children);
-        this._groupItems();
-    }
+    /** Removes an existing HcOption from the list */
+    removeOption(option: HcOption) {
+        if (!option.parent) { throw new Error(`Trying to remove an option that does not have a parent: ${option}`); }
+        this._deleteItem(option, this._items);
 
-    /** Create item groups */
-    private _groupItems() {
-        if (this._pickPane.groupBy) {
-            this._groups = this._groupBy(this._items, this._pickPane.groupBy);
-            this._items = this._flatten(this._groups);
-        } else {
-            // if the picklist is configured not to do grouping, put all the items in one unnamed group
-            this._groups = new Map();
-            this._groups.set(undefined, this._items)
-            this._sortChildrenWithinGroups();
+        const parentGroup = this._optionGroups.find(pg => pg.groupKey === option.parent.groupKey);
+        this._deleteItem(option, parentGroup.children);
+        if (parentGroup.children.length === 0) {
+            this._deleteItem(parentGroup, this._items);
+            this._deleteItem(parentGroup, this._optionGroups);
         }
-        this._filteredItems = [...this._items];
-        this._updateCounts();
+
+        this._items = this.sortAndIndex(this._optionGroups);
     }
 
-    /** If a sort function was provided, sort the child items within their groups */
-    private _sortChildrenWithinGroups() {
+    private _deleteItem(item: HcOption, list: Array<HcOption>) {
+        const findIndexFunc = (i: HcOption) => i.index === item.index;
+        let indexToRemove = list.findIndex(findIndexFunc);
+        if (indexToRemove === -1) { console.error(`Couldn't find the item to remove: ${item}`); return; }
+        list.splice(indexToRemove, 1);
+    }
+
+    /** Create item groups. If we're not grouping, everything just gets placed in one default group. */
+    private _groupItems(items: Array<HcOption>, groupBy: string | Function): Array<HcOption> {
+        const childOptsGroupedByKey = this._groupBy(items, groupBy);
+        return this._createParentHcOptions(childOptsGroupedByKey);
+    }
+
+    /** If a sort function was provided, sort at the child and group level*/
+    private _sortOptions(groups: Array<HcOption>) {
         if (!this._pickPane.sortFn) { return; }
-        for (let values of this._groups.values()) {
-            values.sort(this._pickPane.sortFn)
-        }
+        groups.forEach(g => { g.children.sort(this._pickPane.sortFn); });
+        groups.sort(this._pickPane.sortFn);
+
+        // if default group exists, sort it at the bottom
+        const defaultGroupIndex = groups.findIndex(g => g.groupKey === this.DEFAULT_GROUP_KEY);
+        if (defaultGroupIndex === -1) { return; }
+        const defaultGroup = groups.splice(defaultGroupIndex, 1);
+        groups.push(...defaultGroup);
     }
 
     /**
@@ -184,26 +201,20 @@ export class ItemsList {
         if (!term) { this.resetFilteredItems(); return; }
         this._filteredItems = [];
         term = this._pickPane.searchFn ? term : term.toLocaleLowerCase();
-        const match = this._pickPane.searchFn || this._defaultSearchFn;
+        const searchFn = this._pickPane.searchFn || this._defaultSearchFn;
 
-        if (!this._groups) { return; }
-        for (const key of Array.from(this._groups.keys())) {
+        this._optionGroups.forEach(pg => {
             const matchedItems = [];
-            for (const item of this._groups.get(key)) {
+            pg.children.forEach(item => {
                 const searchItem = this._pickPane.searchFn ? item.value : item;
-                if (match(term, searchItem)) {
+                if (searchFn(term, searchItem)) {
                     matchedItems.push(item);
                 }
-            }
+            });
             if (matchedItems.length > 0) {
-                const [last] = matchedItems.slice(-1);
-                if (last.parent) {
-                    const head = this._items.find(x => x === last.parent);
-                    this._filteredItems.push(head);
-                }
-                this._filteredItems.push(...matchedItems);
+                this._filteredItems.push(...[pg, ...matchedItems]);
             }
-        }
+        })
         this._updateCounts();
     }
 
@@ -220,7 +231,7 @@ export class ItemsList {
         this.markFirst();
     }
 
-    /** Remove focus from any of the list options */
+    /** Remove focus from any of the options */
     unmark() {
         this._markedIndex = -1;
     }
@@ -255,7 +266,7 @@ export class ItemsList {
     /** Obtain a nested value from a given object. It could be a direct property, or a nested property */
     resolveNested(option: any, key: string): any {
         if (!isObject(option)) { return option; }
-        if (!key || key.indexOf(".") === -1) {
+        if (!key || key.indexOf('.') === -1) {
             return option[key];
         } else {
             let keys: string[] = key.split('.');
@@ -271,10 +282,11 @@ export class ItemsList {
     }
 
     /** Maps the given raw value into an HcOption. */
-    mapItem(item: any, index: number): HcOption {
+    createHcOption(item: any, index?: number): HcOption {
         // $hcOptionLabel and $hcOptionValue will be used in the case of <hc-pick-option> components
         const label = isDefined(item.$hcOptionLabel) ? item.$hcOptionLabel : this.resolveNested(item, this._pickPane.bindLabel);
         const value = isDefined(item.$hcOptionValue) ? item.$hcOptionValue : item;
+        index = Number.isFinite(index) ? index : this._items.length;
         return new HcOption({
             index: index,
             label: isDefined(label) ? label.toString() : '',
@@ -291,13 +303,13 @@ export class ItemsList {
     }
 
     /** If picklist is not configured with a search function, use this one. */
-    private _defaultSearchFn(search: string, opt: HcOption) {
+    private _defaultSearchFn(searchTerm: string, opt: HcOption): boolean {
         const label = opt.label.toLocaleLowerCase();
-        return label.indexOf(search) > -1
+        return label.indexOf(searchTerm) > -1
     }
 
     /** Get index of an item a given number of steps above or below the current focus item */
-    private _getNextItemIndex(steps: number) {
+    private _getNextItemIndex(steps: number): number {
         if (steps > 0) {
             return (this._markedIndex === this._filteredItems.length - 1) ? 0 : (this._markedIndex + 1);
         }
@@ -311,8 +323,8 @@ export class ItemsList {
         if (this.markedItem.disabled) { this._stepToItem(steps); }
     }
 
-    /** Figure out which item in the list was marked most recently */
-    private _getLastMarkedIndex() {
+    /** Find the index of the item in the list was marked most recently */
+    private _getLastMarkedIndex(): number {
         if (this._markedIndex > -1 && this.markedItem === undefined) { return -1; }
 
         const selectedIndex = this._filteredItems.indexOf(this.lastSelectedItem);
@@ -321,23 +333,27 @@ export class ItemsList {
     }
 
     /** Group the items in the list as configured */
-    private _groupBy(items: HcOption[], prop: string | Function): OptionGroups {
-        const groups = new Map<string | HcOption, HcOption[]>();
+    private _groupBy(items: Array<HcOption>, groupBy: string | Function): ChildrenByGroupKeyMap {
+        const groups: ChildrenByGroupKeyMap = new Map<string | HcOption, Array<HcOption>>();
         if (items.length === 0) { return groups; }
+        
+        // if not asked to group, everything goes into a hidden default group
+        if (!groupBy) { groups.set(this.DEFAULT_GROUP_KEY, items); return groups; }
 
         // Check if items are already grouped by given key.
-        if (Array.isArray(items[0].value[<string>prop])) {
+        if (Array.isArray(items[0].value[<string>groupBy])) {
             for (const item of items) {
-                const children = (item.value[<string>prop] || []).map((x, index) => this.mapItem(x, index));
+                const children = (item.value[<string>groupBy] || []).map((x, index) => this.createHcOption(x, index));
                 groups.set(item, children);
             }
             return groups;
         }
 
+        // Generate groups by given key or grouper function
         const isFnKey = isFunction(this._pickPane.groupBy);
         const keyFn = (item: HcOption) => {
-            let key = isFnKey ? (<Function>prop)(item.value) : item.value[<string>prop];
-            return isDefined(key) ? key : undefined;
+            let key = isFnKey ? (<Function>groupBy)(item.value) : item.value[<string>groupBy];
+            return isDefined(key) ? key : this.DEFAULT_GROUP_KEY;
         };
 
         // Group items by key.
@@ -353,35 +369,25 @@ export class ItemsList {
         return groups;
     }
 
-    /** Flatten the groups such that the parent is just above it children in a flattened array */
-    private _flatten(groups: OptionGroups) {
+    /** Creates parent HcOption as needed */
+    private _createParentHcOptions(groups: ChildrenByGroupKeyMap): Array<HcOption> {
         const isGroupByFn = isFunction(this._pickPane.groupBy);
-        this._sortChildrenWithinGroups();
-        const flattenedSortedItems = new Array<HcOption>()
-        const groupItems = new Array<HcOption>();
+        const parentOptions = new Array<HcOption>();
         for (const key of Array.from(groups.keys())) {
-            if (key === undefined) {
-                const withoutGroup = groups.get(undefined) || [];
-                withoutGroup.forEach((item, index) => item.index = index);
-                flattenedSortedItems.push(...withoutGroup);
-                continue;
-            }
-
             const isObjectKey = isObject(key);
             const parent = new HcOption({
-                label: isObjectKey ? '' : String(key),
+                groupKey: key,
+                label: isObjectKey ? '' : this.getStringForKey(key),
                 children: undefined,
                 parent: null,
                 disabled: !this._pickPane.canSelectGroup,
                 htmlId: newId(),
-                isClosed: this._pickPane.canCollapseGroup
+                isClosed: !!this._pickPane.groupBy && this._pickPane.canCloseGroup && this._pickPane.closeGroupsByDefault
             });
-            const groupKey = isGroupByFn ? this._pickPane.bindLabel : <string>this._pickPane.groupBy;
+            const keyForGroupVal = isGroupByFn ? this._pickPane.bindLabel : <string>this._pickPane.groupBy;
             const groupValue = this._pickPane.groupValue || (() => {
-                if (isObjectKey) {
-                    return (<HcOption>key).value;
-                }
-                return { [groupKey]: key };
+                if (isObjectKey) { return (<HcOption>key).value; }
+                return { [keyForGroupVal]: this.getStringForKey(key) };
             });
             const children = groups.get(key).map(x => {
                 x.parent = parent;
@@ -390,19 +396,33 @@ export class ItemsList {
             });
             parent.children = children;
             parent.value = groupValue(key, children.map(x => x.value));
-            groupItems.push(parent)
+            parentOptions.push(parent)
         }
-        if (this._pickPane.sortFn) { groupItems.sort(this._pickPane.sortFn); }
+        return parentOptions;
+    }
 
-        groupItems.forEach(groupItem => {
+    private getStringForKey(key: any) {
+        if (key === this.DEFAULT_GROUP_KEY) {
+            return this._pickPane.orphanItemsGroupName;
+        } else {
+            return key.toString();
+        }
+    }
+
+    private sortAndIndex(groups: Array<HcOption>): Array<HcOption> {
+        const flattenedSortedItems = new Array<HcOption>()
+        this._sortOptions(groups);
+
+        groups.forEach(group => {
             let i = flattenedSortedItems.length;
-            groupItem.index = i++;
-            flattenedSortedItems.push(groupItem)
-            groupItem.children.forEach(childItem => {
+            group.index = i++;
+            flattenedSortedItems.push(group)
+            group.children.forEach(childItem => {
                 childItem.index = i++;
                 flattenedSortedItems.push(childItem);
             });
         });
+
         return flattenedSortedItems;
     }
 }

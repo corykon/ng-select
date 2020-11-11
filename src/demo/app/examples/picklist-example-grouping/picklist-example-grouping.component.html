@@ -12,7 +12,8 @@
     [searchFn]="customSearchFn"
     [groupBy]="groupByFn"
     [canSelectGroup]="true"
-    [canCollapseGroup]="true">
+    [canCloseGroup]="true"
+    [closeGroupsByDefault]="false">
      <!-- Group header template -->
      <ng-template hc-pick-optgroup-tmp let-item="hcOption">
         <div class="hc-pick-optgroup-inner group-row">
@@ -32,6 +33,20 @@
             <span class="icon-wrapper {{ item.color }}"><hc-icon fontSet="fa" fontIcon="fa-{{ item.icon }}" hcIconSm></hc-icon></span>
             {{ item.name }}
         </div>
+    </ng-template>
+</hc-picklist2>
+
+<hc-picklist2
+    [items]="projects"
+    bindLabel="title"
+    bindValue="id"
+    groupBy="subprojects"
+    [(ngModel)]="selectedProjects">
+    <ng-template hc-pick-optgroup-tmp let-item="item">
+        {{item.title}}
+    </ng-template>
+    <ng-template hc-pick-option-tmp let-item="item">
+        {{item.title}}
     </ng-template>
 </hc-picklist2>
 

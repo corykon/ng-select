@@ -21,12 +21,12 @@ export class DefaultSelectionModel implements HcPickSelectionModel {
 
     select(item: HcOption) {
         item.selected = true;
-        if (!item.children) {
+        if (!item.isParent) {
             this._selected.push(item);
         }
-        if (item.parent) {
+        if (item.isChild) {
             item.parent.selected = item.parent.children.every(x => x.selected);
-        } else if (item.children) {
+        } else if (item.isParent) {
             this._setChildrenSelectedState(item.children, true);
             this._removeChildren(item);
             this._selected = [...this._selected, ...item.children.filter(x => !x.disabled)];
@@ -36,13 +36,13 @@ export class DefaultSelectionModel implements HcPickSelectionModel {
     unselect(item: HcOption) {
         this._selected = this._selected.filter(x => x !== item);
         item.selected = false;
-        if (item.parent && item.parent.selected) {
+        if (item.isChild && item.parent.selected) {
             const children = item.parent.children;
             this._removeParent(item.parent);
             this._removeChildren(item.parent);
             this._selected.push(...children.filter(x => x !== item && !x.disabled));
             item.parent.selected = false;
-        } else if (item.children) {
+        } else if (item.isParent) {
             this._setChildrenSelectedState(item.children, false);
             this._removeChildren(item);
         }
@@ -68,16 +68,12 @@ export class DefaultSelectionModel implements HcPickSelectionModel {
 
     private _removeChildren(parent: HcOption) {
         this._selected = [
-            ...this._selected.filter(x => x.parent !== parent), 
+            ...this._selected.filter(x => x.parent !== parent),
             ...parent.children.filter(x => x.parent === parent && x.disabled && x.selected)
         ];
     }
 
     private _removeParent(parent: HcOption) {
         this._selected = this._selected.filter(x => x !== parent)
-    }
-
-    private _activeChildren(item: HcOption): boolean {
-        return item.children.every(x => !x.disabled || x.selected);
     }
 }

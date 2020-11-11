@@ -233,6 +233,10 @@ $hc-pick-height: 36px !default;
         background-color: $hc-pick-hover;
         color: $hc-pick-primary-text;
     }
+
+    &.hc-pick-option-hide {
+        display: none;
+    }
 }
 
 .hc-pick-optgroup {
@@ -253,10 +257,6 @@ $hc-pick-height: 36px !default;
             padding-right: 22px;
             padding-left: 0;
         }
-    }
-
-    &.hc-pick-option-hide {
-        display: none;
     }
 
     .hc-pick-custom-item-label {

@@ -3,16 +3,34 @@ import { SelectionModelFactory } from './selection-model';
 
 export class HcOption {
     [name: string]: any;
+    /** zero-based position in the list */
     index?: number;
+    /** used as the id for the DOM element representing this option */
     htmlId?: string;
+    /** true if the option is highlighted in its pane */
     selected?: boolean;
+    /** true if the option should not be available for interaction */
     disabled?: boolean;
+    /** true if the option currently has focus in the list */
     marked?: boolean;
+    /** the display name for the option */
     label?: string;
+    /** the option given to the form or NgModel for this option */
     value?: string | Object;
+    /** reference to this option's parent option */
     parent?: HcOption;
+
+    // for HcOption groups only
+    /** identifier for the group. typically a string, but can be an HcOption if items provided to the 
+     * component were grouped before being passed in */
+    groupKey?: string | HcOption;
+    /** collection of nested HcOptions */
     children?: HcOption[];
+    /** true if this group should be collapsed in the UI*/
     isClosed = false;
+
+    get isChild(): boolean { return !!this.parent; }
+    get isParent(): boolean { return !!this.children; }
 
     constructor(config: IHcOption) {
         Object.assign(this, config);

@@ -49,7 +49,9 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     @Input() groupBy: string | Function;
     @Input() groupValue: GroupValueFn;
     @Input() canSelectGroup = false;
-    @Input() canCollapseGroup = false;
+    @Input() canCloseGroup = false;
+    @Input() closeGroupsByDefault = true;
+    @Input() orphanItemsGroupName: string;
     @Input() virtualScroll: boolean;
     @Input() bufferAmount = 4;
     @Input() trackByFn = null;
@@ -304,7 +306,7 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
 
     /** Place focus in the searchbar, or the list if searchbar is not available */
     focus() {
-        if (this.hasSearch) { 
+        if (this.hasSearch) {
             this.searchInput.nativeElement.focus();
         } else {
             this.panelFocus();
@@ -335,7 +337,7 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
 
     /** Convert the given custom item into an HcOption, add it to the list, and then highlight it */
     _selectNewCustomOption(customItem: any) {
-        const newOption = this._isUsingSearchSubject ? this.itemsList.mapItem(customItem, null) : this.itemsList.addNewOption(customItem);
+        const newOption = this.itemsList.createHcOption(customItem);
         this.filter();
         this.itemsList.markItem(newOption)
         this._selectAndScrollToItem(newOption);
