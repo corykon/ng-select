@@ -10,24 +10,24 @@ export interface Example {
 }
 
 export const EXAMPLE_COMPONENTS: { [key: string]: Example } = {
-    // 'picklist-example-simple-component': {
-    //     component: PicklistExampleSimpleComponent,
-    //     title: 'Picklist Simple'
-    // },
+    'picklist-example-simple-component': {
+        component: PicklistExampleSimpleComponent,
+        title: 'Picklist Simple'
+    },
     'picklist-example-grouping': {
         component: PicklistExampleGroupingComponent,
         title: 'Grouping'
     },
-    // 'picklist-example': {
-    //     component: PicklistExampleComponent,
-    //     title: 'Picklist'
-    // },
-    // 'picklist-example-templates': {
-    //     component: PicklistExampleTemplatesComponent,
-    //     title: 'Templates'
-    // },
-    // 'picklist-example-custom-items': {
-    //     component: PicklistExampleTaggingComponent,
-    //     title: 'Custom Options'
-    // }
+    'picklist-example': {
+        component: PicklistExampleComponent,
+        title: 'Picklist'
+    },
+    'picklist-example-templates': {
+        component: PicklistExampleTemplatesComponent,
+        title: 'Templates'
+    },
+    'picklist-example-custom-items': {
+        component: PicklistExampleTaggingComponent,
+        title: 'Custom Options'
+    }
 };
