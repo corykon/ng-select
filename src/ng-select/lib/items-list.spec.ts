@@ -3,348 +3,175 @@ import { HcPickPaneComponent } from './hc-pick-pane.component';
 import { DefaultSelectionModel } from './selection-model';
 import { HcPickPaneDragService } from './hc-pick-pane-drag.service';
 import { HcPicklist2Service } from './hc-picklist2.service';
+import { HcOption } from './hc-pick.types';
 
-describe('ItemsList', () => {
+let list: ItemsList;
+let cmp: HcPickPaneComponent;
+
+fdescribe('ItemsList', () => {
     describe('select', () => {
-        describe('single', () => {
-            let list: ItemsList;
-            beforeEach(() => {
-                const cmp = ngSelectFactory();
-                cmp.bindLabel = 'label';
-                list = itemsListFactory(cmp);
-            });
-
-            it('should add only one item to selected items', () => {
-                list.select({ value: 'val' });
-                expect(list.selectedItems.length).toBe(1);
-                expect(list.selectedItems[0].value).toBe('val');
-
-                list.select({ value: 'val2' });
-                expect(list.selectedItems.length).toBe(1);
-                expect(list.selectedItems[0].value).toBe('val2');
-            });
+        beforeEach(() => {
+            cmp = ngSelectFactory();
+            cmp.bindLabel = 'label';
+            list = itemsListFactory(cmp);
         });
 
-        describe('multiple', () => {
-            let list: ItemsList;
-            let cmp: HcPickPaneComponent;
-            beforeEach(() => {
-                cmp = ngSelectFactory();
-                cmp.bindLabel = 'label';
-                list = itemsListFactory(cmp);
-            });
+        it('should add item to selected items', () => {
+            list.select(new HcOption({ value: 'val' }));
+            expect(list.selectedItems.length).toBe(1);
+            expect(list.selectedItems[0].value).toBe('val');
 
-            it('should add item to selected items', () => {
-                list.select({ value: 'val' });
-                expect(list.selectedItems.length).toBe(1);
+            list.select(new HcOption({ value: 'val2' }));
+            expect(list.selectedItems.length).toBe(2);
+            expect(list.selectedItems[1].value).toBe('val2');
+        });
 
-                list.select({ value: 'val2' });
-                expect(list.selectedItems.length).toBe(2);
-            });
+        it('should skip when item already selected', () => {
+            list.select(new HcOption({ selected: true }));
+            expect(list.selectedItems.length).toBe(0);
+        });
 
-            it('should skip when item already selected', () => {
-                list.select({ selected: true });
+        it('should select all items in group when group is selected', () => {
+            cmp.groupBy = 'groupKey';
+            list.setItems([
+                { label: 'K1', val: 'V1', groupKey: 'G1' },
+                { label: 'K2', val: 'V2', groupKey: 'G1' }
+            ]);
+            list.select(list.items[0]); // G1
 
-                expect(list.selectedItems.length).toBe(0);
-            });
+            expect(list.selectedItems.length).toBe(2);
+            expect(list.selectedItems[0]).toBe(list.items[1]);
+        });
 
-            it('should select only group item when at least one child was selected and then group item was selected', () => {
-                cmp.groupBy = 'groupKey';
-                list.setItems([
-                    { label: 'K1', val: 'V1', groupKey: 'G1' },
-                    { label: 'K2', val: 'V2', groupKey: 'G1' }
-                ]);
-                list.select(list.items[1]); // K1
-                list.select(list.items[0]); // G1
+        it('should be able to select items from different groups', () => {
+            cmp.groupBy = 'groupKey';
+            list.setItems([
+                // G1
+                { label: 'K1', val: 'V1', groupKey: 'G1' },
+                { label: 'K2', val: 'V2', groupKey: 'G1' },
+                // G2
+                { label: 'K3', val: 'V3', groupKey: 'G2' },
+                { label: 'K4', val: 'V4', groupKey: 'G2' }
+            ]);
 
-                expect(list.selectedItems.length).toBe(1);
-                expect(list.selectedItems[0]).toBe(list.items[0]);
-            });
+            list.select(list.items[1]); // K1
+            list.select(list.items[4]); // K3
 
-            it('should items from different groups', () => {
-                cmp.groupBy = 'groupKey';
-                list.setItems([
-                    // G1
-                    { label: 'K1', val: 'V1', groupKey: 'G1' },
-                    { label: 'K2', val: 'V2', groupKey: 'G1' },
-                    // G2
-                    { label: 'K3', val: 'V3', groupKey: 'G2' },
-                    { label: 'K4', val: 'V4', groupKey: 'G2' }
-                ]);
+            expect(list.selectedItems.length).toBe(2);
+        });
 
-                list.select(list.items[0]); // K1
-                list.select(list.items[4]); // K3
+        
+        it('should not select disabled items when selecting group', () => {
+            cmp.groupBy = 'groupKey';
+            list.setItems([
+                { label: 'K1', val: 'V1', groupKey: 'G1' },
+                { label: 'K2', val: 'V2', groupKey: 'G1', disabled: true }
+            ]);
+            list.select(list.items[0]); // G1
 
-                expect(list.selectedItems.length).toBe(2);
-            });
+            expect(list.selectedItems.length).toBe(1);
+            expect(list.selectedItems[0].label).toBe('K1');
+        });
 
-            
-            it('should not select disabled items when selecting group', () => {
-                cmp.groupBy = 'groupKey';
-                list.setItems([
-                    { label: 'K1', val: 'V1', groupKey: 'G1' },
-                    { label: 'K2', val: 'V2', groupKey: 'G1', disabled: true }
-                ]);
-                list.select(list.items[0]); // G1
+        it('should mark group selected when all child items are selected', () => {
+            cmp.groupBy = 'groupKey';
+            list.setItems([
+                { label: 'K1', val: 'V1', groupKey: 'G1' },
+                { label: 'K2', val: 'V2', groupKey: 'G1' }
+            ]);
+            list.select(list.items[1]) // K1
+            list.select(list.items[2]); // K2
 
-                expect(list.selectedItems.length).toBe(1);
-                expect(list.selectedItems[0].label).toBe('K1');
-            });
-
-            it('should select group when disabled items are selected', () => {
-                cmp.groupBy = 'groupKey';
-                list.setItems([
-                    { label: 'K1', val: 'V1', groupKey: 'G1' },
-                    { label: 'K2', val: 'V2', groupKey: 'G1', disabled: true }
-                ]);
-                list.select(list.items[2]) // K2
-                list.select(list.items[0]); // G1
-
-                expect(list.selectedItems.length).toBe(1);
-                expect(list.selectedItems[0].label).toBe('G1');
-            });
-
-
-            it('should remove item from filtered items when hideSelected=true', () => {
-                cmp.hideSelected = true;
-                list.setItems([
-                    { label: 'K1', val: 'V1' },
-                    { label: 'K2', val: 'V2' },
-                    { label: 'K3', val: 'V3' },
-                    { label: 'K4', val: 'V4' }
-                ]);
-
-                list.select(list.items[0]);
-                list.select(list.items[1]);
-
-                expect(list.filteredItems.length).toBe(2);
-            });
-
-            it('should remove group from filtered items when hideSelected=true and all child group items are selected', () => {
-                cmp.hideSelected = true;
-                cmp.groupBy = 'groupKey';
-                list.setItems([
-                    // G1
-                    { label: 'K1', val: 'V1', groupKey: 'G1' },
-                    { label: 'K2', val: 'V2', groupKey: 'G1' },
-                    // G2
-                    { label: 'K3', val: 'V3', groupKey: 'G2' },
-                    { label: 'K4', val: 'V4', groupKey: 'G2' }
-                ]);
-                list.select(list.items[1]); // K1
-                list.select(list.items[2]); // K2
-
-                expect(list.filteredItems.length).toBe(3);
-            });
-
-            it('should remove all group and group children items if group is selected when hideSelected=true', () => {
-                cmp.hideSelected = true;
-                cmp.groupBy = 'groupKey';
-                list.setItems([
-                    // G1
-                    { label: 'K1', val: 'V1', groupKey: 'G1' },
-                    { label: 'K2', val: 'V2', groupKey: 'G1' },
-                    // G2
-                    { label: 'K3', val: 'V3', groupKey: 'G2' },
-                    { label: 'K4', val: 'V4', groupKey: 'G2' }
-                ]);
-                list.select(list.items[1]); // K1
-                list.select(list.items[0]); // G1
-
-                expect(list.filteredItems.length).toBe(3); // should contain only second group items
-            });
-
-            it('should remove all children items if group is selected when hideSelected=true and filter is used', () => {
-                cmp.hideSelected = true;
-                cmp.groupBy = 'groupKey';
-                list.setItems([
-                    { label: 'K1', val: 'V1', groupKey: 'G1' },
-                    { label: 'K2', val: 'V2', groupKey: 'G1' }
-                ]);
-                list.filter('K');
-                list.select(list.items[0]); // G1
-
-                expect(list.filteredItems.length).toBe(0); // remove all items since group was selected
-            });
+            expect(list.selectedItems.length).toBe(2); // only children included in selectedItems array
+            expect(list.items[0].label).toBe('G1');
+            expect(list.items[0].selected).toBeTruthy();
+        });
     });
 
-    describe('un-select', () => {
-        describe('single', () => {
-            let list: ItemsList;
-            let cmp: HcPickPaneComponent;
-            beforeEach(() => {
-                cmp = ngSelectFactory();
-                cmp.bindLabel = 'label';
-                list = itemsListFactory(cmp);
-            });
-            it('should un-select selected item', () => {
-                list.setItems([
-                    { label: 'K1', val: 'V1' }
-                ]);
-
-                list.select(list.items[0]);
-                list.unselect(list.items[0]);
-
-                expect(list.selectedItems.length).toBe(0);
-            });
+    describe('unselect', () => {
+        beforeEach(() => {
+            cmp = ngSelectFactory();
+            cmp.bindLabel = 'label';
+            list = itemsListFactory(cmp);
         });
 
-        describe('multiple', () => {
-            let list: ItemsList;
-            let cmp: HcPickPaneComponent;
-            beforeEach(() => {
-                cmp = ngSelectFactory();
-                cmp.multiple = true;
-                cmp.bindLabel = 'label';
-                list = itemsListFactory(cmp);
-            });
+        it('should unselect selected items', () => {
+            list.setItems([
+                { label: 'K1', val: 'V1' },
+                { label: 'K2', val: 'V2' },
+            ]);
 
-            it('should un-select selected items', () => {
-                list.setItems([
-                    { label: 'K1', val: 'V1' },
-                    { label: 'K2', val: 'V2' },
-                ]);
+            list.select(list.items[0]);
+            list.select(list.items[1]);
+            list.unselect(list.items[0]);
+            list.unselect(list.items[1]);
 
-                list.select(list.items[0]);
-                list.select(list.items[1]);
-                list.unselect(list.items[0]);
-                list.unselect(list.items[1]);
+            expect(list.selectedItems.length).toBe(0);
+        });
 
-                expect(list.selectedItems.length).toBe(0);
-            });
+        it('should unselect grouped selected item', () => {
+            cmp.groupBy = 'groupKey';
+            list.setItems([
+                { label: 'K1', val: 'V1', groupKey: 'G1' },
+                { label: 'K2', val: 'V2', groupKey: 'G1' },
+            ]);
 
-            it('should un-select grouped selected item', () => {
-                cmp.groupBy = 'groupKey';
-                list.setItems([
-                    { label: 'K1', val: 'V1', groupKey: 'G1' },
-                    { label: 'K2', val: 'V2', groupKey: 'G1' },
-                ]);
+            list.select(list.items[1]); // K1
+            list.select(list.items[2]); // K2
+            list.unselect(list.items[1]);
 
-                list.select(list.items[1]); // K1
-                list.select(list.items[2]); // K2
-                list.unselect(list.items[1]);
+            expect(list.selectedItems.length).toBe(1);
+            expect(list.selectedItems[0]).toBe(list.items[2]);
+        });
 
-                expect(list.selectedItems.length).toBe(1);
-                expect(list.selectedItems[0]).toBe(list.items[2]);
-            });
+        it('should unselect grouped selected item after group was selected', () => {
+            cmp.groupBy = 'groupKey';
+            list.setItems([
+                { label: 'K1', val: 'V1', groupKey: 'G1' },
+                { label: 'K2', val: 'V2', groupKey: 'G1' },
+            ]);
 
-            it('should un-select grouped selected item when group was selected', () => {
-                cmp.groupBy = 'groupKey';
-                list.setItems([
-                    { label: 'K1', val: 'V1', groupKey: 'G1' },
-                    { label: 'K2', val: 'V2', groupKey: 'G1' },
-                ]);
+            list.select(list.items[0]); // G1
+            list.unselect(list.items[1]); // K1
 
-                list.select(list.items[0]); // G1
-                list.unselect(list.items[1]); // K1
+            expect(list.selectedItems.length).toBe(1);
+            expect(list.selectedItems[0].label).toBe(list.items[2].label); // only K2 should be selected
+        });
 
-                expect(list.selectedItems.length).toBe(1);
-                expect(list.selectedItems[0].label).toBe(list.items[2].label); // should select only K2
-            });
+        it('should not unselect disabled items within a group', () => {
+            cmp.groupBy = 'groupKey';
+            list.setItems([
+                { label: 'K1', val: 'V1', groupKey: 'G1' },
+                { label: 'K2', val: 'V2', groupKey: 'G1', disabled: true },
+                { label: 'K3', val: 'V3', groupKey: 'G2' },
+                { label: 'K4', val: 'V4', groupKey: 'G2', disabled: true },
+            ]);
 
-            it('should not unselect disabled items within a group', () => {
-                cmp.groupBy = 'groupKey';
-                list.setItems([
-                    { label: 'K1', val: 'V1', groupKey: 'G1' },
-                    { label: 'K2', val: 'V2', groupKey: 'G1', disabled: true },
-                    { label: 'K3', val: 'V3', groupKey: 'G2' },
-                    { label: 'K4', val: 'V4', groupKey: 'G2', disabled: true },
-                ]);
+            list.selectedItems.push(list.findByLabel('K2'))
+            expect(list.selectedItems.length).toBe(1);
 
-                list.select(list.findByLabel('K2'));
-                list.select(list.findByLabel('K4'));
-                list.select(list.findByLabel('G1'));
-                list.select(list.findByLabel('G2'));
-                expect(list.selectedItems.length).toBe(2);
-                expect(list.selectedItems[0].label).toBe('G1');
-                expect(list.selectedItems[1].label).toBe('G2');
+            list.unselect(list.findByLabel('G1'));
+            expect(list.selectedItems.length).toBe(1);
+            expect(list.selectedItems[0].label).toBe('K2');
+        });
 
-                list.unselect(list.findByLabel('G1'));
-                expect(list.selectedItems.length).toBe(2);
-                expect(list.selectedItems[0].label).toBe('G2');
-            });
+        it('should not affect disabled items when unselecting a group', () => {
+            cmp.groupBy = 'groupKey';
+            list.setItems([
+                { label: 'K1', val: 'V1', groupKey: 'G1' },
+                { label: 'K2', val: 'V2', groupKey: 'G1' },
+                { label: 'K3', val: 'V3', groupKey: 'G1', disabled: true },
+            ]);
 
-            it('should not affect disabled items when un-selecting a group', () => {
-                cmp.groupBy = 'groupKey';
-                list.setItems([
-                    { label: 'K1', val: 'V1', groupKey: 'G1' },
-                    { label: 'K2', val: 'V2', groupKey: 'G1' },
-                    { label: 'K3', val: 'V3', groupKey: 'G1', disabled: true },
-                ]);
-
-                list.select(list.items[0]); // G1
-                list.unselect(list.items[1]); // K1
-                expect(list.selectedItems.length).toBe(1);
-                expect(list.selectedItems[0].label).toBe('K2');
-            });
-
-            it('should un-select selected item and insert it back to filtered items list when hideSelected=true', () => {
-                cmp.hideSelected = true;
-                list.setItems([
-                    { label: 'K1', val: 'V1' },
-                    { label: 'K2', val: 'V2' },
-                ]);
-
-                list.select(list.items[0]);
-                list.unselect(list.items[0]);
-
-                expect(list.filteredItems.length).toBe(2);
-            });
-
-            it('should un-select selected group and insert it back to filtered items when hideSelected=true', () => {
-                cmp.hideSelected = true;
-                cmp.groupBy = 'groupKey';
-                list.setItems([
-                    { label: 'K1', val: 'V1', groupKey: 'G1' },
-                    { label: 'K2', val: 'V2', groupKey: 'G1' }
-                ]);
-
-                list.select(list.items[0]);
-                expect(list.filteredItems.length).toBe(0);
-                list.unselect(list.items[0]);
-                expect(list.filteredItems.length).toBe(3);
-            });
-
-            it('should un-select selected item and insert it back to filtered items with parent group when hideSelected=true', () => {
-                cmp.hideSelected = true;
-                cmp.groupBy = 'groupKey';
-                list.setItems([
-                    { label: 'K1', val: 'V1', groupKey: 'G1' }
-                ]);
-
-                list.select(list.items[1]);
-                expect(list.filteredItems.length).toBe(0);
-                list.unselect(list.items[1]);
-                expect(list.filteredItems.length).toBe(2);
-            });
-
-            it('should not inserted unselected group parent item to filtered items if it is already exists', () => {
-                cmp.hideSelected = true;
-                cmp.groupBy = 'groupKey';
-                list.setItems([
-                    // G1
-                    { label: 'K1', val: 'V1', groupKey: 'G1' },
-                    { label: 'K2', val: 'V2', groupKey: 'G1' },
-                    // G2
-                    { label: 'K3', val: 'V3', groupKey: 'G2' },
-                    { label: 'K4', val: 'V4', groupKey: 'G2' },
-                ]);
-
-                list.select(list.items[1]);
-                list.select(list.items[2]);
-                list.select(list.items[4]);
-                list.unselect(list.items[1]);
-                list.unselect(list.items[2]);
-
-                expect(list.filteredItems.length).toBe(5);
-                expect(list.selectedItems.length).toBe(1);
-            });
+            list.select(list.items[0]); // G1
+            list.unselect(list.items[1]); // K1
+            expect(list.selectedItems.length).toBe(1);
+            expect(list.selectedItems[0].label).toBe('K2');
         });
     });
 
     describe('filter', () => {
-        let list: ItemsList;
-        let cmp: HcPickPaneComponent;
+        // todo: check counts
         beforeEach(() => {
             cmp = ngSelectFactory();
             cmp.bindLabel = 'label';
@@ -361,13 +188,13 @@ describe('ItemsList', () => {
             ]);
 
             list.filter('part1');
-            expect(list.filteredItems.length).toBe(5);
+            expect(list.filteredItems.length).toBe(6); // +1 for default group
 
             list.filter('part2.2');
-            expect(list.filteredItems.length).toBe(3);
+            expect(list.filteredItems.length).toBe(4); // +1 for default group
 
             list.filter('part3');
-            expect(list.filteredItems.length).toBe(1);
+            expect(list.filteredItems.length).toBe(2); // +1 for default group
 
             list.filter('nope');
             expect(list.filteredItems.length).toBe(0);
@@ -397,25 +224,9 @@ describe('ItemsList', () => {
             list.filter('nope');
             expect(list.filteredItems.length).toBe(0);
         });
-
-        it('should exclude child item if its parent is already selected when hideSelected=true', () => {
-            cmp.groupBy = 'groupKey';
-            cmp.hideSelected = true;
-            list.setItems([
-                { label: 'K1', val: 'V1', groupKey: 'G1' },
-                { label: 'K2', val: 'V2', groupKey: 'G1' },
-            ]);
-
-            list.select(list.items[0]); // select group;
-            list.filter('K1');
-            expect(list.filteredItems.length).toBe(0);
-        });
     });
 
     describe('markSelectedOrDefault', () => {
-        let list: ItemsList;
-        let cmp: HcPickPaneComponent;
-
         beforeEach(() => {
             cmp = ngSelectFactory();
             list = itemsListFactory(cmp);
@@ -424,8 +235,8 @@ describe('ItemsList', () => {
         });
 
         it('should mark first item', () => {
-            list.markSelectedOrDefault(true);
-            expect(list.markedIndex).toBe(0);
+            list.markSelectedOrDefault();
+            expect(list.markedIndex).toBe(1); // index 0 is a group, so index 1 should be first selected
         });
 
         it('should keep marked item if it is above last selected item', () => {
@@ -433,30 +244,38 @@ describe('ItemsList', () => {
             list.markSelectedOrDefault();
             expect(list.markedIndex).toBe(10);
 
-            list.markNextItem();
-            list.markNextItem();
-            list.markNextItem();
+            list.markNextItem(true);
+            list.markNextItem(true);
+            list.markNextItem(true);
             list.markSelectedOrDefault();
             expect(list.markedIndex).toBe(13);
         });
 
         it('should mark first after last marked item was filtered out', () => {
-            list.markSelectedOrDefault(true);
-            list.markNextItem();
+            list.markSelectedOrDefault();
+            list.markNextItem(true);
             list.filter('item-0');
-            list.markSelectedOrDefault(true);
-            expect(list.markedIndex).toBe(0);
-            list.markNextItem();
-            expect(list.markedIndex).toBe(0);
+            list.markSelectedOrDefault();
+            expect(list.markedIndex).toBe(1); // index 0 is a group, so index 1 should be first selected
+            list.markNextItem(true);
+            expect(list.markedIndex).toBe(1); // index still 1, because there only 1 items available to be marked
         });
     });
 
     // todo: write tests
+    describe('unmark', () => { });
+    describe('markItem', () => { });
+    describe('markFirst', () => { });
+    describe('findOption', () => { });
+    describe('addOption', () => { });
+    describe('removeOption', () => { });
     describe('clearSelected', () => { });
     describe('selectAll', () => { });
+    describe('resolveNested', () => { });
+    describe('createHcOption', () => { });
 
-    function itemsListFactory(cmp: HcPickPaneComponent): ItemsList {
-        return new ItemsList(cmp, new DefaultSelectionModel());
+    function itemsListFactory(pickCmp: HcPickPaneComponent): ItemsList {
+        return new ItemsList(pickCmp, new DefaultSelectionModel());
     }
 
     function ngSelectFactory(): HcPickPaneComponent {

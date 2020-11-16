@@ -71,7 +71,7 @@ export class ItemsList {
     select(item: HcOption) {
         if (item.selected) { return; }
         if (item.children) {
-            const availableChildren = item.children.filter(i => this._filteredItems.some(fi => fi.htmlId === i.htmlId))
+            const availableChildren = item.children.filter(i => this._filteredItems.some(fi => fi.htmlId === i.htmlId && !i.disabled));
             availableChildren.forEach(child => this._selectionModel.select(child));
         } else {
             this._selectionModel.select(item);
