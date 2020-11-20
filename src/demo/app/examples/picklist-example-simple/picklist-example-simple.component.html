@@ -6,8 +6,9 @@
 <hc-picklist2
     [items]="cars"
     bindLabel="details.name"
-    bindValue="id"
+    bindValue="details"
     [(ngModel)]="selectedCars"
+    [compareWith]="compareWith"
     autofocus>
 </hc-picklist2>
 

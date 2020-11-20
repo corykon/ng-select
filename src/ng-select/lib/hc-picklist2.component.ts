@@ -59,7 +59,8 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     @Input() bindValue: string;
     /** When addCustomItem is true, this changes the default message on the option to add a new item. */
     @Input() addCustomItemText = 'Add custom option.';
-    /** True if user should be able to add custom items. These options will appear when a search term is not exactly matched. */
+    /** True if user should be able to add custom items. The button to add an option will appear when a search term is not exactly matched.
+     * Can optionally provide a function that will generate a value for the custom option based on the given search term. */
     @Input() addCustomItem: boolean | AddCustomItemFn = false;
     /** Group items by property or function expression */
     @Input() groupBy: string | Function;
@@ -217,13 +218,13 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
 
     /** Returns true if the number of selected items matches or exceeds the maximum number */
     get hasMaxItemsSelected(): boolean {
-        return Number.isFinite(this.maxSelectedItems) && this.selectedPane.itemsList.items.length >= this.maxSelectedItems;
+        return Number.isFinite(this.maxSelectedItems) && this.selectedPane.itemsList.itemsTotalCount >= this.maxSelectedItems;
     }
 
     /** Returns true if the number of selected items exceeds the maximum number. Could be true if the model is
      * manipulated or set outside of the component. */
     get hasExceededMaxItemsSelected(): boolean {
-        return Number.isFinite(this.maxSelectedItems) && this.selectedPane.itemsList.items.length > this.maxSelectedItems;
+        return Number.isFinite(this.maxSelectedItems) && this.selectedPane.itemsList.itemsTotalCount > this.maxSelectedItems;
     }
 
     /** Move highlighted items from the left pane over to the right pane. */
@@ -241,7 +242,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         let maxLimitEnforced = false;
         let overLimitBy = 0;
         if (isAdding && this.maxSelectedItems) {
-            overLimitBy = this.selectedPane.itemsList.items.length + source.selectedItems.length - this.maxSelectedItems;
+            overLimitBy = this.selectedPane.itemsList.itemsTotalCount + source.selectedItems.length - this.maxSelectedItems;
             maxLimitEnforced = overLimitBy > 0;
         }
         const optionsToMove = maxLimitEnforced ? source.selectedItems.slice(0, source.selectedItems.length - overLimitBy)
@@ -319,27 +320,19 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
         if (!this._isValidWriteValue(ngModel)) { return; }
 
         const select = (val: any) => {
-            let alreadySelected = this.selectedPane.itemsList.findOption(val, true);
+            let alreadySelected = this.selectedPane.itemsList.findOption(val);
             if (alreadySelected) { return; }
 
-            let item = this.availablePane.itemsList.findOption(val, true);
-            if (item) {
-                this.availablePane.itemsList.removeOption(item);
-                this.selectedPane.itemsList.addOption(item);
+            let availableItem = this.availablePane.itemsList.findOption(val);
+            if (availableItem) {
+                this.availablePane.itemsList.removeOption(availableItem);
+                this.selectedPane.itemsList.addOption(availableItem);
                 this.availablePane.itemsList.reIndex();
             } else {
-                const isValObject = isObject(val);
-                const isPrimitive = !isValObject && !this.bindValue;
-                if ((isValObject || isPrimitive)) {
-                    this.selectedPane.itemsList.addOption(this.selectedPane.itemsList.createHcOption(val, null));
-                } else if (this.bindValue) {
-                    // todo: test this code path
-                    const rawitem = {
-                        [this.bindLabel]: null,
-                        [this.bindValue]: val
-                    };
-                    this.selectedPane.itemsList.addOption(this.selectedPane.itemsList.createHcOption(rawitem, null));
-                }
+                // where possible, handle cases where we're adding something to the model that's not an existing option
+                if (this.bindValue) { throw new Error(`Attempting to set a value (${val}) in the model that does not exist in the available options.
+                    This is not allowed when the [bindValue] Input() is used. You'll need to add the option to the [items] Input().`); }
+                this.selectedPane.itemsList.addNewOption(val);
             }
         };
 

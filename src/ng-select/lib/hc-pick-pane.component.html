@@ -16,7 +16,7 @@
     <ng-template #defaultToolbarTemplate>
         <div class="hc-picklist-pane-counts">
             <ng-container *ngIf="!loading">
-                Showing {{itemsList.itemsShownCount}} of {{externalTotalOptionCount || itemsList.itemsTotalCount}}
+                Showing {{itemsList.itemsShownCountStr}} of {{externalOptionCountStr || itemsList.itemsTotalCountStr}}
             </ng-container>
             <ng-container *ngIf="loading">
                 Loading...

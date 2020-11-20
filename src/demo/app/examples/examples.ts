@@ -14,18 +14,18 @@ export const EXAMPLE_COMPONENTS: { [key: string]: Example } = {
         component: PicklistExampleSimpleComponent,
         title: 'Picklist Simple'
     },
-    'picklist-example-grouping': {
-        component: PicklistExampleGroupingComponent,
-        title: 'Grouping'
-    },
+    // 'picklist-example-grouping': {
+    //     component: PicklistExampleGroupingComponent,
+    //     title: 'Grouping'
+    // },
     'picklist-example': {
         component: PicklistExampleComponent,
         title: 'Picklist'
     },
-    'picklist-example-templates': {
-        component: PicklistExampleTemplatesComponent,
-        title: 'Templates'
-    },
+    // 'picklist-example-templates': {
+    //     component: PicklistExampleTemplatesComponent,
+    //     title: 'Templates'
+    // },
     'picklist-example-custom-items': {
         component: PicklistExampleTaggingComponent,
         title: 'Custom Options'

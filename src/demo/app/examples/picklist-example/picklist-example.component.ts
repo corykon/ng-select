@@ -7,7 +7,7 @@ import { Component, OnInit } from '@angular/core';
 })
 export class PicklistExampleComponent implements OnInit {
 
-    selectedCars = [3];
+    selectedCars = [3, "made up"];
     cars = [
         { id: 1, name: 'Volvo' },
         { id: 2, name: 'Saab', disabled: true },

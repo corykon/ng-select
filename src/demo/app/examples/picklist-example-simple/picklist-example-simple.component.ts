@@ -20,10 +20,10 @@ export class PicklistExampleSimpleComponent {
         { id: 10, details: { name: 'Chevy' }}
     ];
 
-    selectedCars = [3];
+    selectedCars = [{ name: 'Opel' }];
 
     compareWith(a, b) {
-        return a.id === b.id;
+        return a.details.name === b.name;
     }
 
     updateOpts() {

@@ -15,7 +15,7 @@ export class HcPicklist2Service {
      *  Make sure they aren't duplicated in the available pane */
     public mapIncomingOptionsToSelected(bindValue?: string) {
         if (!isDefined(this.availablePane) || !isDefined(this.selectedPane)) { return; }
-        const selectedItems = this.selectedPane.itemsList.items.slice();
+        const selectedItems = this.selectedPane.itemsList.items.filter(i => !i.isParent);
         selectedItems.forEach(selected => {
             const value = bindValue ?
                 this.selectedPane.itemsList.resolveNested(selected.value, bindValue) : selected.value;

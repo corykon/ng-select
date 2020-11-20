@@ -10,12 +10,16 @@ type ChildrenByGroupKeyMap = Map<string | HcOption, Array<HcOption>>;
 export class ItemsList {
     constructor(private _pickPane: HcPickPaneComponent, private _selectionModel: HcPickSelectionModel) {}
 
-    get itemsShownCount(): string { return this._itemsShownCount; }
-    private _itemsShownCount = '';
+    get itemsShownCountStr(): string { return this._itemsShownCountStr; }
+    private _itemsShownCountStr = '';
     
-    get itemsTotalCount(): string { return this._itemsTotalCount; }
-    private _itemsTotalCount = '';
+    get itemsTotalCountStr(): string { return this._itemsTotalCountStr; }
+    private _itemsTotalCountStr = '';
+    
+    get itemsTotalCount(): number { return this._itemsTotalCount; }
+    private _itemsTotalCount = 0;
 
+    /** containts all items in the list, including parent items */
     get items(): Array<HcOption> { return this._items; }
     private _items = new Array<HcOption>();
 
@@ -55,11 +59,11 @@ export class ItemsList {
 
     /** Converts an array of raw values into HcOptions and set them on the list */
     setItems(items: any[]) {
-        const hcOptionItems = items.map((item, index) => this.createHcOption(item, index));
+        const hcOptionItems = items.map((item, index) => this._createHcOption(item, index));
         this._optionGroups = this._groupItems(hcOptionItems, this._pickPane.groupBy);
         this._items = this.sortAndIndex(this._optionGroups);
         this._filteredItems = [...this._items];
-        this._updateCounts();
+        this.updateCounts();
     }
 
     /** Reset the indexes on each HcOption */
@@ -86,13 +90,10 @@ export class ItemsList {
 
     /**
      * Find the option in this list for a given value
-     * @param value the value we are searching for in this list
-     * @param favorBindValueSetting if true, favor the bindValue matching strategy. This will be the case
-     * when the value we are searching for is the bound value instead of the entire object.
      */
-    findOption(value: any, favorBindValueStrategy: boolean = false): HcOption {
+    findOption(value: any): HcOption {
         let findBy: (item: HcOption) => boolean;
-        if (this._pickPane.compareWith && !(favorBindValueStrategy && this._pickPane.bindValue)) {
+        if (this._pickPane.compareWith) {
             findBy = item => this._pickPane.compareWith(item.value, value)
         } else if (this._pickPane.bindValue) {
             findBy = item => !item.children && this.resolveNested(item.value, this._pickPane.bindValue) === value
@@ -100,12 +101,12 @@ export class ItemsList {
             findBy = item => item.value === value ||
                 !item.children && item.label && item.label === this.resolveNested(value, this._pickPane.bindLabel)
         }
-        return this._items.find(item => findBy(item));
+        return this._items.filter(i => !i.isParent).find(item => findBy(item));
     }
 
     /** Adds an existing HcOption to the list. */
     addOption(option: HcOption) {
-        if (!option.parent) { throw new Error(`Trying to add an option that does not have a parent: ${option}`); }
+        if (option.isParent) { throw new Error(`Trying to add an option that has children: ${option}`); }
         const parentKey = option.parent.groupKey;
         const parentGroup = this._optionGroups.find(pg => pg.groupKey === parentKey);
         if (parentGroup) {
@@ -142,6 +143,29 @@ export class ItemsList {
         }
 
         this._items = this.sortAndIndex(this._optionGroups);
+    }
+
+    /** Create a new HcOption and add it to the list from a given raw value. Also returns the newly created option */
+    addNewOption(item: any): HcOption {
+        const newOption = this._createHcOption(item);
+        this._groupItems([newOption], this._pickPane.groupBy);
+        this.addOption(newOption);
+        return newOption;
+    }
+
+    /** Maps the given raw value into an HcOption. */
+    _createHcOption(item: any, index?: number): HcOption {
+        // $hcOptionLabel and $hcOptionValue will be used in the case of <hc-pick-option> components
+        const label = isDefined(item.$hcOptionLabel) ? item.$hcOptionLabel : this.resolveNested(item, this._pickPane.bindLabel);
+        const value = isDefined(item.$hcOptionValue) ? item.$hcOptionValue : item;
+        index = Number.isFinite(index) ? index : this._items.length;
+        return new HcOption({
+            index: index,
+            label: isDefined(label) ? label.toString() : '',
+            value: value,
+            disabled: item.disabled,
+            htmlId: `${this._pickPane.paneId}-${index}`,
+        });
     }
 
     private _deleteItem(item: HcOption, list: Array<HcOption>) {
@@ -215,14 +239,14 @@ export class ItemsList {
                 this._filteredItems.push(...[pg, ...matchedItems]);
             }
         })
-        this._updateCounts();
+        this.updateCounts();
     }
 
     /** Unfilter the list */
     resetFilteredItems() {
-        if (this._filteredItems.length === this._items.length) { return; }
+        if (this._filteredItems.length === this._items.length) { this.updateCounts(); return; }
         this._filteredItems = this._items;
-        this._updateCounts();
+        this.updateCounts();
     }
 
     /** Wipe out selection state and marked state, then mark the first selectable option */
@@ -281,25 +305,11 @@ export class ItemsList {
         }
     }
 
-    /** Maps the given raw value into an HcOption. */
-    createHcOption(item: any, index?: number): HcOption {
-        // $hcOptionLabel and $hcOptionValue will be used in the case of <hc-pick-option> components
-        const label = isDefined(item.$hcOptionLabel) ? item.$hcOptionLabel : this.resolveNested(item, this._pickPane.bindLabel);
-        const value = isDefined(item.$hcOptionValue) ? item.$hcOptionValue : item;
-        index = Number.isFinite(index) ? index : this._items.length;
-        return new HcOption({
-            index: index,
-            label: isDefined(label) ? label.toString() : '',
-            value: value,
-            disabled: item.disabled,
-            htmlId: `${this._pickPane.paneId}-${index}`,
-        });
-    }
-
     /** Update the 'Showing x of y' counts */
-    private _updateCounts() {
-        this._itemsShownCount = this.filteredItems.filter(i => !i.children).length.toLocaleString();
-        this._itemsTotalCount = this.items.filter(i => !i.children).length.toLocaleString();
+    updateCounts() {
+        this._itemsShownCountStr = this.filteredItems.filter(i => !i.isParent).length.toLocaleString();
+        this._itemsTotalCount = this.items.filter(i => !i.isParent).length;
+        this._itemsTotalCountStr = this._itemsTotalCount.toLocaleString();
     }
 
     /** If picklist is not configured with a search function, use this one. */
@@ -343,7 +353,7 @@ export class ItemsList {
         // Check if items are already grouped by given key.
         if (Array.isArray(items[0].value[<string>groupBy])) {
             for (const item of items) {
-                const children = (item.value[<string>groupBy] || []).map((x, index) => this.createHcOption(x, index));
+                const children = (item.value[<string>groupBy] || []).map((x, index) => this._createHcOption(x, index));
                 groups.set(item, children);
             }
             return groups;
@@ -375,15 +385,7 @@ export class ItemsList {
         const parentOptions = new Array<HcOption>();
         for (const key of Array.from(groups.keys())) {
             const isObjectKey = isObject(key);
-            const parent = new HcOption({
-                groupKey: key,
-                label: isObjectKey ? '' : this.getStringForKey(key),
-                children: undefined,
-                parent: null,
-                disabled: !this._pickPane.canSelectGroup,
-                htmlId: newId(),
-                isClosed: !!this._pickPane.groupBy && this._pickPane.canCloseGroup && this._pickPane.closeGroupsByDefault
-            });
+            const parent = this.createOptionGroup(key, isObjectKey);
             const keyForGroupVal = isGroupByFn ? this._pickPane.bindLabel : <string>this._pickPane.groupBy;
             const groupValue = this._pickPane.groupValue || (() => {
                 if (isObjectKey) { return (<HcOption>key).value; }
@@ -399,6 +401,18 @@ export class ItemsList {
             parentOptions.push(parent)
         }
         return parentOptions;
+    }
+
+    private createOptionGroup(key: string | HcOption, isObjectKey: boolean = false): HcOption {
+        return new HcOption({
+            groupKey: key,
+            label: isObjectKey ? '' : this.getStringForKey(key),
+            children: undefined,
+            parent: null,
+            disabled: !this._pickPane.canSelectGroup,
+            htmlId: newId(),
+            isClosed: !!this._pickPane.groupBy && this._pickPane.canCloseGroup && this._pickPane.closeGroupsByDefault
+        });
     }
 
     private getStringForKey(key: any) {

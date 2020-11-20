@@ -49,7 +49,7 @@
 
     <div class="hc-picklist-move-btns">
         <button hc-button buttonStyle="primary-alt" type="button" name="addBtn"
-            [title]="hasMaxItemsSelected ? 'Cannot select more than 3 items.' : ''"
+            [title]="maxSelectedItems && hasMaxItemsSelected ? 'Cannot select more than ' + maxSelectedItems.toLocaleString() + ' items.' : ''"
             (click)="moveLeftToRight()"
             [disabled]="disabled || availablePane.selectedItems.length === 0 || hasMaxItemsSelected">
                 <span class="icon icon-arrow-right"> -> </span>

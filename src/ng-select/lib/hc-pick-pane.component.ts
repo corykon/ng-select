@@ -114,6 +114,8 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
      * using this property and adding a css class works more smoothly than relying on :focus psuedo selector */
     _paneHasFocus = false;
     public get disabled() { return this.readonly || this._disabled };
+    public get externalOptionCountStr(): string | null {
+        return Number.isFinite(this.externalTotalOptionCount) ? this.externalTotalOptionCount.toLocaleString() : null; }
     public get _companionPane(): HcPickPaneComponent {
         return this._isLeftPane ? this.picklistService.selectedPane : this.picklistService.availablePane; }
 
@@ -321,9 +323,14 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
 
     /** Create as custom item from a search term that didn't match available options from either pane */
     addAndSelectCustomOption() {
-        let customItem;
-        if (isFunction(this.addCustomItem)) {
+        let customItem: any;
+        const hasAddCustomItemFunc = isFunction(this.addCustomItem)
+        if (hasAddCustomItemFunc) {
             customItem = (<AddCustomItemFn>this.addCustomItem)(this.searchTerm);
+        } else if (!hasAddCustomItemFunc && this.bindValue && this.bindValue !== this.bindLabel) {
+            throw new Error(`Attempting to add a custom option, but because the [bindValue] & [bindLabel] Input() params don't match,
+                you'll need to also supply a function to the [addCustomItem] Input() to create an appropriate value for the new option.
+                This function should return an object that matches the shape of the options passed into the [items] array.`);
         } else {
             customItem = this._primitive ? this.searchTerm : { [this.bindLabel]: this.searchTerm };
         }
@@ -337,7 +344,7 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
 
     /** Convert the given custom item into an HcOption, add it to the list, and then highlight it */
     _selectNewCustomOption(customItem: any) {
-        const newOption = this.itemsList.createHcOption(customItem);
+        const newOption = this.itemsList.addNewOption(customItem);
         this.filter();
         this.itemsList.markItem(newOption)
         this._selectAndScrollToItem(newOption);
@@ -391,6 +398,7 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         this.searchTerm = term;
         if (this._isUsingSearchSubject && (this._validTerm || this.externalSearchTermMinLength === 0)) {
             this.externalSearchSubject.next(term);
+            this.itemsList.updateCounts();
         }
 
         if (!this._isUsingSearchSubject) {

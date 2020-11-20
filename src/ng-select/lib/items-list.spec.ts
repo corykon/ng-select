@@ -171,14 +171,13 @@ fdescribe('ItemsList', () => {
     });
 
     describe('filter', () => {
-        // todo: check counts
         beforeEach(() => {
             cmp = ngSelectFactory();
             cmp.bindLabel = 'label';
             list = itemsListFactory(cmp);
         });
 
-        it('should find item from items list', () => {
+        it('should find item from items list and update counts', () => {
             list.setItems([
                 { label: 'K1 part1 part2', val: 'V1' },
                 { label: 'K2 part1 part2', val: 'V2' },
@@ -189,15 +188,23 @@ fdescribe('ItemsList', () => {
 
             list.filter('part1');
             expect(list.filteredItems.length).toBe(6); // +1 for default group
+            expect(list.itemsShownCountStr).toBe('5'); // excludes groups
+            expect(list.itemsTotalCountStr).toBe('5'); // excludes groups
 
             list.filter('part2.2');
             expect(list.filteredItems.length).toBe(4); // +1 for default group
+            expect(list.itemsShownCountStr).toBe('3');
+            expect(list.itemsTotalCountStr).toBe('5');
 
             list.filter('part3');
             expect(list.filteredItems.length).toBe(2); // +1 for default group
+            expect(list.itemsShownCountStr).toBe('1');
+            expect(list.itemsTotalCountStr).toBe('5');
 
             list.filter('nope');
             expect(list.filteredItems.length).toBe(0);
+            expect(list.itemsShownCountStr).toBe('0');
+            expect(list.itemsTotalCountStr).toBe('5');
         });
 
         it('should find item from grouped items list', () => {
@@ -251,7 +258,7 @@ fdescribe('ItemsList', () => {
             expect(list.markedIndex).toBe(13);
         });
 
-        it('should mark first after last marked item was filtered out', () => {
+        it('should mark first after previous marked item was filtered out', () => {
             list.markSelectedOrDefault();
             list.markNextItem(true);
             list.filter('item-0');
@@ -262,17 +269,250 @@ fdescribe('ItemsList', () => {
         });
     });
 
-    // todo: write tests
-    describe('unmark', () => { });
-    describe('markItem', () => { });
-    describe('markFirst', () => { });
-    describe('findOption', () => { });
-    describe('addOption', () => { });
-    describe('removeOption', () => { });
-    describe('clearSelected', () => { });
-    describe('selectAll', () => { });
-    describe('resolveNested', () => { });
-    describe('createHcOption', () => { });
+    describe('unmark', () => {
+        beforeEach(() => {
+            cmp = ngSelectFactory();
+            list = itemsListFactory(cmp);
+            const items = Array.from(Array(30)).map((_, index) => (`item-${index}`));
+            list.setItems(items);
+        });
+        it('should reset the markedIndex property', () => {
+            list.markItem(list.items[5]);
+            list.unmark();
+             expect(list.markedIndex).toBe(-1);
+        });
+    });
+    describe('markItem', () => {
+        beforeEach(() => {
+            cmp = ngSelectFactory();
+            list = itemsListFactory(cmp);
+            const items = Array.from(Array(30)).map((_, index) => (`item-${index}`));
+            list.setItems(items);
+        });
+        it('should set the markedIndex property according to the position of the item in the filtered list', () => {
+            list.markItem(list.items[5]);
+            expect(list.markedIndex).toBe(5);
+        });
+        it('should set the markedIndex property to -1 if the given item is not in the list', () => {
+            list.markItem(new HcOption({}));
+            expect(list.markedIndex).toBe(-1);
+        });
+    });
+
+    describe('markFirst', () => {
+        beforeEach(() => {
+            cmp = ngSelectFactory();
+            list = itemsListFactory(cmp);
+            const items = Array.from(Array(30)).map((_, index) => (`item-${index}`));
+            list.setItems(items);
+        });
+        it('unmarks what ever is currently marked and then marks the first selectable item', () => {
+            list.markItem(list.items[5]);
+            list.markFirst();
+            expect(list.markedIndex).toBe(1); // groups are disabled by default, index 0 is a group
+        });
+    });
+
+    describe('findOption', () => {
+        beforeEach(() => {
+            cmp = ngSelectFactory();
+            list = itemsListFactory(cmp);
+            const items = Array.from(Array(30)).map((_, index) => (`item-${index}`));
+            list.setItems(items);
+        });
+        it('uses a given compareWith function to find a match', () => {
+            cmp.compareWith = (a, b) => {
+                return a.value === b.value;
+            }
+            const result = list.findOption(list.items[3]);
+            expect(result.value).toBe(list.items[3].value);
+        });
+        it('uses a given bindValue to find a match (if no compareWith func was given)', () => {
+            cmp.bindValue = 'value';
+            const result = list.findOption(list.items[3].value);
+            expect(result.value).toBe(list.items[3].value);
+        });
+        it('uses a given bindLabel to find a match (if no compareWith func or bindValue was given)', () => {
+            cmp.bindValue = null;
+            cmp.bindLabel = 'label';
+            const result = list.findOption(list.items[3].value);
+            expect(result.value).toBe(list.items[3].value);
+        });
+    });
+
+    describe('addOption', () => {
+        beforeEach(() => {
+            cmp = ngSelectFactory();
+            list = itemsListFactory(cmp);
+            const items = Array.from(Array(10)).map((_, index) => (`item-${index}`));
+            list.setItems(items);
+        });
+        it('throws error if given an option without a parent', () => {
+            const optionNoParent = new HcOption({ name: 'no parent', parent: null});
+            expect(() => { list.addOption(optionNoParent) })
+                .toThrow(new Error(`Trying to add an option that does not have a parent: ${optionNoParent}`));
+        });
+        it('adds option whose parent already exisits in the list', () => {
+            const hasExistingParent = new HcOption({ name: 'default parent', parent: list.items[0]});
+            expect(list.items.length).toBe(11);
+            list.addOption(hasExistingParent);
+
+            expect(list.items.length).toBe(12);
+            expect(list.items[0].children.length).toBe(11);
+            expect(list.items[0].children[10].name).toBe(hasExistingParent.name);
+        });
+        it('adds option whose parent does not already exisits in the list', () => {
+            const newParentOpt = new HcOption({name: 'new parent', children: []});
+            const optionWithNewParent = new HcOption({ name: 'has new parent', parent: newParentOpt});
+            newParentOpt.children.push(optionWithNewParent);
+            expect(list.items.length).toBe(11);
+            list.addOption(optionWithNewParent);
+
+            expect(list.items.length).toBe(13);
+            expect(list.items[11].children.length).toBe(1);
+            expect(list.items[11].children[0].name).toBe(optionWithNewParent.name);
+        });
+    });
+    describe('removeOption', () => {
+        beforeEach(() => {
+            cmp = ngSelectFactory();
+            list = itemsListFactory(cmp);
+            const items = Array.from(Array(10)).map((_, index) => (`item-${index}`));
+            list.setItems(items);
+        });
+        it('throws error if given an option without a parent', () => {
+            const optionNoParent = new HcOption({ name: 'no parent', parent: null});
+            expect(() => { list.removeOption(optionNoParent) })
+                .toThrow(new Error(`Trying to remove an option that does not have a parent: ${optionNoParent}`));
+        });
+        it('removes a given option from items list', () => {
+            const existingOption = list.items[1];
+            expect(list.items.length).toBe(11);
+            list.removeOption(existingOption);
+            expect(list.items.length).toBe(10);
+        });
+        it('removes a given option and its parent group if it was the last option in that group', () => {
+            list.clearList();
+            list.setItems([new HcOption({name: 'only option'})]);
+            const onlyOption = list.items[1];
+            
+            expect(list.items.length).toBe(2); // the only option and its parent
+            list.removeOption(onlyOption);
+            expect(list.items.length).toBe(0);
+        });
+    });
+    describe('clearSelected', () => {
+        beforeEach(() => {
+            cmp = ngSelectFactory();
+            cmp.bindLabel = 'label';
+            list = itemsListFactory(cmp);
+        });
+
+        it('should empty selected items list', () => {
+            list.setItems([new HcOption({name: 'only option'})]);
+            const onlyOption = list.items[1];
+            list.select(onlyOption);
+            expect(list.selectedItems.length).toBe(1);
+            expect(onlyOption.selected).toBeTruthy();
+
+            list.clearSelected();
+            expect(list.selectedItems.length).toBe(0);
+            expect(onlyOption.selected).toBeFalsy();
+        });
+
+        it('if nothing was selected when called, selectedItems property should still be empty', () => {
+            list.setItems([45, 56, 67]);
+            expect(list.selectedItems.length).toBe(0);
+            list.clearSelected();
+            expect(list.selectedItems.length).toBe(0);
+        });
+    });
+    describe('selectAll', () => {
+        beforeEach(() => {
+            cmp = ngSelectFactory();
+            cmp.bindLabel = 'label';
+            list = itemsListFactory(cmp);
+        });
+
+        it('selects all items in the list', () => {
+            list.setItems(['one', 'two', 'three']);
+            list.selectAll();
+            expect(list.selectedItems.length).toBe(3);
+            list.selectedItems.forEach(i => {
+                expect(i.selected).toBeTruthy();
+            })
+        });
+
+        it('marks all items as selected, including groups, if canSelectGroup is true', () => {
+            cmp.canSelectGroup = true;
+            list.setItems(['one', 'two', 'three']);
+            list.selectAll();
+            expect(list.selectedItems.length).toBe(3); // only child items actually get placed in selectedItems array
+            list.items.forEach(i => {
+                expect(i.selected).toBeTruthy();
+            })
+        });
+
+        it('selects all items in the list except disabled items', () => {
+            list.setItems(['one', 'two', 'three']);
+            list.items[1].disabled = true;
+            list.selectAll();
+            expect(list.selectedItems.length).toBe(2);
+            expect(list.items[1].selected).toBeFalsy();
+        });
+    });
+    
+    describe('resolveNested', () => {
+        beforeEach(() => {
+            cmp = ngSelectFactory();
+            list = itemsListFactory(cmp);
+        });
+        it('can pluck given property value from an object', () => {
+            const testObj = { test: 1 };
+            expect(list.resolveNested(testObj, 'test')).toBe(1);
+        });
+        it('can pluck given nested property value from an object', () => {
+            const testObj = { test: 1, nestTest: { test2: 2 }};
+            expect(list.resolveNested(testObj, 'nestTest.test2')).toBe(2);
+        });
+        it('can pluck given deeply nested property value from an object', () => {
+            const testObj = { test: 1, nestTest: { test2: 2, deepNest: { deeperNest: { deepestNest: 3 }}}};
+            expect(list.resolveNested(testObj, 'nestTest.deepNest.deeperNest.deepestNest')).toBe(3);
+        });
+    });
+
+    describe('createHcOption', () => {
+        beforeEach(() => {
+            cmp = ngSelectFactory();
+            cmp.bindLabel = 'label';
+            list = itemsListFactory(cmp);
+        });
+        it('converts raw primitive value into an option', () => {
+            const result = list._createHcOption(3);
+            expect(result.value).toBe(3);
+        });
+        it('converts raw object value into an option', () => {
+            const result = list._createHcOption({ countVal: 3 });
+            expect((result.value as Object)['countVal']).toBe(3);
+        });
+        it('use given index', () => {
+            const result = list._createHcOption(3, 2);
+            expect(result.index).toBe(2);
+        });
+        it('use bindLabel from pane component to set label property', () => {
+            cmp.bindLabel = 'myLabel';
+            const expectedLabelVal = 'i am the label';
+            const result = list._createHcOption({value: 4, myLabel: expectedLabelVal});
+            expect(result.label).toBe(expectedLabelVal);
+        });
+        it('uses $hcOptionLabel and $hcOptionValue if they exist', () => {
+            // for the <hc-pick-option> use case
+            const expectedLabelVal = 'i am the label';
+            const result = list._createHcOption({ $hcOptionLabel: expectedLabelVal, $hcOptionValue: 7 });
+            expect(result.value).toBe(7);
+            expect(result.label).toBe(expectedLabelVal);
+        });
+    });
 
     function itemsListFactory(pickCmp: HcPickPaneComponent): ItemsList {
         return new ItemsList(pickCmp, new DefaultSelectionModel());
