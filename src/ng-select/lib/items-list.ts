@@ -107,6 +107,7 @@ export class ItemsList {
     /** Adds an existing HcOption to the list. */
     addOption(option: HcOption) {
         if (option.isParent) { throw new Error(`Trying to add an option that has children: ${option}`); }
+        if (!option.parent) { throw new Error(`Trying to add an option that does not have a parent: ${option}`); }
         const parentKey = option.parent.groupKey;
         const parentGroup = this._optionGroups.find(pg => pg.groupKey === parentKey);
         if (parentGroup) {

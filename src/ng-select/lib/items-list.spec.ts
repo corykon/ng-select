@@ -322,7 +322,7 @@ fdescribe('ItemsList', () => {
         });
         it('uses a given compareWith function to find a match', () => {
             cmp.compareWith = (a, b) => {
-                return a.value === b.value;
+                return a === b.value;
             }
             const result = list.findOption(list.items[3]);
             expect(result.value).toBe(list.items[3].value);
