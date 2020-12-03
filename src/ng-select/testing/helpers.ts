@@ -11,22 +11,26 @@ export function tickAndDetectChanges(fixture: ComponentFixture<any>) {
 }
 
 export function selectOption(fixture, key: KeyCode, index: number) {
-    triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode.Space); // open
+    triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Space); // open
     tickAndDetectChanges(fixture); // need to tick and detect changes, since dropdown fully inits after promise is resolved
     for (let i = 0; i < index; i++) {
-        triggerKeyDownEvent(getNgSelectElement(fixture), key);
+        triggerKeyDownEvent(getPickPaneElement(fixture), key);
     }
-    triggerKeyDownEvent(getNgSelectElement(fixture), KeyCode.Enter); // select
+    triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Enter); // select
 }
 
-export function getNgSelectElement(fixture: ComponentFixture<any>): DebugElement {
-    return fixture.debugElement.query(By.css('ng-select'));
+export function getPickPaneElement(fixture: ComponentFixture<any>): DebugElement {
+    return fixture.debugElement.query(By.css('hc-pick-pane'));
 }
 
-export function triggerKeyDownEvent(element: DebugElement, which: number, key = ''): void {
+export function triggerKeyDownEvent(
+    element: DebugElement, which: number, key = '', pressedShiftKey: boolean = false, pressedCtrlKey: boolean = false
+): void {
     element.triggerEventHandler('keydown', {
         which: which,
         key: key,
+        shiftKey: pressedShiftKey,
+        ctrlKey: pressedCtrlKey,
         preventDefault: () => { },
     });
 }

@@ -8,7 +8,7 @@ import { HcOption } from './hc-pick.types';
 let list: ItemsList;
 let cmp: HcPickPaneComponent;
 
-fdescribe('ItemsList', () => {
+describe('ItemsList', () => {
     describe('select', () => {
         beforeEach(() => {
             cmp = ngSelectFactory();

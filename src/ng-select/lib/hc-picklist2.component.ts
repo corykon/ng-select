@@ -182,7 +182,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
 
     ngAfterViewInit() {
         this.picklistService.reset(this.availablePane, this.selectedPane);
-        if (!this._itemsAreUsed) { this._setItemsFromNgOptions(); }
+        if (!this._itemsAreUsed) { this._setItemsFromHcPickOptions(); }
         if (isDefined(this.autoFocus)) { this.availablePane.focus(); }
         this._detectChanges();
     }
@@ -280,7 +280,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     }
 
     /** Convert <hc-pick-option> components into HcOptions */
-    private _setItemsFromNgOptions() {
+    private _setItemsFromHcPickOptions() {
         const mapNgOptions = (options: QueryList<HcPickOptionComponent>) => {
             const items = options.map(option => ({
                 $hcOptionValue: option.value,

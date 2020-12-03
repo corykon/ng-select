@@ -329,7 +329,7 @@ export class ItemsList {
 
     /** Move focus a certain number of steps above or below the current focused item */
     private _stepToItem(steps: number) {
-        if (this._filteredItems.every(x => x.disabled)) { return; }
+        if (this._filteredItems.every(x => x.disabled)) { this.unmark(); return; }
         this._markedIndex = this._getNextItemIndex(steps);
         if (this.markedItem.disabled) { this._stepToItem(steps); }
     }

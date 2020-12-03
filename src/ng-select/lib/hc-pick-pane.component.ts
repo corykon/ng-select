@@ -1,6 +1,5 @@
 import {
     Component,
-    OnDestroy,
     AfterViewInit,
     forwardRef,
     ChangeDetectorRef,
@@ -40,7 +39,7 @@ import { SortFn, GroupValueFn, CompareWithFn, AddCustomItemFn, SELECTION_MODEL_F
     }
 })
 /** A single pane containing the searchbar, toolbar, items list, and footer. */
-export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges {
+export class HcPickPaneComponent implements AfterViewInit, OnChanges {
     @Input() _isLeftPane = false;
     @Input() bindLabel: string;
     @Input() bindValue: string;
@@ -127,9 +126,6 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
     private _compareWith: CompareWithFn;
     private _isComposing = false;
 
-    private readonly _destroy$ = new Subject<void>();
-    private readonly _keyPress$ = new Subject<string>();
-
     constructor(
         @Inject(SELECTION_MODEL_FACTORY) newSelectionModel: SelectionModelFactory,
         _elementRef: ElementRef<HTMLElement>,
@@ -161,11 +157,6 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         }
     }
 
-    ngOnDestroy() {
-        this._destroy$.next();
-        this._destroy$.complete();
-    }
-
     /** Called when a key is pressed in the search input box */
     onSearchKeydown($event: KeyboardEvent) {
         if ($event.which === KeyCode.ArrowDown || $event.which === KeyCode.Enter) {
@@ -175,8 +166,6 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
             } else {
                 this.panelFocus();
             }
-        } else if ($event.key && $event.key.length === 1 && $event.target === this.searchInput.nativeElement) {
-            this._keyPress$.next($event.key.toLocaleLowerCase());
         }
     }
 
@@ -361,8 +350,8 @@ export class HcPickPaneComponent implements OnDestroy, AfterViewInit, OnChanges 
         if (!this._validTerm) { return false; }
         const term = this.searchTerm.toLowerCase().trim();
         return this.addCustomItem &&
-            !this.itemsList.items.some(x => x.label.toLowerCase() === term) &&
-            !this._companionPane.itemsList.items.some(x => x.label.toLowerCase() === term) &&
+            !this.itemsList.items.some(x => x.label?.toLowerCase() === term) &&
+            !this._companionPane.itemsList.items.some(x => x.label?.toLowerCase() === term) &&
             !this.loading;
     }
 
