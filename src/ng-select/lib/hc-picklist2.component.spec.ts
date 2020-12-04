@@ -7,6 +7,16 @@
 //             </ng-template>
 //         </hc-pick-pane>`);
 
+import { Component, ErrorHandler, NgZone, Type, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { TestsErrorHandler } from '../testing/helpers';
+import { MockNgZone } from '../testing/mocks';
+import { HcPickPaneComponent } from "./hc-pick-pane.component";
+import { HcPicklist2Module } from './hc-picklist2.module';
+import { HcPicklist2Service } from './hc-picklist2.service';
+
 //     fixture.detectChanges();
 
 //     fixture.whenStable().then(() => {
@@ -980,3 +990,196 @@
 //         expect(items[0].label).toBe('Indeed');
 //     }));
 // });
+
+function createTestingModule<T>(cmp: Type<T>, template: string): ComponentFixture<T> {
+
+    TestBed.configureTestingModule({
+        imports: [FormsModule, HcPicklist2Module],
+        declarations: [cmp],
+        providers: [
+            HcPicklist2Service,
+            { provide: ErrorHandler, useClass: TestsErrorHandler },
+            { provide: NgZone, useFactory: () => new MockNgZone() }
+        ]
+    })
+        .overrideComponent(cmp, {
+            set: {
+                template: template
+            }
+        });
+
+    TestBed.compileComponents();
+
+    const fixture = TestBed.createComponent(cmp);
+    fixture.detectChanges();
+    return fixture;
+}
+
+function createEvent(target = {}) {
+    return {
+        preventDefault: () => {
+        },
+        target: {
+            className: '',
+            tagName: '',
+            classList: {
+                contains: () => {
+                }
+            },
+            ...target
+        }
+    }
+}
+
+@Component({
+    template: ``
+})
+class NgSelectTestCmp {
+    @ViewChild(HcPickPaneComponent, { static: false }) pickPane: HcPickPaneComponent;
+    @ViewChild('companionPane', { static: false }) companionPickPane: HcPickPaneComponent;
+    label = 'Yes';
+    clearOnBackspace = false;
+    disabled = false;
+    readonly = false;
+    dropdownPosition = 'bottom';
+    visible = true;
+    externalSearchTermMinLength = 0;
+    filter = new Subject<string>();
+    searchFn: (term: string, item: any) => boolean = null;
+    selectOnTab = true;
+    hideSelected = false;
+
+    citiesLoading = false;
+    selectedCityId: number;
+    selectedCityIds: number[];
+    selectedCity: { id: number; name: string };
+    selectedCities: { id: number; name: string }[];
+    cities: any[] = [
+        { id: 1, name: 'Vilnius' },
+        { id: 2, name: 'Kaunas' },
+        { id: 3, name: 'Pabrade' },
+    ];
+    citiesNames = this.cities.map(x => x.name);
+
+    selectedCountry: any;
+    countries = [
+        { id: 1, description: { name: 'Lithuania', id: 'a' } },
+        { id: 2, description: { name: 'USA', id: 'b' } },
+        { id: 3, description: { name: 'Australia', id: 'c' } }
+    ];
+
+    customItemFunc(term: string) {
+        return { id: term, name: term, custom: true }
+    }
+
+    customItemFuncPromise(term: string) {
+        return Promise.resolve({
+            id: 5, name: term, valid: true
+        });
+    }
+
+    compareWith(a, b) {
+        return a.name === b.name && a.district === b.district
+    }
+
+    toggleVisible() {
+        this.visible = !this.visible;
+    }
+
+    onChange(_: any) {
+    }
+
+    onFocus(_: Event) {
+    }
+
+    onBlur(_: Event) {
+    }
+
+    onOpen() {
+    }
+
+    onClose() {
+    }
+
+    onAdd(_: Event) {
+    }
+
+    onRemove(_: Event) {
+    }
+
+    onClear() {
+    }
+
+    onSearch(_: any) {
+    }
+
+    onScroll() {
+    }
+
+    onScrollToEnd() {
+    }
+}
+
+@Component({
+    template: ``,
+    encapsulation: ViewEncapsulation.ShadowDom,
+})
+class EncapsulatedTestCmp extends NgSelectTestCmp {
+    @ViewChild(HcPickPaneComponent, { static: true }) pickPane: HcPickPaneComponent;
+}
+
+@Component({
+    template: ``,
+})
+class NgSelectGroupingTestCmp {
+    @ViewChild(HcPickPaneComponent, { static: true }) pickPane: HcPickPaneComponent;
+    selectedAccountName = 'Adam';
+    selectedAccount = null;
+    groupByFn = (item) => item.child.name;
+    groupValueFn = (key, _) => ({ group: key });
+    accounts = [
+        { name: 'Adam', email: 'adam@email.com', age: 12, country: 'United States', child: { name: 'c1' } },
+        { name: 'Samantha', email: 'samantha@email.com', age: 30, country: 'United States', child: { name: 'c1' } },
+        { name: 'Amalie', email: 'amalie@email.com', age: 12, country: 'Argentina', child: { name: 'c1' } },
+        { name: 'Estefanía', email: 'estefania@email.com', age: 21, country: 'Argentina', child: { name: 'c1' } },
+        { name: 'Adrian', email: 'adrian@email.com', age: 21, country: 'Ecuador', child: { name: 'c1' } },
+        { name: 'Wladimir', email: 'wladimir@email.com', age: 30, country: 'Ecuador', child: { name: 'c2' } },
+        { name: 'Natasha', email: 'natasha@email.com', age: 54, country: 'Ecuador', child: { name: 'c2' } },
+        { name: 'Nicole', email: 'nicole@email.com', age: 43, country: 'Colombia', child: { name: 'c2' } },
+        { name: 'Michael', email: 'michael@email.com', age: 15, country: 'Colombia', child: { name: 'c2' } },
+        { name: 'Nicolás', email: 'nicole@email.com', age: 43, country: 'Colombia', child: { name: 'c2' } }
+    ];
+
+    groupedAccounts = [
+        {
+            country: 'United States',
+            accounts: [
+                { name: 'Adam', email: 'adam@email.com', age: 12 },
+                { name: 'Samantha', email: 'samantha@email.com', age: 30 },
+            ]
+        },
+        {
+            country: 'Argentina',
+            accounts: [
+                { name: 'Amalie', email: 'amalie@email.com', age: 12 },
+                { name: 'Estefanía', email: 'estefania@email.com', age: 21 },
+            ]
+        },
+        {
+            country: 'Ecuador',
+            accounts: [
+                { name: 'Adrian', email: 'adrian@email.com', age: 21 },
+                { name: 'Wladimir', email: 'wladimir@email.com', age: 30 },
+                { name: 'Natasha', email: 'natasha@email.com', age: 54 },
+            ]
+        },
+        {
+            country: 'Colombia',
+            accounts: [
+                { name: 'Nicole', email: 'nicole@email.com', age: 43 },
+                { name: 'Michael', email: 'michael@email.com', age: 15 },
+                { name: 'Nicolás', email: 'nicole@email.com', age: 43 }
+            ]
+        }
+    ]
+}

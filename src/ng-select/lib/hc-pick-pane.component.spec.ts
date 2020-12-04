@@ -1,9 +1,9 @@
-import { async, ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { Component, DebugElement, ErrorHandler, NgZone, Type, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, DebugElement, ErrorHandler, NgZone, Type, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { getPickPaneElement, selectOption, TestsErrorHandler, tickAndDetectChanges, triggerKeyDownEvent } from '../testing/helpers';
-import { KeyCode, HcOption } from './hc-pick.types';
+import { TestsErrorHandler, tickAndDetectChanges, triggerKeyDownEvent } from '../testing/helpers';
+import { KeyCode } from './hc-pick.types';
 import { MockNgZone } from '../testing/mocks';
 import { HcPickPaneComponent } from '@ng-select/ng-select';
 import { HcPicklist2Module } from './hc-picklist2.module';
@@ -12,10 +12,10 @@ import { HcPicklist2Service } from './hc-picklist2.service';
 
 describe('HcPickPaneComponent', () => {
     describe('Data source and bindings', () => {
-        let select: HcPickPaneComponent;
+        let pickPane: HcPickPaneComponent;
         it('should set items from primitive numbers array', fakeAsync(() => {
             const fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="[0, 30, 60, 90, 120, 180, 240]">
                 </hc-pick-pane>`);
 
@@ -30,21 +30,21 @@ describe('HcPickPaneComponent', () => {
 
         it('should map label correctly', fakeAsync(() => {
             const fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="cities" bindLabel="name"> </hc-pick-pane>`);
 
             fixture.componentInstance.cities = [{ label: 'Vilnius city', name: 'Vilnius' }];
             tickAndDetectChanges(fixture);
-            select = fixture.componentInstance.pickPane;
+            pickPane = fixture.componentInstance.pickPane;
 
-            expect(select.itemsList.items[0].label).toBe('Vilnius');
+            expect(pickPane.itemsList.items[1].label).toBe('Vilnius');
         }));
     });
 
     describe('Scrollable List', () => {
         it('should set and render items in scrollable list', fakeAsync(() => {
             const fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="cities" bindLabel="name">
                 </hc-pick-pane>`);
 
@@ -66,7 +66,7 @@ describe('HcPickPaneComponent', () => {
 
         it('should always have div #padding with height 0 in dropdown panel when virtual scroll is disabled', fakeAsync(() => {
             createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="cities" bindLabel="name" [virtualScroll]="false">
                 </hc-pick-pane>`);
 
@@ -79,7 +79,7 @@ describe('HcPickPaneComponent', () => {
         it('should have div #padding with height other than 0 in dropdown panel when virtual scroll is enabled', fakeAsync(() => {
 
             const fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="cities" bindLabel="name" [virtualScroll]="true">
                 </hc-pick-pane>`);
 
@@ -105,7 +105,7 @@ describe('HcPickPaneComponent', () => {
 
         it('should set and render items in dropdown panel with virtual scroll', fakeAsync(() => {
             const fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="cities" bindLabel="name" [virtualScroll]="true">
                 </hc-pick-pane>`);
 
@@ -130,7 +130,7 @@ describe('HcPickPaneComponent', () => {
 
         it('should scroll to item and do not change scroll position when scrolled to visible item', fakeAsync(() => {
             const fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="cities" bindLabel="name">
                 </hc-pick-pane>`);
             const cmp = fixture.componentInstance;
@@ -149,12 +149,12 @@ describe('HcPickPaneComponent', () => {
     });
 
     describe('Keyboard events in search box', () => {
-        let fixture: ComponentFixture<NgSelectTestCmp>;
+        let fixture: ComponentFixture<HcPickPaneTestCmp>;
         let pickPane: HcPickPaneComponent;
 
         beforeEach(() => {
             fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [loading]="citiesLoading">
@@ -211,13 +211,13 @@ describe('HcPickPaneComponent', () => {
     });
 
     describe('Keyboard events in list', () => {
-        let fixture: ComponentFixture<NgSelectTestCmp>;
+        let fixture: ComponentFixture<HcPickPaneTestCmp>;
         let pickPane: HcPickPaneComponent;
         let listPanel: DebugElement;
 
         beforeEach(() => {
             fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="cities" bindLabel="name" [loading]="citiesLoading">
                 </hc-pick-pane>`);
             pickPane = fixture.componentInstance.pickPane;
@@ -328,11 +328,11 @@ describe('HcPickPaneComponent', () => {
     });
 
     describe('Selects multiple items', () => {
-        let fixture: ComponentFixture<NgSelectTestCmp>;
+        let fixture: ComponentFixture<HcPickPaneTestCmp>;
         let pickPane: HcPickPaneComponent;
         beforeEach(() => {
             fixture = createTestingModule(
-                NgSelectTestCmp, `<hc-pick-pane [items]="cities" bindLabel="name" placeholder="select value"></hc-pick-pane>`);
+                HcPickPaneTestCmp, `<hc-pick-pane [items]="cities" bindLabel="name" placeholder="select value"></hc-pick-pane>`);
             pickPane = fixture.componentInstance.pickPane;
         });
 
@@ -348,7 +348,7 @@ describe('HcPickPaneComponent', () => {
     describe('Custom Options', () => {
         it('should select default custom item', fakeAsync(() => {
             let fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="cities" bindLabel="name" [addCustomItem]="true">
                 </hc-pick-pane>`);
 
@@ -366,7 +366,7 @@ describe('HcPickPaneComponent', () => {
 
         it('should add custom item as string', fakeAsync(() => {
             let fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="citiesNames" [addCustomItem]="true">
                 </hc-pick-pane>`);
 
@@ -383,7 +383,7 @@ describe('HcPickPaneComponent', () => {
 
         it('should add custom item as string when there are no items', fakeAsync(() => {
             let fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="[]" [addCustomItem]="true">
                 </hc-pick-pane>`);
 
@@ -400,7 +400,7 @@ describe('HcPickPaneComponent', () => {
 
         it('should add custom item as string when down arrow pressed', fakeAsync(() => {
             let fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="citiesNames" [addCustomItem]="true">
                 </hc-pick-pane>`);
 
@@ -417,7 +417,7 @@ describe('HcPickPaneComponent', () => {
 
         it('can select custom item even if there are filtered items that matches search term', fakeAsync(() => {
             let fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="cities" bindLabel="name" [addCustomItem]="true">
                 </hc-pick-pane>`);
 
@@ -436,7 +436,7 @@ describe('HcPickPaneComponent', () => {
 
         it('should select custom item using given fuction', fakeAsync(() => {
             let fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="cities" bindLabel="name" [addCustomItem]="customItemFunc">
                 </hc-pick-pane>`);
 
@@ -454,7 +454,7 @@ describe('HcPickPaneComponent', () => {
 
         it('should select custom item with given promise-based function', fakeAsync(() => {
             let fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="cities" bindLabel="name" [addCustomItem]="customItemFuncPromise">
                 </hc-pick-pane>`);
 
@@ -474,10 +474,10 @@ describe('HcPickPaneComponent', () => {
         describe('show add custom item', () => {
             let pickPane: HcPickPaneComponent;
             let companionPickPane: HcPickPaneComponent;
-            let fixture: ComponentFixture<NgSelectTestCmp>;
+            let fixture: ComponentFixture<HcPickPaneTestCmp>;
             beforeEach(() => {
                 fixture = createTestingModule(
-                    NgSelectTestCmp,
+                    HcPickPaneTestCmp,
                     `<hc-pick-pane [items]="cities"
                         bindLabel="name"
                         [addCustomItem]="true"
@@ -530,182 +530,82 @@ describe('HcPickPaneComponent', () => {
         });
     });
 
-    describe('Placeholder', () => {
-        let fixture: ComponentFixture<NgSelectTestCmp>;
-        beforeEach(() => {
-            fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities"
-                    bindLabel="name"
-                    placeholder="select value"
-                    [(ngModel)]="selectedCity">
-                </hc-pick-pane>`);
-        });
-
-        it('should be visible when no value selected', async(() => {
-            fixture.detectChanges();
-            fixture.whenStable().then(() => {
-                const element = fixture.componentInstance.pickPane.element;
-                const placeholder: any = element.querySelector('.ng-placeholder');
-                expect(placeholder.innerText).toBe('select value');
-                expect(getComputedStyle(placeholder).display).toBe('block');
-            });
-        }));
-    });
-
     describe('Filter', () => {
         it('should filter using default implementation', fakeAsync(() => {
-            const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities"
-                    bindLabel="name"
-                    [(ngModel)]="selectedCity">
-                </hc-pick-pane>`);
+            const fixture = createTestingModule(HcPickPaneTestCmp, `<hc-pick-pane [items]="cities" bindLabel="name"></hc-pick-pane>`);
+            const pickPane = fixture.componentInstance.pickPane;
 
             tick(200);
-            fixture.componentInstance.pickPane.filter('vilnius');
+            pickPane.filter('vilnius');
             tick(200);
 
-            const result = [jasmine.objectContaining({
-                value: { id: 1, name: 'Vilnius' }
-            })];
-            expect(fixture.componentInstance.pickPane.itemsList.filteredItems).toEqual(result);
+            expect(pickPane.itemsList.filteredItems.length).toEqual(2);
+            expect(pickPane.itemsList.filteredItems[1].label).toBe('Vilnius');
         }));
 
         it('should filter using custom searchFn', fakeAsync(() => {
             const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities"
-                    bindLabel="name"
-                    [searchFn]="searchFn"
-                    [(ngModel)]="selectedCity">
-                </hc-pick-pane>`);
+                HcPickPaneTestCmp, `<hc-pick-pane [items]="cities" bindLabel="name" [searchFn]="searchFn"></hc-pick-pane>`);
+            const pickPane = fixture.componentInstance.pickPane;
 
-            fixture.componentInstance.searchFn = (term: string, item: any) => {
-                return item.name.indexOf(term) > -1 || item.id === 2;
-            };
-            const select = fixture.componentInstance.pickPane;
+            fixture.componentInstance.searchFn = (term: string, item: any) => { return item.name.indexOf(term) > -1 || item.id === 2; };
             tickAndDetectChanges(fixture);
-            select.filter('Vilnius');
+            pickPane.filter('Vilnius');
             tick(200);
 
-            expect(select.itemsList.filteredItems.length).toEqual(2);
-            expect(select.itemsList.filteredItems[0]).toEqual(jasmine.objectContaining({
-                value: { id: 1, name: 'Vilnius' }
-            }));
-            expect(select.itemsList.filteredItems[1]).toEqual(jasmine.objectContaining({
-                value: { id: 2, name: 'Kaunas' }
-            }));
-        }));
-
-        it('should not filter when searchable false', fakeAsync(() => {
-            const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities"
-                    bindLabel="name"
-                    [searchable]="false"
-                    [(ngModel)]="selectedCity">
-                </hc-pick-pane>`);
-
-            const select = fixture.componentInstance.pickPane;
-            triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Space);
-            triggerKeyDownEvent(getPickPaneElement(fixture), 97, 'v');
-            tick(200);
-            fixture.detectChanges();
-
-            const input: HTMLInputElement = select.element.querySelector('input');
-            expect(select.searchTerm).toBeNull();
-            expect(input.readOnly).toBeTruthy();
+            expect(pickPane.itemsList.filteredItems.length).toEqual(3);
+            expect(pickPane.itemsList.filteredItems[1].label).toBe('Vilnius');
+            expect(pickPane.itemsList.filteredItems[2].label).toBe('Kaunas');
         }));
 
         it('should mark first item on filter', fakeAsync(() => {
-            const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities"
-                    bindLabel="name"
-                    [(ngModel)]="selectedCity">
-                </hc-pick-pane>`);
+            const fixture = createTestingModule(HcPickPaneTestCmp, `<hc-pick-pane [items]="cities" bindLabel="name"></hc-pick-pane>`);
+            const pickPane = fixture.componentInstance.pickPane;
 
             tick(200);
-            fixture.componentInstance.pickPane.filter('pab');
+            pickPane.filter('pab');
             tick(200);
 
-            const result = jasmine.objectContaining({
-                value: fixture.componentInstance.cities[2]
-            });
-            expect(fixture.componentInstance.pickPane.itemsList.markedItem).toEqual(result);
-            triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Enter);
-            expect(fixture.componentInstance.pickPane.selectedItems).toEqual([result]);
+            expect(pickPane.itemsList.markedItem.label).toEqual('Pabrade');
         }));
 
         it('should mark first item on filter when selected is not among filtered items', fakeAsync(() => {
-            const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities"
-                    bindLabel="name"
-                    [(ngModel)]="selectedCity">
-                </hc-pick-pane>`);
+            const fixture = createTestingModule(HcPickPaneTestCmp, `<hc-pick-pane [items]="cities" bindLabel="name"></hc-pick-pane>`);
+            const pickPane = fixture.componentInstance.pickPane;
 
-            fixture.componentInstance.selectedCity = fixture.componentInstance.cities[0];
+            pickPane.itemsList.select(pickPane.itemsList.filteredItems[1]);
             fixture.detectChanges();
             fixture.componentInstance.pickPane.filter('pab');
             tick();
 
-            const result = jasmine.objectContaining({
-                value: fixture.componentInstance.cities[2]
-            });
-            expect(fixture.componentInstance.pickPane.itemsList.markedItem).toEqual(result);
-            triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Enter);
-            expect(fixture.componentInstance.pickPane.selectedItems).toEqual([result]);
+            expect(pickPane.itemsList.markedItem.label).toEqual('Pabrade');
         }));
 
-        it('should clear filterValue on selected item', fakeAsync(() => {
-            const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities"
-                    bindLabel="name"
-                    [(ngModel)]="selectedCity">
-                </hc-pick-pane>`);
+        it('should not reset items when moving focus from search box to list pane', fakeAsync(() => {
+            const fixture = createTestingModule(HcPickPaneTestCmp, `<hc-pick-pane [items]="cities" bindLabel="name"></hc-pick-pane>`);
+            const pickPane = fixture.componentInstance.pickPane;
+            fixture.detectChanges();
+            fixture.componentInstance.pickPane.filter('pab');
 
+            const resetFilteredItemsSpy = spyOn(pickPane.itemsList, 'resetFilteredItems');
             tickAndDetectChanges(fixture);
 
-            fixture.componentInstance.pickPane.searchTerm = 'Hey! Whats up!?';
-            selectOption(fixture, KeyCode.ArrowDown, 1);
-            tickAndDetectChanges(fixture);
-            expect(fixture.componentInstance.pickPane.searchTerm).toBe(null);
-        }));
-
-        it('should not reset items when selecting option', fakeAsync(() => {
-            const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities"
-                    bindLabel="name"
-                    [(ngModel)]="selectedCity">
-                </hc-pick-pane>`);
-
-            const resetFilteredItemsSpy = spyOn(fixture.componentInstance.pickPane.itemsList, 'resetFilteredItems');
-            tickAndDetectChanges(fixture);
-
-            fixture.componentInstance.pickPane.searchTerm = null;
-            selectOption(fixture, KeyCode.ArrowDown, 1);
+            const searchBox = fixture.debugElement.query(By.css('.hc-pick-search-input'));
+            triggerKeyDownEvent(searchBox, KeyCode.Enter);
             tickAndDetectChanges(fixture);
             expect(resetFilteredItemsSpy).not.toHaveBeenCalled();
         }));
 
         it('should filter grouped items', fakeAsync(() => {
             const fixture = createTestingModule(
-                NgSelectGroupingTestCmp,
-                `<hc-pick-pane [items]="accounts"
-                        groupBy="country"
-                        bindLabel="name"
-                        [(ngModel)]="selectedAccount">
-                </hc-pick-pane>`);
-
+                HcPickPaneGroupingTestCmp, `<hc-pick-pane [items]="accounts" groupBy="country" bindLabel="name"></hc-pick-pane>`);
+            const pickPane = fixture.componentInstance.pickPane;
+            
             tickAndDetectChanges(fixture);
-            fixture.componentInstance.select.filter('adam');
+            pickPane.filter('adam');
             tickAndDetectChanges(fixture);
 
-            const filteredItems = fixture.componentInstance.select.itemsList.filteredItems;
+            const filteredItems = fixture.componentInstance.pickPane.itemsList.filteredItems;
             expect(filteredItems.length).toBe(2);
             expect(filteredItems[0].children).toBeDefined();
             expect(filteredItems[0].label).toBe('United States');
@@ -715,20 +615,14 @@ describe('HcPickPaneComponent', () => {
 
         it('should continue filtering items on update of items', fakeAsync(() => {
             const fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities"
-                    bindLabel="name"
-                    [(ngModel)]="selectedCity">
-                </hc-pick-pane>`);
+                HcPickPaneTestCmp, `<hc-pick-pane [items]="cities" bindLabel="name"></hc-pick-pane>`);
+            const pickPane = fixture.componentInstance.pickPane;
             tickAndDetectChanges(fixture);
 
-            fixture.componentInstance.pickPane.filter('vil');
+            pickPane.filter('vil');
             tickAndDetectChanges(fixture);
 
-            let result = [jasmine.objectContaining({
-                value: { id: 1, name: 'Vilnius' }
-            })];
-            expect(fixture.componentInstance.pickPane.itemsList.filteredItems).toEqual(result);
+            expect(fixture.componentInstance.pickPane.itemsList.filteredItems[1].label).toBe('Vilnius');
 
             fixture.componentInstance.cities = [
                 { id: 1, name: 'Vilnius' },
@@ -738,49 +632,40 @@ describe('HcPickPaneComponent', () => {
             ];
             tickAndDetectChanges(fixture);
 
-            result = [
-                jasmine.objectContaining({
-                    value: { id: 1, name: 'Vilnius' }
-                }),
-                jasmine.objectContaining({
-                    value: { id: 4, name: 'Bruchhausen-Vilsen' }
-                })
-            ];
-            expect(fixture.componentInstance.pickPane.itemsList.filteredItems).toEqual(result);
+            expect(fixture.componentInstance.pickPane.itemsList.filteredItems[1].label).toBe('Vilnius');
+            expect(fixture.componentInstance.pickPane.itemsList.filteredItems[2].label).toBe('Bruchhausen-Vilsen');
         }));
 
         describe('with externalSearchSubject', () => {
-            let fixture: ComponentFixture<NgSelectTestCmp>;
+            let fixture: ComponentFixture<HcPickPaneTestCmp>;
+            let pickPane: HcPickPaneComponent;
             beforeEach(() => {
                 fixture = createTestingModule(
-                    NgSelectTestCmp,
+                    HcPickPaneTestCmp,
                     `<hc-pick-pane [items]="cities"
                         [externalSearchSubject]="filter"
                         [externalSearchTermMinLength]="externalSearchTermMinLength"
-                        bindLabel="name"
-                        [hideSelected]="hideSelected"
-                        [(ngModel)]="selectedCity">
+                        bindLabel="name">
                     </hc-pick-pane>`);
+                pickPane = fixture.componentInstance.pickPane;
             });
 
             it('should not show selected city among options if it does not match search term', fakeAsync(() => {
-                fixture.componentInstance.selectedCity = { id: 9, name: 'Copenhagen' };
+                pickPane.itemsList.select(pickPane.itemsList.items[1])
                 tickAndDetectChanges(fixture);
 
                 fixture.componentInstance.filter.subscribe();
-                fixture.componentInstance.pickPane.filter('new');
+                pickPane.filter('new');
                 fixture.componentInstance.cities = [{ id: 4, name: 'New York' }];
                 tickAndDetectChanges(fixture);
-                expect(fixture.componentInstance.pickPane.itemsList.filteredItems.length).toBe(1);
-                expect(fixture.componentInstance.pickPane.itemsList.filteredItems[0]).toEqual(jasmine.objectContaining({
-                    value: { id: 4, name: 'New York' }
-                }))
+                expect(pickPane.itemsList.filteredItems.length).toBe(2);
+                expect(pickPane.itemsList.filteredItems[1].label).toBe('New York');
             }));
 
             it('should push term to custom observable', fakeAsync(() => {
                 fixture.componentInstance.filter.subscribe();
                 const next = spyOn(fixture.componentInstance.filter, 'next');
-                fixture.componentInstance.pickPane.filter('vilnius');
+                pickPane.filter('vilnius');
                 tickAndDetectChanges(fixture);
                 expect(next).toHaveBeenCalledWith('vilnius')
             }));
@@ -788,7 +673,7 @@ describe('HcPickPaneComponent', () => {
             it('should push term to custom observable', fakeAsync(() => {
                 fixture.componentInstance.filter.subscribe();
                 const next = spyOn(fixture.componentInstance.filter, 'next');
-                fixture.componentInstance.pickPane.filter('');
+                pickPane.filter('');
                 tickAndDetectChanges(fixture);
                 expect(next).toHaveBeenCalledWith('')
             }));
@@ -798,148 +683,9 @@ describe('HcPickPaneComponent', () => {
                 tickAndDetectChanges(fixture);
                 fixture.componentInstance.filter.subscribe();
                 const next = spyOn(fixture.componentInstance.filter, 'next');
-                fixture.componentInstance.pickPane.filter('v');
+                pickPane.filter('v');
                 tickAndDetectChanges(fixture);
                 expect(next).not.toHaveBeenCalledWith('v')
-            }));
-        });
-    });
-
-    describe('Accessibility', () => {
-        let fixture: ComponentFixture<NgSelectTestCmp>;
-        let select: HcPickPaneComponent;
-        let input: HTMLInputElement;
-
-        beforeEach(fakeAsync(() => {
-            fixture = createTestingModule(
-                NgSelectTestCmp,
-                `<hc-pick-pane [items]="cities"
-                        (change)="onChange($event)"
-                        bindLabel="name">
-                </hc-pick-pane>`);
-            select = fixture.componentInstance.pickPane;
-            input = fixture.debugElement.query(By.css('input')).nativeElement;
-        }));
-
-        it('should set aria-activedescendant absent at start', fakeAsync(() => {
-            expect(input.hasAttribute('aria-activedescendant'))
-                .toBe(false);
-        }));
-
-        it('should set aria-owns absent at start', fakeAsync(() => {
-            expect(input.hasAttribute('aria-owns'))
-                .toBe(false);
-        }));
-
-        it('should set aria-owns be set to paneId on open', fakeAsync(() => {
-            triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Space);
-            tickAndDetectChanges(fixture);
-
-            expect(input.getAttribute('aria-owns'))
-                .toBe(select.paneId);
-        }));
-
-        it('should set aria-activedecendant equal to chosen item on open', fakeAsync(() => {
-            triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Space);
-            tickAndDetectChanges(fixture);
-            expect(input.getAttribute('aria-activedescendant'))
-                .toBe(select.itemsList.markedItem.htmlId);
-        }));
-
-        it('should set aria-activedecendant equal to chosen item on arrow down', fakeAsync(() => {
-            triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Space);
-            tickAndDetectChanges(fixture);
-            triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.ArrowDown);
-            tickAndDetectChanges(fixture);
-            expect(input.getAttribute('aria-activedescendant'))
-                .toBe(select.itemsList.markedItem.htmlId);
-        }));
-
-        it('should set aria-activedecendant equal to chosen item on arrow up', fakeAsync(() => {
-            triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Space);
-            tickAndDetectChanges(fixture);
-            triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.ArrowUp);
-            tickAndDetectChanges(fixture);
-            expect(input.getAttribute('aria-activedescendant'))
-                .toBe(select.itemsList.markedItem.htmlId);
-        }));
-
-        it('should set aria-activedescendant absent on dropdown close', fakeAsync(() => {
-            triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Space);
-            tickAndDetectChanges(fixture);
-            triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Enter);
-            tickAndDetectChanges(fixture);
-            expect(input.hasAttribute('aria-activedescendant'))
-                .toBe(false);
-        }));
-
-        it('should set aria-owns  absent on dropdown close', fakeAsync(() => {
-            triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Space);
-            tickAndDetectChanges(fixture);
-            triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Enter);
-            tickAndDetectChanges(fixture);
-            expect(input.hasAttribute('aria-owns'))
-                .toBe(false);
-        }));
-    });
-
-    describe('Mousedown', () => {
-        let fixture: ComponentFixture<NgSelectTestCmp>;
-        let select: HcPickPaneComponent;
-        let triggerMousedown = null;
-
-        describe('input click', () => {
-            let event: Event;
-            beforeEach(fakeAsync(() => {
-                fixture = createTestingModule(
-                    NgSelectTestCmp,
-                    `<hc-pick-pane [items]="cities"
-                            bindLabel="name"
-                            [(ngModel)]="selectedCities">
-                    </hc-pick-pane>`);
-                select = fixture.componentInstance.pickPane;
-
-                event = createEvent({ tagName: 'INPUT' }) as any;
-                triggerMousedown = () => {
-                    const control = fixture.debugElement.query(By.css('.hc-pick-search-outer'));
-                    control.triggerEventHandler('mousedown', event);
-                };
-            }));
-
-            it('should not prevent default', fakeAsync(() => {
-                const preventDefault = spyOn(event, 'preventDefault');
-                triggerMousedown();
-                tickAndDetectChanges(fixture);
-                expect(preventDefault).not.toHaveBeenCalled();
-            }));
-        });
-
-        describe('select none click', () => {
-            beforeEach(fakeAsync(() => {
-                fixture = createTestingModule(
-                    NgSelectTestCmp,
-                    `<hc-pick-pane [items]="cities"
-                            bindLabel="name"
-                            [(ngModel)]="selectedCities">
-                    </hc-pick-pane>`);
-                select = fixture.componentInstance.pickPane;
-
-                fixture.componentInstance.selectedCities = fixture.componentInstance.cities[0];
-                tickAndDetectChanges(fixture);
-                tickAndDetectChanges(fixture);
-                triggerMousedown = () => {
-                    const control = fixture.debugElement.query(By.css('.hc-pick-search-outer'));
-                    control.triggerEventHandler('mousedown', createEvent({
-                        classList: { contains: (term) => term === 'ng-value-icon' }
-                    }));
-                };
-            }));
-
-            it('should focus dropdown while unselecting', fakeAsync(() => {
-                const focus = spyOn(select, 'focus');
-                select.unselect(fixture.componentInstance.cities[0]);
-                tickAndDetectChanges(fixture);
-                expect(focus).toHaveBeenCalled();
             }));
         });
     });
@@ -947,16 +693,10 @@ describe('HcPickPaneComponent', () => {
     describe('Grouping', () => {
         it('should group flat items list by group key', fakeAsync(() => {
             const fixture = createTestingModule(
-                NgSelectGroupingTestCmp,
-                `<hc-pick-pane [items]="accounts"
-                        groupBy="country"
-                        [(ngModel)]="selectedAccount">
-                </hc-pick-pane>`);
-
+                HcPickPaneGroupingTestCmp, `<hc-pick-pane [items]="accounts" groupBy="country"></hc-pick-pane>`);
             tickAndDetectChanges(fixture);
 
-            const items = fixture.componentInstance.select.itemsList.items;
-
+            const items = fixture.componentInstance.pickPane.itemsList.items;
             expect(items.length).toBe(14);
             expect(items[0].children).toBeDefined();
             expect(items[0].index).toBe(0);
@@ -979,16 +719,10 @@ describe('HcPickPaneComponent', () => {
 
         it('should group items with children array by group key', fakeAsync(() => {
             const fixture = createTestingModule(
-                NgSelectGroupingTestCmp,
-                `<hc-pick-pane [items]="groupedAccounts"
-                        groupBy="accounts"
-                        [(ngModel)]="selectedAccount">
-                </hc-pick-pane>`);
-
+                HcPickPaneGroupingTestCmp, `<hc-pick-pane [items]="groupedAccounts" groupBy="accounts"></hc-pick-pane>`);
             tickAndDetectChanges(fixture);
 
-            const items = fixture.componentInstance.select.itemsList.items;
-
+            const items = fixture.componentInstance.pickPane.itemsList.items;
             expect(items.length).toBe(14);
             expect(items[0].children).toBeDefined();
             expect(items[0].index).toBe(0);
@@ -1007,49 +741,12 @@ describe('HcPickPaneComponent', () => {
             expect(items[11].parent).toBe(items[10]);
         }));
 
-        it('should not group items without key', fakeAsync(() => {
-            const fixture = createTestingModule(
-                NgSelectGroupingTestCmp,
-                `<hc-pick-pane [items]="accounts"
-                        groupBy="country"
-                        [(ngModel)]="selectedAccount">
-                </hc-pick-pane>`);
-
-            tickAndDetectChanges(fixture);
-
-            fixture.componentInstance.accounts.push(
-                <any>{ name: 'Henry', email: 'henry@email.com', age: 10 },
-                <any>{ name: 'Meg', email: 'meg@email.com', age: 7, country: null },
-                <any>{ name: 'Meg', email: 'meg@email.com', age: 7, country: '' },
-            );
-            fixture.componentInstance.accounts = [...fixture.componentInstance.accounts];
-            tickAndDetectChanges(fixture);
-
-            const items: HcOption[] = fixture.componentInstance.select.itemsList.items;
-            expect(items.length).toBe(18);
-            expect(items[0].children).toBeTruthy();
-            expect(items[0].parent).toBeNull();
-            expect(items[14].children).toBeUndefined();
-            expect(items[14].parent).toBeUndefined();
-            expect(items[15].children).toBeUndefined();
-            expect(items[15].parent).toBeUndefined();
-            expect(items[16].children).toBeTruthy();
-            expect(items[16].label).toBe('');
-            expect(items[17].parent).toBeDefined();
-        }));
-
         it('should group by group fn', fakeAsync(() => {
             const fixture = createTestingModule(
-                NgSelectGroupingTestCmp,
-                `<hc-pick-pane [items]="accounts"
-                        bindLabel="name"
-                        [groupBy]="groupByFn"
-                        [(ngModel)]="selectedAccount">
-                </hc-pick-pane>`);
+                HcPickPaneGroupingTestCmp, `<hc-pick-pane [items]="accounts" bindLabel="name" [groupBy]="groupByFn"></hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
-
-            const items = fixture.componentInstance.select.itemsList.items;
+            const items = fixture.componentInstance.pickPane.itemsList.items;
 
             expect(items.length).toBe(12);
             expect(items[0].children).toBeDefined();
@@ -1060,17 +757,12 @@ describe('HcPickPaneComponent', () => {
 
         it('should set group value using custom fn', fakeAsync(() => {
             const fixture = createTestingModule(
-                NgSelectGroupingTestCmp,
-                `<hc-pick-pane [items]="accounts"
-                        bindLabel="name"
-                        [groupBy]="groupByFn"
-                        [groupValue]="groupValueFn"
-                        [(ngModel)]="selectedAccount">
+                HcPickPaneGroupingTestCmp,
+                `<hc-pick-pane [items]="accounts" bindLabel="name" [groupBy]="groupByFn" [groupValue]="groupValueFn">
                 </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
-
-            const items = fixture.componentInstance.select.itemsList.items;
+            const items = fixture.componentInstance.pickPane.itemsList.items;
 
             expect(items.length).toBe(12);
             expect(items[0].children).toBeDefined();
@@ -1079,131 +771,85 @@ describe('HcPickPaneComponent', () => {
             expect(items[6].value['group']).toBe('c2');
         }));
 
-        it('should not mark optgroup item as marked', fakeAsync(() => {
-            const fixture = createTestingModule(
-                NgSelectGroupingTestCmp,
-                `<hc-pick-pane [items]="accounts"
-                        groupBy="country"
-                        bindValue="name"
-                        [(ngModel)]="selectedAccountName">
-                </hc-pick-pane>`);
-
-            tickAndDetectChanges(fixture);
-
-            const select = fixture.componentInstance.select;
-            expect(select.itemsList.markedItem).toBeUndefined();
-        }));
-
         it('should filter grouped items', fakeAsync(() => {
             const fixture = createTestingModule(
-                NgSelectGroupingTestCmp,
-                `<hc-pick-pane [items]="accounts"
-                        groupBy="country"
-                        bindLabel="name"
-                        [(ngModel)]="selectedAccount">
-                </hc-pick-pane>`);
+                HcPickPaneGroupingTestCmp,
+                `<hc-pick-pane [items]="accounts" groupBy="country" bindLabel="name"></hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
-            const select = fixture.componentInstance.select;
-            select.filter('aDaM');
+            const pickPane = fixture.componentInstance.pickPane;
+            pickPane.filter('aDaM');
 
-            const filteredItems = select.itemsList.filteredItems;
+            const filteredItems = pickPane.itemsList.filteredItems;
             expect(filteredItems.length).toBe(2);
             expect(filteredItems[0].children).toBeTruthy();
             expect(filteredItems[1].parent).toBe(filteredItems[0]);
 
-            select.filter('not in list');
-            expect(select.itemsList.filteredItems.length).toBe(0);
+            pickPane.filter('not in list');
+            expect(pickPane.itemsList.filteredItems.length).toBe(0);
         }));
 
-        it('should allow select optgroup items when [canSelectGroup]="true"', fakeAsync(() => {
+        it('selecting an optgroup selects its children', fakeAsync(() => {
             const fixture = createTestingModule(
-                NgSelectGroupingTestCmp,
-                `<hc-pick-pane [items]="accounts"
-                        groupBy="country"
-                        bindLabel="name"
-                        bindValue="email"
-                        [canSelectGroup]="true"
-                        [(ngModel)]="selectedAccount">
+                HcPickPaneGroupingTestCmp,
+                `<hc-pick-pane [items]="accounts" groupBy="country" bindLabel="name" bindValue="email" [canSelectGroup]="true">
                 </hc-pick-pane>`);
 
             tickAndDetectChanges(fixture);
-            selectOption(fixture, KeyCode.ArrowDown, 0);
-            expect(fixture.componentInstance.selectedAccount).toBe('United States');
-
-            selectOption(fixture, KeyCode.ArrowDown, 1);
-            expect(fixture.componentInstance.selectedAccount).toBe('adam@email.com');
-        }));
-
-        it('should select group by default when [canSelectGroup]="true"', fakeAsync(() => {
-            const fixture = createTestingModule(
-                NgSelectGroupingTestCmp,
-                `<hc-pick-pane [items]="accounts"
-                        groupBy="country"
-                        bindLabel="name"
-                        bindValue="email"
-                        [canSelectGroup]="true"
-                        [(ngModel)]="selectedAccount">
-                </hc-pick-pane>`);
-
-
-            const select = fixture.componentInstance.select;
-            tickAndDetectChanges(fixture);
-            select.filter('adam');
-            tick(200);
-
-            selectOption(fixture, KeyCode.ArrowDown, 0);
-            expect(fixture.componentInstance.selectedAccount).toBe('United States');
+            const pickPane = fixture.componentInstance.pickPane;
+            pickPane.itemsList.select(pickPane.itemsList.items[0]);
+            expect(pickPane.selectedItems.length).toBe(2);
+            expect(pickPane.selectedItems[0].label).toBe('Adam');
+            expect(pickPane.selectedItems[1].label).toBe('Samantha');
         }));
     });
 
     describe('Input method composition', () => {
-        let fixture: ComponentFixture<NgSelectTestCmp>;
-        let select: HcPickPaneComponent;
+        let fixture: ComponentFixture<HcPickPaneTestCmp>;
+        let pickPane: HcPickPaneComponent;
         const originValue = '';
         const imeInputValue = 'zhangsan';
 
         beforeEach(() => {
             fixture = createTestingModule(
-                NgSelectTestCmp,
+                HcPickPaneTestCmp,
                 `<hc-pick-pane [items]="citiesNames"
                     [addCustomItem]="true"
                     placeholder="select value"
-                    [searchWhileComposing]="false"
-                    [(ngModel)]="selectedCity">
+                    [searchWhileComposing]="false">
                 </hc-pick-pane>`);
-            select = fixture.componentInstance.pickPane;
+            pickPane = fixture.componentInstance.pickPane;
         });
 
         describe('composition start', () => {
             it('should not update search term', fakeAsync(() => {
-                select.filter(originValue);
+                pickPane.filter(originValue);
                 tickAndDetectChanges(fixture);
-                select._onCompositionStart();
+                pickPane._onCompositionStart();
                 tickAndDetectChanges(fixture);
-                select.filter(imeInputValue);
+                pickPane.filter(imeInputValue);
 
-                expect(select.searchTerm).toBe(originValue);
+                expect(pickPane.searchTerm).toBe(originValue);
             }));
         });
 
         describe('composition end', () => {
             it('should update search term', fakeAsync(() => {
-                select.filter(originValue);
+                pickPane.filter(originValue);
                 tickAndDetectChanges(fixture);
-                select._onCompositionEnd(imeInputValue);
+                pickPane._onCompositionEnd(imeInputValue);
                 tickAndDetectChanges(fixture);
 
-                expect(select.searchTerm).toBe(imeInputValue);
+                expect(pickPane.searchTerm).toBe(imeInputValue);
             }));
 
             it('should update search term when searchWhileComposing', fakeAsync(() => {
-                select.searchWhileComposing = true;
-                select._onCompositionStart();
-                select._onCompositionEnd(imeInputValue);
-                select.filter('new term');
+                pickPane.searchWhileComposing = true;
+                pickPane._onCompositionStart();
+                pickPane._onCompositionEnd(imeInputValue);
+                pickPane.filter('new term');
 
-                expect(select.searchTerm).toBe('new term');
+                expect(pickPane.searchTerm).toBe('new term');
             }));
         });
     });
@@ -1234,26 +880,10 @@ function createTestingModule<T>(cmp: Type<T>, template: string): ComponentFixtur
     return fixture;
 }
 
-function createEvent(target = {}) {
-    return {
-        preventDefault: () => {
-        },
-        target: {
-            className: '',
-            tagName: '',
-            classList: {
-                contains: () => {
-                }
-            },
-            ...target
-        }
-    }
-}
-
 @Component({
     template: ``
 })
-class NgSelectTestCmp {
+class HcPickPaneTestCmp {
     @ViewChild(HcPickPaneComponent, { static: false }) pickPane: HcPickPaneComponent;
     @ViewChild('companionPane', { static: false }) companionPickPane: HcPickPaneComponent;
     label = 'Yes';
@@ -1341,17 +971,9 @@ class NgSelectTestCmp {
 
 @Component({
     template: ``,
-    encapsulation: ViewEncapsulation.ShadowDom,
 })
-class EncapsulatedTestCmp extends NgSelectTestCmp {
+class HcPickPaneGroupingTestCmp {
     @ViewChild(HcPickPaneComponent, { static: true }) pickPane: HcPickPaneComponent;
-}
-
-@Component({
-    template: ``,
-})
-class NgSelectGroupingTestCmp {
-    @ViewChild(HcPickPaneComponent, { static: true }) select: HcPickPaneComponent;
     selectedAccountName = 'Adam';
     selectedAccount = null;
     groupByFn = (item) => item.child.name;
