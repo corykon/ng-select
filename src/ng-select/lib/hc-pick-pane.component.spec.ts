@@ -934,39 +934,6 @@ class HcPickPaneTestCmp {
     toggleVisible() {
         this.visible = !this.visible;
     }
-
-    onChange(_: any) {
-    }
-
-    onFocus(_: Event) {
-    }
-
-    onBlur(_: Event) {
-    }
-
-    onOpen() {
-    }
-
-    onClose() {
-    }
-
-    onAdd(_: Event) {
-    }
-
-    onRemove(_: Event) {
-    }
-
-    onClear() {
-    }
-
-    onSearch(_: any) {
-    }
-
-    onScroll() {
-    }
-
-    onScrollToEnd() {
-    }
 }
 
 @Component({

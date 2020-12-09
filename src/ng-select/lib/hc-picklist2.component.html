@@ -48,13 +48,13 @@
     </div>
 
     <div class="hc-picklist-move-btns">
-        <button hc-button buttonStyle="primary-alt" type="button" name="addBtn"
+        <button hc-button buttonStyle="primary-alt" type="button" name="addBtn" class="hc-picklist-right-arrow-btn"
             [title]="maxSelectedItems && hasMaxItemsSelected ? 'Cannot select more than ' + maxSelectedItems.toLocaleString() + ' items.' : ''"
             (click)="moveLeftToRight()"
             [disabled]="disabled || availablePane.selectedItems.length === 0 || hasMaxItemsSelected">
                 <span class="icon icon-arrow-right"> -> </span>
         </button>
-        <button hc-button buttonStyle="primary-alt" type="button" name="removeBtn"
+        <button hc-button buttonStyle="primary-alt" type="button" name="removeBtn" class="hc-picklist-left-arrow-btn"
                 (click)="moveRightToLeft()"
                 [disabled]="disabled || selectedPane.selectedItems.length === 0">
             <span class="icon icon-arrow-left"> <- </span>

@@ -1,7 +1,7 @@
 import { DebugElement } from '@angular/core';
 import { ComponentFixture, tick } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { KeyCode } from '../lib/hc-pick.types';
+import { HcPicklist2Component } from '../lib/hc-picklist2.component';
 
 export class TestsErrorHandler {}
 
@@ -10,13 +10,11 @@ export function tickAndDetectChanges(fixture: ComponentFixture<any>) {
     tick();
 }
 
-export function selectOption(fixture, key: KeyCode, index: number) {
-    triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Space); // open
-    tickAndDetectChanges(fixture); // need to tick and detect changes, since dropdown fully inits after promise is resolved
-    for (let i = 0; i < index; i++) {
-        triggerKeyDownEvent(getPickPaneElement(fixture), key);
-    }
-    triggerKeyDownEvent(getPickPaneElement(fixture), KeyCode.Enter); // select
+export function selectOptions(picklist: HcPicklist2Component, indicesToSelect: number[]) {
+    indicesToSelect.forEach(i => {
+        picklist.availablePane.select(picklist.availablePane.itemsList.items[i]);
+    });
+    picklist.moveLeftToRight();
 }
 
 export function getPickPaneElement(fixture: ComponentFixture<any>): DebugElement {
