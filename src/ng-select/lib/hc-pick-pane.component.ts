@@ -1,6 +1,5 @@
 import {
     Component,
-    AfterViewInit,
     forwardRef,
     ChangeDetectorRef,
     Input,
@@ -39,7 +38,7 @@ import { SortFn, GroupValueFn, CompareWithFn, AddCustomItemFn, SELECTION_MODEL_F
     }
 })
 /** A single pane containing the searchbar, toolbar, items list, and footer. */
-export class HcPickPaneComponent implements AfterViewInit, OnChanges {
+export class HcPickPaneComponent implements OnChanges {
     @Input() _isLeftPane = false;
     @Input() bindLabel: string;
     @Input() bindValue: string;
@@ -67,8 +66,9 @@ export class HcPickPaneComponent implements AfterViewInit, OnChanges {
     @Input() loading = false;
     @Input() hasToolbar = true;
     @Input() hasFooter = true;
+    @Input() escapeHTML = true;
     @Input() get items() { return this._items };
-    set items(value: any[]) { this._itemsAreUsed = true; this._items = value; };
+    set items(value: any[]) { this._items = value; };
     @Input() get compareWith() { return this._compareWith; }
     set compareWith(fn: CompareWithFn) {
         if (isDefined(fn) && !isFunction(fn)) { throw Error('`compareWith` must be a function.'); }
@@ -102,8 +102,6 @@ export class HcPickPaneComponent implements AfterViewInit, OnChanges {
     /** unique identifier used as the HTML id on the list element */
     paneId = newId();
     element: HTMLElement;
-    /** whether or not we need to escape html in the default option template */
-    escapeHTML = true;
     useDefaultClass = true;
     /** true if an item is being dragged from this pane */
     _isDragging = false;
@@ -118,7 +116,6 @@ export class HcPickPaneComponent implements AfterViewInit, OnChanges {
     public get _companionPane(): HcPickPaneComponent {
         return this._isLeftPane ? this.picklistService.selectedPane : this.picklistService.availablePane; }
 
-    private _itemsAreUsed: boolean;
     private _items = [];
     private _disabled: boolean;
     private _defaultLabel = 'label';
@@ -148,12 +145,6 @@ export class HcPickPaneComponent implements AfterViewInit, OnChanges {
             this.picklistService.mapIncomingOptionsToSelected(this.bindValue);
             this.filter();
             this.detectChanges();
-        }
-    }
-
-    ngAfterViewInit() {
-        if (!this._itemsAreUsed) {
-            this.escapeHTML = false;
         }
     }
 

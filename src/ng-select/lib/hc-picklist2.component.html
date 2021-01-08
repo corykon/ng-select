@@ -43,6 +43,7 @@
             [toolbarTemplate]="toolbarTemplate"
             [footerTemplate]="footerTemplate"
             [customItemTemplate]="customItemTemplate"
+            [escapeHTML]="_escapeHTML"
             (triggerMove)="moveLeftToRight()">
         </hc-pick-pane>
     </div>
@@ -100,6 +101,7 @@
             [toolbarTemplate]="toolbarTemplate"
             [footerTemplate]="footerTemplate"
             [customItemTemplate]="customItemTemplate"
+            [escapeHTML]="_escapeHTML"
             (triggerMove)="moveRightToLeft()">
         </hc-pick-pane>
     </div>

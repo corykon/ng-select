@@ -3,6 +3,8 @@ import { PicklistExampleTemplatesComponent } from './picklist-example-templates/
 import { PicklistExampleGroupingComponent } from './picklist-example-grouping/picklist-example-grouping.component';
 import { PicklistExampleComponent } from './picklist-example/picklist-example.component';
 import { PicklistExampleTaggingComponent } from './picklist-example-tagging/picklist-example-tagging.component';
+import { PicklistRemoteDataExampleComponent } from './picklist-remote-data/picklist-remote-data-example.component';
+import { PicklistOverviewExampleComponent } from './picklist-overview/picklist-overview-example.component';
 
 export interface Example {
     component: any;
@@ -22,12 +24,16 @@ export const EXAMPLE_COMPONENTS: { [key: string]: Example } = {
         component: PicklistExampleComponent,
         title: 'Picklist'
     },
+    // 'picklist-remote': {
+    //     component: PicklistRemoteDataExampleComponent,
+    //     title: 'Picklist Remote'
+    // },
     // 'picklist-example-templates': {
     //     component: PicklistExampleTemplatesComponent,
     //     title: 'Templates'
     // },
-    'picklist-example-custom-items': {
-        component: PicklistExampleTaggingComponent,
-        title: 'Custom Options'
-    }
+    // 'picklist-example-custom-items': {
+    //     component: PicklistOverviewExampleComponent,
+    //     title: 'Overview'
+    // }
 };

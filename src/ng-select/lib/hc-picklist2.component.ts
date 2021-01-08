@@ -163,6 +163,10 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
     @HostBinding('class.hc-picklist2-disabled') get disabled() { return this.readonly || this._disabled };
 
     _el: HTMLElement;
+    /** whether or not we should escape HTML in default option templates. will be set to false if using <hc-pick-option> instead of passing in
+     * an items array
+     */
+    _escapeHTML = true;
     private _items = [];
     private _itemsAreUsed: boolean;
     private _defaultLabel = 'label';
@@ -182,7 +186,7 @@ export class HcPicklist2Component implements OnDestroy, AfterViewInit, ControlVa
 
     ngAfterViewInit() {
         this.picklistService.reset(this.availablePane, this.selectedPane);
-        if (!this._itemsAreUsed) { this._setItemsFromHcPickOptions(); }
+        if (!this._itemsAreUsed) { this._setItemsFromHcPickOptions(); this._escapeHTML = false; }
         if (isDefined(this.autoFocus)) { this.availablePane.focus(); }
         this._detectChanges();
     }
