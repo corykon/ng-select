@@ -1,0 +1,26 @@
+<hc-picklist2
+    autofocus
+    [formControl]="selectedDoctors"
+    [items]="doctors"
+    bindLabel="name"
+    bindValue="id"
+    [hasSearch]="hasSearch"
+    [readonly]="readOnly"
+    [leftPaneLoading]="leftPaneLoading"
+    [rightPaneLoading]="rightPaneLoading"
+    [maxSelectedItems]="usingMaxSelected ? maxSelectedItems : false"
+    [hasHeader]="hasHeader"
+    [hasToolbar]="hasToolbar"
+    [hasFooter]="hasFooter"
+    [addCustomItem]="canAddCustomItem ? customItemFn : false"
+    [addCustomItemText]="addCustomItemText"
+    [groupBy]="isGrouped ? 'department' : false"
+    [canSelectGroup]="true"
+    [closeGroupsByDefault]="false"
+    [canCloseGroup]="canCloseGroup"
+    [height]="height"
+    [searchPlaceholder]="searchPlaceholder"
+    [notFoundText]="notFoundText">
+</hc-picklist2>
+
+

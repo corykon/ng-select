@@ -8,7 +8,7 @@ import { Component } from '@angular/core';
 export class PicklistExampleSimpleComponent {
 
     cars = [
-        { id: 1, details: { name: 'Volvo' }},
+        { id: 1, details: { name: 'Volvo <strong>hi</strong>' }},
         { id: 2, details: { name: 'Saab' }},
         { id: 3, details: { name: 'Opel' }},
         { id: 4, details: { name: 'Audi' }},
@@ -17,7 +17,27 @@ export class PicklistExampleSimpleComponent {
         { id: 7, details: { name: 'GM' }},
         { id: 8, details: { name: 'Nissan' }},
         { id: 9, details: { name: 'Honda' }},
-        { id: 10, details: { name: 'Chevy' }}
+        { id: 10, details: { name: 'Chevy' }},
+        { id: 11, details: { name: 'Volvo' }},
+        { id: 12, details: { name: 'Saab' }},
+        { id: 13, details: { name: 'Opel' }},
+        { id: 14, details: { name: 'Audi' }},
+        { id: 15, details: { name: 'Toyota' }},
+        { id: 16, details: { name: 'Ford' }},
+        { id: 17, details: { name: 'GM' }},
+        { id: 18, details: { name: 'Nissan' }},
+        { id: 19, details: { name: 'Honda' }},
+        { id: 20, details: { name: 'Chevy' }},
+        { id: 21, details: { name: 'Volvo' }},
+        { id: 22, details: { name: 'Saab' }},
+        { id: 23, details: { name: 'Opel' }},
+        { id: 24, details: { name: 'Audi' }},
+        { id: 25, details: { name: 'Toyota' }},
+        { id: 26, details: { name: 'Ford' }},
+        { id: 27, details: { name: 'GM' }},
+        { id: 28, details: { name: 'Nissan' }},
+        { id: 29, details: { name: 'Honda' }},
+        { id: 30, details: { name: 'Chevy' }}
     ];
 
     selectedCars = [{ name: 'Opel' }];

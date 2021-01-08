@@ -21,10 +21,10 @@ export class ItemsList {
 
     /** containts all items in the list, including parent items */
     get items(): Array<HcOption> { return this._items; }
-    private _items = new Array<HcOption>();
+    _items = new Array<HcOption>();
 
     get filteredItems(): Array<HcOption> { return this._filteredItems; }
-    private _filteredItems = new Array<HcOption>();
+    _filteredItems = new Array<HcOption>();
 
     private _optionGroups = new Array<HcOption>();
     private readonly DEFAULT_GROUP_KEY = 'HC_PICK_PANE_DEFAULT_GROUP_KEY';
@@ -246,7 +246,7 @@ export class ItemsList {
     /** Unfilter the list */
     resetFilteredItems() {
         if (this._filteredItems.length === this._items.length) { this.updateCounts(); return; }
-        this._filteredItems = this._items;
+        this._filteredItems = [...this._items];
         this.updateCounts();
     }
 

@@ -334,8 +334,13 @@ export class HcPickPaneComponent implements AfterViewInit, OnChanges {
     /** Convert the given custom item into an HcOption, add it to the list, and then highlight it */
     _selectNewCustomOption(customItem: any) {
         const newOption = this.itemsList.addNewOption(customItem);
-        this.filter();
-        this.itemsList.markItem(newOption)
+        if (this._isUsingSearchSubject) {
+            this.itemsList._filteredItems = [...this.itemsList._items];
+            this.itemsList.updateCounts();
+        } else {
+            this.itemsList.filter(this.searchTerm);
+        }
+        this.itemsList.markItem(newOption);
         this._selectAndScrollToItem(newOption);
     }
 
@@ -384,12 +389,13 @@ export class HcPickPaneComponent implements AfterViewInit, OnChanges {
     filter(term: string = this.searchTerm) {
         if (this._isComposing && !this.searchWhileComposing) { return; }
 
-        this.searchTerm = term;
+        if (this._isUsingSearchSubject && !term || this.searchTerm === term) { this.itemsList.resetFilteredItems(); }
         if (this._isUsingSearchSubject && (this._validTerm || this.externalSearchTermMinLength === 0)) {
             this.externalSearchSubject.next(term);
             this.itemsList.updateCounts();
         }
 
+        this.searchTerm = term;
         if (!this._isUsingSearchSubject) {
             this.itemsList.filter(this.searchTerm);
         }

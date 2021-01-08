@@ -18,7 +18,7 @@
     height="300px"
     searchPlaceholder="Search for cars"
     notFoundText="Nothing to see here.">
-    <hc-pick-option *ngFor="let car of cars" [value]="car.id" [disabled]="car.disabled">{{car.name}}</hc-pick-option>
+    <hc-pick-option *ngFor="let car of cars" [value]="car.id" [disabled]="car.disabled">{{car.name}}<strong>hi</strong></hc-pick-option>
     <hc-pick-option [value]="'custom'">Custom</hc-pick-option>
 </hc-picklist2>
 

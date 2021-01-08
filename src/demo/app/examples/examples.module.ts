@@ -8,6 +8,8 @@ import { PicklistExampleSimpleComponent } from './picklist-example-simple/pickli
 import { PicklistExampleTemplatesComponent } from './picklist-example-templates/picklist-example-templates.component';
 import { PicklistExampleTaggingComponent } from './picklist-example-tagging/picklist-example-tagging.component';
 import { PicklistExampleGroupingComponent } from './picklist-example-grouping/picklist-example-grouping.component';
+import { PicklistRemoteDataExampleComponent } from './picklist-remote-data/picklist-remote-data-example.component';
+import { PicklistOverviewExampleComponent } from './picklist-overview/picklist-overview-example.component';
 
 
 const examples = [
@@ -15,7 +17,9 @@ const examples = [
     PicklistExampleSimpleComponent,
     PicklistExampleTemplatesComponent,
     PicklistExampleTaggingComponent,
-    PicklistExampleGroupingComponent
+    PicklistExampleGroupingComponent,
+    PicklistRemoteDataExampleComponent,
+    PicklistOverviewExampleComponent
 ];
 
 @NgModule({
